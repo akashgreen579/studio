@@ -41,7 +41,7 @@ export function ManagerDashboard({
         <TooltipProvider>
             <Tooltip>
                 <TooltipTrigger asChild>
-                    <Button onClick={() => setIsWizardOpen(true)} className="bg-indigo-600 hover:bg-indigo-700 text-white">
+                    <Button onClick={() => setIsWizardOpen(true)} className="bg-accent hover:bg-accent/90">
                       <PlusCircle className="mr-2 h-4 w-4" />
                       Create New Project
                     </Button>

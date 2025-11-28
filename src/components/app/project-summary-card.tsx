@@ -51,7 +51,7 @@ export function ProjectSummaryCard({
             <div className="flex justify-between items-start">
               <CardTitle className="truncate">{project.name}</CardTitle>
               {isOwner && (
-                <Badge variant="secondary" className="bg-indigo-100 text-indigo-800 hover:bg-indigo-200">
+                <Badge variant="secondary" className="bg-primary/10 text-primary hover:bg-primary/20">
                   <ShieldCheck className="mr-1.5 h-4 w-4" />
                   Owner
                 </Badge>
@@ -98,7 +98,7 @@ export function ProjectSummaryCard({
            </div>
            <div className="w-full space-y-2">
                 <p className="text-xs text-muted-foreground">Last updated {lastUpdatedText}</p>
-                {isOwner && <p className="text-xs text-indigo-700 font-medium">You are responsible for managing access and permissions.</p>}
+                {isOwner && <p className="text-xs text-primary/80 font-medium">You are responsible for managing access and permissions.</p>}
            </div>
         </CardFooter>
       </Card>
