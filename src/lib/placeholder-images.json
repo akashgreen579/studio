@@ -1,3 +1,34 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "manager-avatar",
+      "description": "Avatar for the manager user",
+      "imageUrl": "https://images.unsplash.com/photo-1710974481447-fb001ad9ad5a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxwZXJzb24lMjBmYWNlfGVufDB8fHx8MTc2NDI5ODQ0Mnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "person face"
+    },
+    {
+      "id": "employee-avatar",
+      "description": "Avatar for the employee user",
+      "imageUrl": "https://images.unsplash.com/photo-1530268729831-4b0b9e170218?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8cGVyc29uJTIwZmFjZXxlbnwwfHx8fDE3NjQyOTg0NDJ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "person face"
+    },
+    {
+      "id": "user1-avatar",
+      "description": "Avatar for user 1",
+      "imageUrl": "https://images.unsplash.com/photo-1530268729831-4b0b9e170218?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8cGVyc29uJTIwZmFjZXxlbnwwfHx8fDE3NjQyOTg0NDJ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "person face"
+    },
+    {
+      "id": "user2-avatar",
+      "description": "Avatar for user 2",
+      "imageUrl": "https://images.unsplash.com/photo-1710974481447-fb001ad9ad5a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxwZXJzb24lMjBmYWNlfGVufDB8fHx8MTc2NDI5ODQ0Mnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "person face"
+    },
+    {
+      "id": "user3-avatar",
+      "description": "Avatar for user 3",
+      "imageUrl": "https://images.unsplash.com/photo-1725028748781-7adb1df9a943?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxwZXJzb24lMjBmYWNlfGVufDB8fHx8MTc2NDI5ODQ0Mnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "person face"
+    }
+  ]
 }
