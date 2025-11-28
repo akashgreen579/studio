@@ -20,12 +20,19 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Download, History } from "lucide-react";
 import { format } from 'date-fns';
+import { useEffect, useState } from "react";
 
 interface AuditLogProps {
   log: AuditLogEntry[];
 }
 
 export function AuditLog({ log }: AuditLogProps) {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
@@ -72,7 +79,7 @@ export function AuditLog({ log }: AuditLogProps) {
                   {entry.details}
                 </TableCell>
                 <TableCell className="text-right text-muted-foreground">
-                  {format(entry.timestamp, "MMM d, yyyy, h:mm a")}
+                  {isClient ? format(entry.timestamp, "MMM d, yyyy, h:mm a") : ''}
                 </TableCell>
               </TableRow>
             ))}

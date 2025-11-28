@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -31,6 +31,12 @@ export function ProjectSummaryCard({
   updateProjectPermissions,
 }: ProjectSummaryCardProps) {
   const [isPermissionsEditorOpen, setIsPermissionsEditorOpen] = useState(false);
+  const [lastUpdatedText, setLastUpdatedText] = useState("");
+
+  useEffect(() => {
+    setLastUpdatedText(formatDistanceToNow(project.lastUpdated, { addSuffix: true }));
+  }, [project.lastUpdated]);
+
 
   return (
     <>
@@ -70,7 +76,7 @@ export function ProjectSummaryCard({
                 Open Project <ArrowRight className="ml-2 h-4 w-4" />
              </Button>
            </div>
-           <p className="text-xs text-muted-foreground">Last updated {formatDistanceToNow(project.lastUpdated, { addSuffix: true })}</p>
+           <p className="text-xs text-muted-foreground">Last updated {lastUpdatedText}</p>
         </CardFooter>
       </Card>
       <PermissionsEditor
