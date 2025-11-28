@@ -12,6 +12,7 @@ import {
 } from "@/lib/data";
 import type { User, Project, AuditLogEntry, Permissions } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
+import { ProjectCreationConfirmation } from "@/components/app/project-creation-confirmation";
 
 export type Role = "manager" | "employee";
 
@@ -20,17 +21,25 @@ export default function Home() {
   const [role, setRole] = useState<Role>("manager");
   const [projects, setProjects] = useState<Project[]>(initialProjects);
   const [auditLog, setAuditLog] = useState<AuditLogEntry[]>(initialAuditLog);
+  const [lastCreatedProject, setLastCreatedProject] = useState<Project | null>(
+    null
+  );
 
   const currentUser = useMemo(() => {
     return allUsers.find((u) => u.role === role)!;
   }, [role]);
 
   const addAuditLogEntry = useCallback(
-    (entry: Omit<AuditLogEntry, "id" | "timestamp">) => {
+    (entry: Omit<AuditLogEntry, "id" | "timestamp" | "impact">) => {
+      let impact: "Low" | "Medium" | "High" = "Low";
+      if (entry.action.includes("Created project")) impact = "High";
+      if (entry.action.includes("Updated permissions")) impact = "Medium";
+
       setAuditLog((prev) => [
         {
           id: `log${prev.length + 1}`,
           timestamp: new Date(),
+          impact,
           ...entry,
         },
         ...prev,
@@ -53,20 +62,10 @@ export default function Home() {
         action: `Created project "${newProject.name}"`,
         details: `Assigned to ${newProject.members.length} member(s).`,
       });
-      toast({
-        title: "Project Created",
-        description: `Project '${newProject.name}' created and assigned to ${newProject.members.length} members.`,
-      });
-      newProject.members.forEach((member) => {
-        if (member.id !== currentUser.id) {
-          toast({
-            title: "Added to Project",
-            description: `You were added to ${newProject.name} by ${currentUser.name}.`,
-          });
-        }
-      });
+
+      setLastCreatedProject(newProject);
     },
-    [projects.length, currentUser, addAuditLogEntry, toast]
+    [projects.length, currentUser, addAuditLogEntry]
   );
 
   const updateProjectPermissions = useCallback(
@@ -79,7 +78,11 @@ export default function Home() {
               action: `Updated permissions for "${p.name}"`,
               details: `Changed permissions for project members.`,
             });
-            return { ...p, permissions: newPermissions, lastUpdated: new Date() };
+            return {
+              ...p,
+              permissions: newPermissions,
+              lastUpdated: new Date(),
+            };
           }
           return p;
         })
@@ -91,6 +94,15 @@ export default function Home() {
     },
     [currentUser, addAuditLogEntry, toast]
   );
+
+  if (lastCreatedProject) {
+    return (
+      <ProjectCreationConfirmation
+        project={lastCreatedProject}
+        onContinue={() => setLastCreatedProject(null)}
+      />
+    );
+  }
 
   const managerProps = {
     user: currentUser,

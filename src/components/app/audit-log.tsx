@@ -18,9 +18,11 @@ import {
 } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Download, History } from "lucide-react";
+import { Download, History, ListFilter } from "lucide-react";
 import { format } from 'date-fns';
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
+import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu";
+import { Badge } from "../ui/badge";
 
 interface AuditLogProps {
   log: AuditLogEntry[];
@@ -28,27 +30,75 @@ interface AuditLogProps {
 
 export function AuditLog({ log }: AuditLogProps) {
   const [isClient, setIsClient] = useState(false);
+  const [actionFilters, setActionFilters] = useState<Record<string, boolean>>({
+    "Created project": true,
+    "Assigned member": true,
+    "Updated permissions": true,
+  });
 
   useEffect(() => {
     setIsClient(true);
   }, []);
 
+  const filteredLog = useMemo(() => {
+    const activeFilters = Object.keys(actionFilters).filter(key => actionFilters[key]);
+    if (activeFilters.length === 0) return log;
+    if (activeFilters.length === Object.keys(actionFilters).length) return log;
+
+    return log.filter(entry => {
+        if(actionFilters["Created project"] && entry.action.startsWith("Created project")) return true;
+        if(actionFilters["Assigned member"] && entry.action.startsWith("Assigned member")) return true;
+        if(actionFilters["Updated permissions"] && entry.action.startsWith("Updated permissions")) return true;
+        return false;
+    });
+  }, [log, actionFilters]);
+
+  const getImpactVariant = (impact: "Low" | "Medium" | "High"): "default" | "secondary" | "destructive" => {
+    switch (impact) {
+      case "High": return "destructive";
+      case "Medium": return "secondary";
+      default: return "default";
+    }
+  };
+
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
+    <Card className="shadow-lg">
+      <CardHeader className="flex flex-row items-start justify-between gap-4">
         <div>
           <CardTitle className="flex items-center gap-2">
             <History className="h-5 w-5" />
             Audit Log
           </CardTitle>
-          <CardDescription>
-            A log of all creation, assignment, and permission changes.
+          <CardDescription className="mt-2">
+            All administrative actions are tracked for security and traceability.
           </CardDescription>
         </div>
-        <Button variant="outline" size="sm">
-          <Download className="mr-2 h-4 w-4" />
-          Export (CSV)
-        </Button>
+        <div className="flex items-center gap-2">
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm">
+                        <ListFilter className="mr-2 h-4 w-4" /> Filter
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Filter by Action</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {Object.keys(actionFilters).map(filter => (
+                        <DropdownMenuCheckboxItem
+                            key={filter}
+                            checked={actionFilters[filter]}
+                            onCheckedChange={checked => setActionFilters(prev => ({...prev, [filter]: checked}))}
+                        >
+                            {filter}
+                        </DropdownMenuCheckboxItem>
+                    ))}
+                </DropdownMenuContent>
+            </DropdownMenu>
+          <Button variant="outline" size="sm">
+            <Download className="mr-2 h-4 w-4" />
+            Export (CSV)
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
         <Table>
@@ -57,11 +107,12 @@ export function AuditLog({ log }: AuditLogProps) {
               <TableHead>User</TableHead>
               <TableHead>Action</TableHead>
               <TableHead>Details</TableHead>
+              <TableHead className="text-center">Impact</TableHead>
               <TableHead className="text-right">Date</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {log.map((entry) => (
+            {filteredLog.map((entry) => (
               <TableRow key={entry.id}>
                 <TableCell>
                   <div className="flex items-center gap-2">
@@ -74,9 +125,16 @@ export function AuditLog({ log }: AuditLogProps) {
                     <span className="font-medium">{entry.user.name}</span>
                   </div>
                 </TableCell>
-                <TableCell>{entry.action}</TableCell>
+                <TableCell>
+                  <Badge variant={entry.action.includes('Created') ? "secondary" : "outline"} className="font-normal">
+                    {entry.action.split(' for')[0].split(' "')[0]}
+                  </Badge>
+                </TableCell>
                 <TableCell className="text-muted-foreground">
                   {entry.details}
+                </TableCell>
+                <TableCell className="text-center">
+                  <Badge variant={getImpactVariant(entry.impact)}>{entry.impact}</Badge>
                 </TableCell>
                 <TableCell className="text-right text-muted-foreground">
                   {isClient ? format(entry.timestamp, "MMM d, yyyy, h:mm a") : ''}

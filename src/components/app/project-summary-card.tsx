@@ -11,10 +11,11 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Users, Settings, ArrowRight } from "lucide-react";
+import { Users, Settings, ArrowRight, ShieldCheck } from "lucide-react";
 import type { Project, User, Permissions } from "@/lib/data";
 import { PermissionsEditor } from "./permissions-editor";
 import { formatDistanceToNow } from 'date-fns';
+import { Badge } from "../ui/badge";
 
 interface ProjectSummaryCardProps {
   project: Project;
@@ -32,31 +33,50 @@ export function ProjectSummaryCard({
 }: ProjectSummaryCardProps) {
   const [isPermissionsEditorOpen, setIsPermissionsEditorOpen] = useState(false);
   const [lastUpdatedText, setLastUpdatedText] = useState("");
+  const isOwner = project.owner.id === currentUser.id;
 
   useEffect(() => {
     setLastUpdatedText(formatDistanceToNow(project.lastUpdated, { addSuffix: true }));
+    const timer = setInterval(() => {
+        setLastUpdatedText(formatDistanceToNow(project.lastUpdated, { addSuffix: true }));
+    }, 60000);
+    return () => clearInterval(timer);
   }, [project.lastUpdated]);
 
 
   return (
     <>
-      <Card>
+      <Card className="flex flex-col border-primary/20 hover:border-primary/40 transition-colors">
         <CardHeader>
-          <CardTitle className="truncate">{project.name}</CardTitle>
-          <CardDescription className="h-10 line-clamp-2">{project.description}</CardDescription>
+            <div className="flex justify-between items-start">
+              <CardTitle className="truncate">{project.name}</CardTitle>
+              {isOwner && (
+                <Badge variant="secondary" className="bg-indigo-100 text-indigo-800 hover:bg-indigo-200">
+                  <ShieldCheck className="mr-1.5 h-4 w-4" />
+                  Owner
+                </Badge>
+              )}
+            </div>
+          <CardDescription className="h-10 line-clamp-2 pt-1">{project.description}</CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="flex justify-between text-sm text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <Avatar className="h-6 w-6">
-                <AvatarImage src={project.owner.avatar} data-ai-hint="person face" />
-                <AvatarFallback>{project.owner.name.charAt(0)}</AvatarFallback>
-              </Avatar>
-              <span>{project.owner.name}</span>
+        <CardContent className="flex-grow">
+          <div className="flex justify-between items-center text-sm text-muted-foreground">
+             <div className="flex -space-x-2 overflow-hidden">
+                {project.members.slice(0, 5).map(member => (
+                    <Avatar key={member.id} className="h-8 w-8 inline-block border-2 border-background">
+                        <AvatarImage src={member.avatar} data-ai-hint="person face" />
+                        <AvatarFallback>{member.name.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                ))}
+                {project.members.length > 5 && (
+                    <div className="h-8 w-8 rounded-full flex items-center justify-center bg-muted text-xs font-medium border-2 border-background">
+                        +{project.members.length - 5}
+                    </div>
+                )}
             </div>
             <div className="flex items-center gap-1">
               <Users className="h-4 w-4" />
-              {project.members.length}
+              {project.members.length} Members
             </div>
           </div>
         </CardContent>
@@ -72,11 +92,14 @@ export function ProjectSummaryCard({
                     Assign
                 </Button>
             </div>
-             <Button size="sm">
-                Open Project <ArrowRight className="ml-2 h-4 w-4" />
+             <Button size="sm" variant="secondary">
+                Open <ArrowRight className="ml-2 h-4 w-4" />
              </Button>
            </div>
-           <p className="text-xs text-muted-foreground">Last updated {lastUpdatedText}</p>
+           <div className="w-full space-y-2">
+                <p className="text-xs text-muted-foreground">Last updated {lastUpdatedText}</p>
+                {isOwner && <p className="text-xs text-indigo-700 font-medium">You are responsible for managing access and permissions.</p>}
+           </div>
         </CardFooter>
       </Card>
       <PermissionsEditor

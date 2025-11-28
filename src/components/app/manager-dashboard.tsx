@@ -7,7 +7,7 @@ import { PlusCircle } from "lucide-react";
 import { CreateProjectWizard } from "./create-project-wizard";
 import { ProjectSummaryCard } from "./project-summary-card";
 import { AuditLog } from "./audit-log";
-import { allUsers } from "@/lib/data";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 
 interface ManagerDashboardProps {
   user: User;
@@ -21,7 +21,7 @@ interface ManagerDashboardProps {
     permissions: Record<string, Permissions>
   ) => void;
   addAuditLogEntry: (
-    entry: Omit<AuditLogEntry, "id" | "timestamp">
+    entry: Omit<AuditLogEntry, "id" | "timestamp" | "impact">
   ) => void;
 }
 
@@ -38,10 +38,19 @@ export function ManagerDashboard({
     <>
       <div className="flex items-center justify-between">
         <h2 className="text-3xl font-bold tracking-tight">Manager Dashboard</h2>
-        <Button onClick={() => setIsWizardOpen(true)}>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Create New Project
-        </Button>
+        <TooltipProvider>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <Button onClick={() => setIsWizardOpen(true)} className="bg-indigo-600 hover:bg-indigo-700 text-white">
+                      <PlusCircle className="mr-2 h-4 w-4" />
+                      Create New Project
+                    </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                    <p>Only Managers can create new projects.</p>
+                </TooltipContent>
+            </Tooltip>
+        </TooltipProvider>
       </div>
       <div className="grid gap-8">
         <div>

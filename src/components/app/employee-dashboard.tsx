@@ -2,6 +2,8 @@
 
 import type { User, Project } from "@/lib/data";
 import { EmployeeProjectCard } from "./employee-project-card";
+import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
+import { UserCheck } from "lucide-react";
 
 interface EmployeeDashboardProps {
   user: User;
@@ -15,6 +17,13 @@ export function EmployeeDashboard({ user, projects }: EmployeeDashboardProps) {
 
   return (
     <div className="grid gap-8">
+       <Alert variant="default" className="bg-muted/50 border-teal-500/30 text-teal-800">
+          <UserCheck className="h-4 w-4 !text-teal-700" />
+          <AlertTitle className="text-teal-900">Employee View</AlertTitle>
+          <AlertDescription>
+            You are viewing the dashboard as an employee. Management actions are restricted.
+          </AlertDescription>
+        </Alert>
       <div>
         <h2 className="text-3xl font-bold tracking-tight mb-4">Your Projects</h2>
         {assignedProjects.length > 0 ? (
