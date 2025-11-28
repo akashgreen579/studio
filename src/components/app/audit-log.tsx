@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { AuditLogEntry } from "@/lib/data";
@@ -42,15 +43,15 @@ export function AuditLog({ log }: AuditLogProps) {
 
   const filteredLog = useMemo(() => {
     const activeFilters = Object.keys(actionFilters).filter(key => actionFilters[key]);
-    if (activeFilters.length === 0) return log;
-    if (activeFilters.length === Object.keys(actionFilters).length) return log;
+    if (activeFilters.length === Object.keys(actionFilters).length) return log.slice(0, 5); // Show recent events
 
     return log.filter(entry => {
-        if(actionFilters["Created project"] && entry.action.startsWith("Created project")) return true;
-        if(actionFilters["Assigned member"] && entry.action.startsWith("Assigned member")) return true;
-        if(actionFilters["Updated permissions"] && entry.action.startsWith("Updated permissions")) return true;
+        const actionType = entry.action.split(' for')[0].split(' "')[0];
+        if(actionFilters["Created project"] && actionType === "Created project") return true;
+        if(actionFilters["Assigned member"] && actionType === "Assigned member") return true;
+        if(actionFilters["Updated permissions"] && actionType.startsWith("Updated permissions")) return true;
         return false;
-    });
+    }).slice(0,5);
   }, [log, actionFilters]);
 
   const getImpactVariant = (impact: "Low" | "Medium" | "High"): "default" | "secondary" | "destructive" => {
@@ -67,10 +68,10 @@ export function AuditLog({ log }: AuditLogProps) {
         <div>
           <CardTitle className="flex items-center gap-2">
             <History className="h-5 w-5" />
-            Audit Log
+            Recent Audit Events
           </CardTitle>
           <CardDescription className="mt-2">
-            All administrative actions are tracked for security and traceability.
+            A preview of the latest administrative actions.
           </CardDescription>
         </div>
         <div className="flex items-center gap-2">
@@ -137,7 +138,7 @@ export function AuditLog({ log }: AuditLogProps) {
                   <Badge variant={getImpactVariant(entry.impact)}>{entry.impact}</Badge>
                 </TableCell>
                 <TableCell className="text-right text-muted-foreground">
-                  {isClient ? format(entry.timestamp, "MMM d, yyyy, h:mm a") : ''}
+                  {isClient ? format(entry.timestamp, "MMM d, h:mm a") : ''}
                 </TableCell>
               </TableRow>
             ))}

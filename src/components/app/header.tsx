@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { Role } from "@/app/page";
@@ -23,7 +24,7 @@ export function Header({ currentRole, onRoleChange, user }: HeaderProps) {
   return (
     <header className={cn(
         "sticky top-0 z-30 flex h-16 items-center gap-4 border-b  px-4 md:px-6 transition-colors",
-        currentRole === 'manager' ? "bg-primary/5 border-primary/20" : "bg-card"
+        currentRole === 'manager' ? "bg-card" : "bg-card"
     )}>
       <div className="flex items-center gap-2">
         <TestTubeDiagonal className="h-6 w-6 text-primary" />

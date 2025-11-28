@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -41,7 +42,7 @@ export function ManagerDashboard({
         <TooltipProvider>
             <Tooltip>
                 <TooltipTrigger asChild>
-                    <Button onClick={() => setIsWizardOpen(true)} className="bg-accent hover:bg-accent/90">
+                    <Button onClick={() => setIsWizardOpen(true)} className="bg-primary hover:bg-primary/90 text-primary-foreground">
                       <PlusCircle className="mr-2 h-4 w-4" />
                       Create New Project
                     </Button>
@@ -54,7 +55,7 @@ export function ManagerDashboard({
       </div>
       <div className="grid gap-8">
         <div>
-          <h3 className="text-xl font-semibold mb-4">My Projects</h3>
+          <h3 className="text-xl font-semibold mb-4">Your Managed Projects</h3>
           {projects.length > 0 ? (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {projects.map((project) => (

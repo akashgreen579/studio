@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { User, Project } from "@/lib/data";
@@ -17,11 +18,11 @@ export function EmployeeDashboard({ user, projects }: EmployeeDashboardProps) {
 
   return (
     <div className="grid gap-8">
-       <Alert variant="default" className="bg-muted/50 border-teal-500/30 text-teal-800">
-          <UserCheck className="h-4 w-4 !text-teal-700" />
-          <AlertTitle className="text-teal-900">Employee View</AlertTitle>
+       <Alert variant="default" className="bg-muted/50 border-border text-foreground">
+          <UserCheck className="h-4 w-4 !text-foreground" />
+          <AlertTitle>Employee View</AlertTitle>
           <AlertDescription>
-            You are viewing the dashboard as an employee. Management actions are restricted.
+            You are viewing the dashboard as an employee. Management actions are hidden.
           </AlertDescription>
         </Alert>
       <div>
