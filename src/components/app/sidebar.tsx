@@ -24,6 +24,7 @@ import {
   Bell,
   TestTubeDiagonal,
   LogOut,
+  UserCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Role, ActiveView } from "@/app/dashboard/page";
@@ -128,6 +129,14 @@ const menuItems = [
         label: "Audit Log",
         view: "audit-log",
         tooltip: "Track all administrative actions",
+        roles: ["manager"],
+      },
+      {
+        href: "#",
+        icon: UserCheck,
+        label: "Approvals",
+        view: "approvals",
+        tooltip: "Manage user access requests",
         roles: ["manager"],
       },
     ],

@@ -12,9 +12,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { ShieldCheck, Info, Eye, Download, Users } from "lucide-react";
+import { ShieldCheck, Info, Eye, Download, Users, KeyRound } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Switch } from "../ui/switch";
+import { AccessRequestModal } from "./access-request-modal";
 
 interface UserPermissionsEditorProps {
     user: User;
@@ -33,6 +34,8 @@ export function UserPermissionsEditor({ user: initialUser, projects }: UserPermi
         return perms;
     });
     const [previewAsEmployee, setPreviewAsEmployee] = useState(false);
+    const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
+    const [selectedProjectForRequest, setSelectedProjectForRequest] = useState<Project | null>(null);
 
     const { toast } = useToast();
 
@@ -99,8 +102,12 @@ export function UserPermissionsEditor({ user: initialUser, projects }: UserPermi
         });
     }
 
-    const isManager = user.role === 'manager';
+    const openRequestModal = (project: Project) => {
+        setSelectedProjectForRequest(project);
+        setIsRequestModalOpen(true);
+    };
 
+    const isManager = user.role === 'manager';
     const permissionCategories = useMemo(() => {
         const categories: Record<string, { label: string; perms: (keyof Permissions)[] }> = {
             'Project': { label: 'Project Access', perms: ['viewAssignedProjects', 'automateTestCases', 'createSrcStructure', 'runPipelines', 'commitAndPublish'] },
@@ -111,6 +118,54 @@ export function UserPermissionsEditor({ user: initialUser, projects }: UserPermi
     }, []);
 
     const userIsManager = user.role === 'manager' && !previewAsEmployee;
+    const isEmployeeViewingSelf = user.id === initialUser.id && initialUser.role === 'employee';
+
+
+    if (isEmployeeViewingSelf) {
+        return (
+            <>
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Your Permissions</CardTitle>
+                        <CardDescription>This is a read-only view of your current access levels.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        {projects.filter(p => p.members.some(m => m.id === user.id)).map(project => (
+                            <Card key={project.id} className="bg-muted/30 mb-4">
+                                <CardHeader className="flex flex-row items-center justify-between">
+                                    <div>
+                                        <CardTitle className="text-lg">{project.name}</CardTitle>
+                                        <CardDescription>Owned by {project.owner.name}</CardDescription>
+                                    </div>
+                                    <Button variant="outline" onClick={() => openRequestModal(project)}>
+                                        <KeyRound className="mr-2 h-4 w-4"/>
+                                        Request Access Change
+                                    </Button>
+                                </CardHeader>
+                                <CardContent>
+                                    <p className="text-sm text-muted-foreground">You have read-only access. Contact your manager to request changes.</p>
+                                </CardContent>
+                            </Card>
+                        ))}
+                        {projects.filter(p => p.members.some(m => m.id === user.id)).length === 0 && (
+                            <div className="text-center text-muted-foreground border-2 border-dashed rounded-lg p-8">
+                                <Users className="mx-auto h-8 w-8 mb-2" />
+                                <p>You are not assigned to any projects.</p>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+                {selectedProjectForRequest && (
+                    <AccessRequestModal
+                        isOpen={isRequestModalOpen}
+                        setIsOpen={setIsRequestModalOpen}
+                        user={user}
+                        project={selectedProjectForRequest}
+                    />
+                )}
+            </>
+        )
+    }
 
     if (previewAsEmployee) {
         return (
@@ -134,7 +189,7 @@ export function UserPermissionsEditor({ user: initialUser, projects }: UserPermi
                         <AlertDescription>
                            This is how {user.name} would see their permissions. To make changes, an employee would need to request access, and a manager would need to disable this preview toggle.
                            <div className="mt-4">
-                               <Button variant="outline">Request Access Change</Button>
+                               <Button variant="outline" disabled>Request Access Change</Button>
                            </div>
                         </AlertDescription>
                     </Alert>
@@ -145,7 +200,7 @@ export function UserPermissionsEditor({ user: initialUser, projects }: UserPermi
                                 <CardDescription>Owned by {project.owner.name}</CardDescription>
                             </CardHeader>
                             <CardContent>
-                                <p className="text-sm text-muted-foreground">You have read-only access. Contact your manager to request changes.</p>
+                                <p className="text-sm text-muted-foreground">User has read-only access. They must contact their manager to request changes.</p>
                             </CardContent>
                          </Card>
                      ))}

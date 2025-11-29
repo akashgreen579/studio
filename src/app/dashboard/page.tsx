@@ -20,9 +20,10 @@ import { ProjectCreationConfirmation } from "@/components/app/project-creation-c
 import { Sidebar } from "@/components/app/sidebar";
 import { Home as PlaceholderHome } from "lucide-react";
 import { AuditLogScreen } from "@/components/app/audit-log-screen";
+import { ApprovalInbox } from "@/components/app/approval-inbox";
 
 export type Role = "manager" | "employee";
-export type ActiveView = "dashboard" | "project-settings" | "user-management" | "audit-log" | null;
+export type ActiveView = "dashboard" | "project-settings" | "user-management" | "audit-log" | "approvals" | null;
 
 function DashboardContent() {
   const searchParams = useSearchParams();
@@ -46,6 +47,7 @@ function DashboardContent() {
       let impact: "Low" | "Medium" | "High" = "Low";
       if (entry.action.includes("Created project")) impact = "High";
       if (entry.action.includes("Updated permissions")) impact = "Medium";
+      if (entry.action.includes("Approved") || entry.action.includes("Denied")) impact = "Medium";
 
       setAuditLog((prev) => [
         {
@@ -166,6 +168,15 @@ function DashboardContent() {
       case 'audit-log':
         return role === "manager" ? (
           <AuditLogScreen log={auditLog} />
+        ) : (
+          <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground rounded-lg border-2 border-dashed">
+            <h2 className="text-2xl font-semibold">Access Denied</h2>
+            <p>You do not have permission to view this page.</p>
+          </div>
+        );
+      case 'approvals':
+        return role === "manager" ? (
+          <ApprovalInbox />
         ) : (
           <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground rounded-lg border-2 border-dashed">
             <h2 className="text-2xl font-semibold">Access Denied</h2>
