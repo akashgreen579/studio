@@ -23,7 +23,7 @@ import {
   TestTubeDiagonal,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { Role, ActiveView } from "@/app/page";
+import type { Role, ActiveView } from "@/app/dashboard/page";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import type { User } from "@/lib/data";
 import {
@@ -165,7 +165,7 @@ export function Sidebar({
       )}
     >
       <div className="flex h-16 items-center border-b px-6">
-        <Link className="flex items-center gap-2 font-semibold" href="#">
+        <Link className="flex items-center gap-2 font-semibold" href="/login">
           <TestTubeDiagonal className="h-6 w-6 text-primary" />
           <span className="">TestCraft AI</span>
         </Link>
