@@ -51,6 +51,23 @@ export interface AuditLogEntry {
   impact: "Low" | "Medium" | "High";
 }
 
+export interface TestCase {
+    id: string;
+    summary: string;
+    priority: "Low" | "Medium" | "High";
+    status: "To Do" | "In Progress" | "Done";
+    assignee: string;
+    tags: string[];
+}
+
+export interface HierarchyItem {
+  id: string;
+  name: string;
+  type: "epic" | "feature" | "folder" | "test-case";
+  children?: HierarchyItem[];
+}
+
+
 export const permissionDescriptions: Record<keyof Permissions, { label: string; description: string; icon: LucideIcon; category: 'Project' | 'Management' | 'Admin' }> = {
     // Project
     viewAssignedProjects: { label: "View Projects", description: "Can see projects they are assigned to in their dashboard.", icon: Eye, category: 'Project' },
@@ -204,6 +221,30 @@ export const teamPerformanceData = [
     { name: "John Doe", avatar: allUsers.find(u=>u.name === 'John Doe')?.avatar || '', completed: 8, drafts: 4, successRate: "91%", pending: 0 },
     { name: "Jane Smith", avatar: allUsers.find(u=>u.name === 'Jane Smith')?.avatar || '', completed: 15, drafts: 1, successRate: "99%", pending: 2 },
     { name: "Peter Jones", avatar: allUsers.find(u=>u.name === 'Peter Jones')?.avatar || '', completed: 5, drafts: 0, successRate: "85%", pending: 0 },
+];
+
+export const testCases: TestCase[] = [
+    { id: "tc-101", summary: "Verify user can log in with valid credentials", priority: "High", status: "To Do", assignee: "Samira Khan", tags: ["auth", "smoke"] },
+    { id: "tc-102", summary: "Verify user sees error on invalid login", priority: "High", status: "To Do", assignee: "Samira Khan", tags: ["auth"] },
+    { id: "tc-201", summary: "Verify user can add item to cart", priority: "Medium", status: "In Progress", assignee: "John Doe", tags: ["cart", "regression"] },
+];
+
+export const testCaseHierarchy: HierarchyItem[] = [
+    { id: "epic-1", name: "User Authentication", type: 'epic', children: [
+        { id: "feat-1-1", name: "Login & Logout", type: 'feature', children: [
+            { id: "folder-1-1-1", name: "Positive Scenarios", type: 'folder', children: [
+                { id: "tc-101", name: "TC-101: Valid Login", type: 'test-case' }
+            ]},
+            { id: "folder-1-1-2", name: "Negative Scenarios", type: 'folder', children: [
+                 { id: "tc-102", name: "TC-102: Invalid Login", type: 'test-case' }
+            ]}
+        ]}
+    ]},
+    { id: "epic-2", name: "Shopping Cart", type: 'epic', children: [
+         { id: "feat-2-1", name: "Cart Management", type: 'feature', children: [
+             { id: "tc-201", name: "TC-201: Add to Cart", type: 'test-case' }
+         ]}
+    ]}
 ];
 
 
