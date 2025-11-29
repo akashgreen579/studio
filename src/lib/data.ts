@@ -193,6 +193,12 @@ export const mockRequests = [
     { id: 3, user: "Jane Smith", project: "Customer Portal Relaunch", type: "Folder Creation", permissions: [], justification: "/new_feature/tests", date: new Date(Date.now() - 172800000), status: "Pending" },
 ];
 
+export const notifications = [
+    { id: 1, text: "Pipeline 'Smoke Tests' failed.", category: "Pipelines", read: false },
+    { id: 2, text: "AI suggestion for 'TC-205' is ready for review.", category: "Automation", read: false },
+    { id: 3, text: "System maintenance is scheduled for tonight at 10 PM.", category: "System", read: true },
+];
+
 
 // This function merges project-specific permissions with global role-based permissions
 export const getEffectivePermissions = (userId: string, project?: Project): Permissions => {
@@ -218,3 +224,5 @@ export const getEffectivePermissions = (userId: string, project?: Project): Perm
 
     return finalPermissions;
 }
+
+    
