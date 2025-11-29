@@ -4,7 +4,7 @@
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { TestTubeDiagonal, UserShield, User } from "lucide-react";
+import { TestTubeDiagonal, ShieldCheck, User } from "lucide-react";
 import type { Role } from "@/app/dashboard/page";
 
 export default function LoginPage() {
@@ -32,7 +32,7 @@ export default function LoginPage() {
               className="w-full"
               size="lg"
             >
-              <UserShield className="mr-2 h-5 w-5" />
+              <ShieldCheck className="mr-2 h-5 w-5" />
               Login as Manager
             </Button>
             <Button
