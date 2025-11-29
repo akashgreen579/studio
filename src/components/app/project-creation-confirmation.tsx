@@ -72,10 +72,7 @@ export function ProjectCreationConfirmation({
                         <p className="text-accent-foreground/80 text-sm">You can now integrate a Test Management Tool.</p>
                         <div className="flex gap-4">
                            <Button variant="default" onClick={onContinue}>
-                                Open Project <ArrowRight className="ml-2 h-4 w-4" />
-                            </Button>
-                            <Button variant="outline">
-                                Assign More Members <UserPlus className="ml-2 h-4 w-4" />
+                                Go to Dashboard <ArrowRight className="ml-2 h-4 w-4" />
                             </Button>
                         </div>
                     </div>

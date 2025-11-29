@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
@@ -14,8 +15,10 @@ import type { User, Project, AuditLogEntry, Permissions } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
 import { ProjectCreationConfirmation } from "@/components/app/project-creation-confirmation";
 import { Sidebar } from "@/components/app/sidebar";
+import { Home as PlaceholderHome } from "lucide-react";
 
 export type Role = "manager" | "employee";
+export type ActiveView = "dashboard" | null;
 
 export default function Home() {
   const { toast } = useToast();
@@ -25,6 +28,7 @@ export default function Home() {
   const [lastCreatedProject, setLastCreatedProject] = useState<Project | null>(
     null
   );
+  const [activeView, setActiveView] = useState<ActiveView>(null);
 
   const currentUser = useMemo(() => {
     return allUsers.find((u) => u.role === role)!;
@@ -65,6 +69,7 @@ export default function Home() {
       });
 
       setLastCreatedProject(newProject);
+      setActiveView('dashboard');
     },
     [projects.length, currentUser, addAuditLogEntry]
   );
@@ -105,12 +110,19 @@ export default function Home() {
     });
   };
 
+  const handleMenuClick = (view: ActiveView) => {
+    setActiveView(view);
+  };
 
-  if (lastCreatedProject) {
+
+  if (lastCreatedProject && activeView !== 'dashboard') {
     return (
       <ProjectCreationConfirmation
         project={lastCreatedProject}
-        onContinue={() => setLastCreatedProject(null)}
+        onContinue={() => {
+          setLastCreatedProject(null);
+          setActiveView('dashboard');
+        }}
       />
     );
   }
@@ -126,23 +138,33 @@ export default function Home() {
   const employeeProps = { user: currentUser, projects };
 
   return (
-    <div className="flex min-h-screen w-full flex-col bg-muted/40 font-body">
+    <div className="flex min-h-screen w-full bg-muted/40 font-body">
       <Sidebar
         currentRole={role}
         onRoleChange={handleRoleChange}
         user={currentUser}
+        activeView={activeView}
+        onMenuClick={handleMenuClick}
       />
-      <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
+      <div className="flex flex-1 flex-col sm:gap-4 sm:py-4 sm:pl-64">
         <Header
           currentRole={role}
           onRoleChange={handleRoleChange}
           user={currentUser}
         />
         <main className="flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8 grid">
-          {role === "manager" ? (
-            <ManagerDashboard {...managerProps} />
+          {activeView === 'dashboard' ? (
+            role === "manager" ? (
+              <ManagerDashboard {...managerProps} />
+            ) : (
+              <EmployeeDashboard {...employeeProps} />
+            )
           ) : (
-            <EmployeeDashboard {...employeeProps} />
+             <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
+                <PlaceholderHome className="h-16 w-16 mb-4"/>
+                <h2 className="text-2xl font-semibold">Welcome to TestCraft AI</h2>
+                <p>Select an item from the menu to get started.</p>
+            </div>
           )}
         </main>
       </div>

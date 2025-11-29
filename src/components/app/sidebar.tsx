@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -22,7 +23,7 @@ import {
   TestTubeDiagonal,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { Role } from "@/app/page";
+import type { Role, ActiveView } from "@/app/page";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import type { User } from "@/lib/data";
 import {
@@ -39,6 +40,8 @@ interface SidebarProps {
   onRoleChange: (role: Role) => void;
   user: User;
   className?: string;
+  activeView: ActiveView;
+  onMenuClick: (view: ActiveView) => void;
 }
 
 const menuItems = [
@@ -49,6 +52,7 @@ const menuItems = [
         href: "#",
         icon: Home,
         label: "Dashboard",
+        view: "dashboard",
         tooltip: "Overview & insights (Phase 2)",
         roles: ["manager", "employee"],
       },
@@ -136,13 +140,15 @@ export function Sidebar({
   onRoleChange,
   user,
   className,
+  activeView,
+  onMenuClick,
 }: SidebarProps) {
-  const isActive = (label: string) => label === "Dashboard";
+  const isActive = (item: any) => item.view && item.view === activeView;
 
   return (
     <aside
       className={cn(
-        "hidden w-64 flex-col border-r bg-background sm:flex",
+        "fixed top-0 left-0 z-40 hidden h-screen w-64 flex-col border-r bg-background sm:flex",
         className
       )}
     >
@@ -174,12 +180,16 @@ export function Sidebar({
                                 className={cn(
                                   "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary",
                                   {
-                                    "bg-muted text-primary": isActive(
-                                      item.label
-                                    ),
+                                    "bg-muted text-primary": isActive(item),
                                   }
                                 )}
                                 href={item.href}
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  if (item.view) {
+                                    onMenuClick(item.view as ActiveView);
+                                  }
+                                }}
                               >
                                 <item.icon className="h-4 w-4" />
                                 {item.label}
