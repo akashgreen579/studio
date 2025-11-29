@@ -2,50 +2,175 @@
 "use client";
 
 import type { User, Project } from "@/lib/data";
-import { EmployeeProjectCard } from "./employee-project-card";
-import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
-import { UserCheck } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  FileText,
+  FileClock,
+  PlayCircle,
+  CheckCircle2,
+  XCircle,
+  Loader,
+  Bell,
+  FlaskConical,
+  ArrowRight,
+  Eye,
+} from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
 
 interface EmployeeDashboardProps {
   user: User;
   projects: Project[];
 }
 
+const summaryCards = [
+    { title: "Completed Scripts", value: "12", icon: FileText, change: "+2 this week" },
+    { title: "Draft Automations", value: "3", icon: FileClock, change: "1 needs review" },
+    { title: "Pipelines Passed", value: "89%", icon: CheckCircle2, change: "-1.2% vs last week" },
+];
+
+const draftAutomations = [
+    { name: "TC-101: User Login", project: "Customer Portal", updated: new Date(Date.now() - 3600000), status: "Step Mapping Pending" },
+    { name: "TC-205: Add to Cart", project: "Payment Gateway", updated: new Date(Date.now() - 86400000 * 2), status: "AI Refinement Pending" },
+    { name: "TC-310: Profile Update", project: "Customer Portal", updated: new Date(Date.now() - 86400000 * 4), status: "Dry Run Required" },
+];
+
+const pipelineHistory = [
+    { id: 'pipe-1', name: "Regression Suite", status: "Passed", duration: "5m 21s", timestamp: new Date(Date.now() - 7200000) },
+    { id: 'pipe-2', name: "Smoke Tests", status: "Failed", duration: "1m 10s", timestamp: new Date(Date.now() - 86400000) },
+    { id: 'pipe-3', name: "Nightly Build", status: "Passed", duration: "12m 45s", timestamp: new Date(Date.now() - 86400000 * 2) },
+    { id: 'pipe-4', name: "Hotfix Validation", status: "Running", duration: "...", timestamp: new Date() },
+];
+
+const notifications = [
+    { id: 1, text: "Pipeline 'Smoke Tests' failed.", category: "Pipelines", read: false },
+    { id: 2, text: "AI suggestion for 'TC-205' is ready for review.", category: "Automation", read: false },
+    { id: 3, text: "System maintenance is scheduled for tonight at 10 PM.", category: "System", read: true },
+];
+
+const getStatusIcon = (status: string) => {
+    switch (status) {
+        case "Passed": return <CheckCircle2 className="h-4 w-4 text-green-500" />;
+        case "Failed": return <XCircle className="h-4 w-4 text-red-500" />;
+        case "Running": return <Loader className="h-4 w-4 animate-spin text-blue-500" />;
+        default: return null;
+    }
+};
+
 export function EmployeeDashboard({ user, projects }: EmployeeDashboardProps) {
-  const assignedProjects = projects.filter((project) =>
-    project.members.some((member) => member.id === user.id)
-  );
 
   return (
     <div className="grid gap-8">
-       <Alert variant="default" className="bg-muted/50 border-border text-foreground">
-          <UserCheck className="h-4 w-4 !text-foreground" />
-          <AlertTitle>Employee View</AlertTitle>
-          <AlertDescription>
-            You are viewing the dashboard as an employee. Management actions are hidden.
-          </AlertDescription>
-        </Alert>
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight mb-4">Your Projects</h2>
-        {assignedProjects.length > 0 ? (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {assignedProjects.map((project) => (
-              <EmployeeProjectCard
-                key={project.id}
-                project={project}
-                user={user}
-              />
+        <div className="flex items-center justify-between">
+            <h1 className="text-2xl font-semibold">Dashboard</h1>
+            <div className="flex gap-2">
+                <Button variant="outline"><FlaskConical className="mr-2"/> Open TestAI Lab</Button>
+                <Button>Trigger Pipeline <PlayCircle className="ml-2"/></Button>
+            </div>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {summaryCards.map(card => (
+                <Card key={card.title}>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">{card.title}</CardTitle>
+                        <card.icon className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{card.value}</div>
+                        <p className="text-xs text-muted-foreground">{card.change}</p>
+                    </CardContent>
+                </Card>
             ))}
-          </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-12 text-center">
-            <h3 className="text-xl font-semibold">No Projects Assigned</h3>
-            <p className="mt-2 text-sm text-muted-foreground">
-              You haven't been assigned to any projects yet.
-            </p>
-          </div>
-        )}
-      </div>
+        </div>
+
+        <div className="grid gap-8 md:grid-cols-2">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Draft Automations</CardTitle>
+                    <CardDescription>Your recent work-in-progress test automations.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    {draftAutomations.length > 0 ? (
+                        <div className="space-y-4">
+                            {draftAutomations.map(draft => (
+                                <Card key={draft.name} className="p-4 flex justify-between items-center">
+                                    <div>
+                                        <p className="font-semibold">{draft.name} <span className="font-normal text-muted-foreground">({draft.project})</span></p>
+                                        <p className="text-xs text-muted-foreground">Last updated {formatDistanceToNow(draft.updated, { addSuffix: true })}</p>
+                                        <Badge variant="secondary" className="mt-2">{draft.status}</Badge>
+                                    </div>
+                                    <Button variant="ghost" size="sm">
+                                        Continue <ArrowRight className="ml-2 h-4 w-4" />
+                                    </Button>
+                                </Card>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-12 text-center">
+                            <h3 className="text-lg font-semibold">No Drafts Yet</h3>
+                            <p className="mt-1 text-sm text-muted-foreground">Start automating a test case in the TestAI Lab.</p>
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>Recent Activity</CardTitle>
+                     <Tabs defaultValue="pipelines" className="w-full">
+                        <TabsList className="grid w-full grid-cols-2">
+                            <TabsTrigger value="pipelines">Pipelines</TabsTrigger>
+                            <TabsTrigger value="notifications">Notifications</TabsTrigger>
+                        </TabsList>
+                        <TabsContent value="pipelines" className="mt-4">
+                             <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Run</TableHead>
+                                        <TableHead>Status</TableHead>
+                                        <TableHead>Duration</TableHead>
+                                        <TableHead className="text-right">Time</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {pipelineHistory.map(run => (
+                                        <TableRow key={run.id}>
+                                            <TableCell className="font-medium">{run.name}</TableCell>
+                                            <TableCell>
+                                                <div className="flex items-center gap-2">
+                                                    {getStatusIcon(run.status)}
+                                                    <span>{run.status}</span>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>{run.duration}</TableCell>
+                                            <TableCell className="text-right text-muted-foreground">{formatDistanceToNow(run.timestamp, { addSuffix: true })}</TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </TabsContent>
+                        <TabsContent value="notifications" className="mt-4">
+                           <div className="space-y-3">
+                                {notifications.map(note => (
+                                    <div key={note.id} className={`flex items-start gap-3 p-3 rounded-lg ${!note.read ? 'bg-blue-50' : 'bg-transparent'}`}>
+                                        <Bell className="h-5 w-5 text-muted-foreground mt-0.5" />
+                                        <div className="flex-1">
+                                            <p className="text-sm">{note.text}</p>
+                                            <p className="text-xs text-muted-foreground">{note.category}</p>
+                                        </div>
+                                        {!note.read && <div className="h-2.5 w-2.5 rounded-full bg-primary mt-1.5"></div>}
+                                    </div>
+                                ))}
+                           </div>
+                        </TabsContent>
+                    </Tabs>
+                </CardHeader>
+            </Card>
+        </div>
     </div>
   );
 }

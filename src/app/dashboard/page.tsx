@@ -21,6 +21,7 @@ import { Sidebar } from "@/components/app/sidebar";
 import { Home as PlaceholderHome } from "lucide-react";
 import { AuditLogScreen } from "@/components/app/audit-log-screen";
 import { ApprovalInbox } from "@/components/app/approval-inbox";
+import { ProjectSettings } from "@/components/app/project-settings";
 
 export type Role = "manager" | "employee";
 export type ActiveView = "dashboard" | "project-settings" | "user-management" | "audit-log" | "approvals" | null;
@@ -150,11 +151,25 @@ function DashboardContent() {
 
   const renderActiveView = () => {
     switch (activeView) {
-      case 'project-settings':
+      case 'dashboard':
         return role === "manager" ? (
           <ManagerDashboard {...managerProps} />
         ) : (
           <EmployeeDashboard {...employeeProps} />
+        );
+      case 'project-settings':
+        return role === "manager" ? (
+          <ProjectSettings
+            projects={projects}
+            user={currentUser}
+            addProject={addProject}
+            updateProjectPermissions={updateProjectPermissions}
+          />
+        ) : (
+          <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground rounded-lg border-2 border-dashed">
+            <h2 className="text-2xl font-semibold">Access Denied</h2>
+            <p>You do not have permission to view this page.</p>
+          </div>
         );
       case 'user-management':
         return role === "manager" ? (
@@ -183,7 +198,6 @@ function DashboardContent() {
             <p>You do not have permission to view this page.</p>
           </div>
         );
-      case 'dashboard':
       default:
         return (
           <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground rounded-lg border-2 border-dashed">

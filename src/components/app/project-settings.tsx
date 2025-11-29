@@ -1,0 +1,76 @@
+
+"use client";
+
+import { useState } from "react";
+import type { User, Project, Permissions } from "@/lib/data";
+import { Button } from "@/components/ui/button";
+import { PlusCircle } from "lucide-react";
+import { CreateProjectWizard } from "./create-project-wizard";
+import { ProjectSummaryCard } from "./project-summary-card";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
+
+interface ProjectSettingsProps {
+  user: User;
+  projects: Project[];
+  addProject: (newProject: Omit<Project, "id" | "owner" | "lastUpdated">) => void;
+  updateProjectPermissions: (
+    projectId: string,
+    permissions: Record<string, Partial<Permissions>>
+  ) => void;
+}
+
+export function ProjectSettings({
+  user,
+  projects,
+  addProject,
+  updateProjectPermissions,
+}: ProjectSettingsProps) {
+  const [isWizardOpen, setIsWizardOpen] = useState(false);
+
+  return (
+    <>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-semibold">Project Settings</h1>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button onClick={() => setIsWizardOpen(true)} className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Create New Project
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Only Managers can create new projects.</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
+      <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
+        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          {projects.length > 0 ? (
+            projects.map((project) => (
+              <ProjectSummaryCard
+                key={project.id}
+                project={project}
+                currentUser={user}
+                updateProjectPermissions={updateProjectPermissions}
+              />
+            ))
+          ) : (
+            <div className="col-span-full text-center py-12 px-6 border-2 border-dashed rounded-lg">
+              <p className="text-muted-foreground">No projects created yet.</p>
+              <Button variant="link" className="mt-2" onClick={() => setIsWizardOpen(true)}>Create your first project</Button>
+            </div>
+          )}
+        </div>
+      </div>
+      <CreateProjectWizard
+        isOpen={isWizardOpen}
+        setIsOpen={setIsWizardOpen}
+        addProject={addProject}
+        currentUser={user}
+        existingProjectNames={projects.map(p => p.name)}
+      />
+    </>
+  );
+}
