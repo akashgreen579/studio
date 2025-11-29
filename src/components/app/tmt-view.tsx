@@ -9,7 +9,7 @@ import {
   File,
   Folder,
   Tag,
-  Filter,
+  Filter as FilterIcon,
   Search,
   MoreHorizontal,
   Star,
@@ -18,6 +18,8 @@ import {
   RefreshCw,
   Shield,
   PlayCircle,
+  X,
+  ListTodo,
 } from "lucide-react";
 import { testCaseHierarchy, testCases as allTestCases, type TestCase, type User, getEffectivePermissions, permissionDescriptions } from "@/lib/data";
 import { Input } from "@/components/ui/input";
@@ -43,6 +45,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { AutomationWorkflowModal } from "./automation-workflow-modal";
 import { CreatePipelineModal } from "./create-pipeline-modal";
+import { motion, AnimatePresence } from "framer-motion";
+import { AdvancedFilterPanel } from "./advanced-filter-panel";
 
 interface HierarchyItem {
   id: string;
@@ -115,14 +119,18 @@ export function TMTView({ user }: TMTViewProps) {
     const [selectedType, setSelectedType] = useState<HierarchyItem['type']>('epic');
     const [isWorkflowModalOpen, setWorkflowModalOpen] = useState(false);
     const [isPipelineModalOpen, setPipelineModalOpen] = useState(false);
+    const [isFilterPanelOpen, setFilterPanelOpen] = useState(false);
     const [selectedTestCase, setSelectedTestCase] = useState<TestCase | null>(null);
     const [selectedTestCases, setSelectedTestCases] = useState<Set<string>>(new Set());
+    const [activeFilters, setActiveFilters] = useState<any[]>([
+      { type: 'Status', value: 'To Do', color: 'bg-blue-100 text-blue-800' },
+      { type: 'Priority', value: 'High', color: 'bg-red-100 text-red-800' }
+    ]);
 
-    // Get user permissions. For TMT view, project context is not strictly necessary
-    // but could be used for more granular control in the future. Here we get global permissions.
+
     const permissions = getEffectivePermissions(user.id);
     const canAutomate = permissions.automateTestCases;
-    const canManageTMT = permissions.syncTMT;
+    const isManager = user.role === 'manager';
 
     const handleAutomateClick = (testCase: TestCase) => {
       setSelectedTestCase(testCase);
@@ -178,7 +186,11 @@ export function TMTView({ user }: TMTViewProps) {
         return allTestCases.filter(tc => selectedTestCases.has(tc.id));
     }, [selectedTestCases]);
 
-    const ManagerActionButton = ({ permission, tooltip, children }: { permission: keyof Permissions, tooltip: string, children: React.ReactNode }) => {
+    const removeFilter = (filterToRemove: any) => {
+      setActiveFilters(prev => prev.filter(f => f.value !== filterToRemove.value));
+    };
+
+    const ManagerActionButton = ({ permission, tooltip, children, className }: { permission: keyof Permissions, tooltip: string, children: React.ReactNode, className?: string }) => {
         const hasPermission = permissions[permission];
 
         if (hasPermission) {
@@ -186,7 +198,7 @@ export function TMTView({ user }: TMTViewProps) {
                 <TooltipProvider>
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <Button variant="outline" size="icon">
+                            <Button variant="outline" className={cn("h-10 w-10 p-0", className)}>
                                 {children}
                             </Button>
                         </TooltipTrigger>
@@ -200,7 +212,7 @@ export function TMTView({ user }: TMTViewProps) {
                  <Tooltip>
                     <TooltipTrigger asChild>
                         <div tabIndex={0}>
-                            <Button variant="outline" size="icon" disabled>
+                            <Button variant="outline" size="icon" disabled className={cn("h-10 w-10 p-0", className)}>
                                 {children}
                             </Button>
                         </div>
@@ -231,30 +243,39 @@ export function TMTView({ user }: TMTViewProps) {
             </div>
 
             {/* Right Panel */}
-            <div>
+            <div className="flex flex-col">
                 {/* Filter Bar */}
-                <div className="flex flex-col gap-4 mb-4">
+                <div className="space-y-3">
                     <div className="flex gap-2 items-center">
-                        <div className="flex items-center gap-2">
-                            <ManagerActionButton permission="assignUsers" tooltip="Assign User">
-                                <UserPlus className="h-4 w-4"/>
+                         <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button variant="outline" className="h-10 w-10 p-0"><ListTodo className="h-5 w-5"/></Button>
+                                </TooltipTrigger>
+                                <TooltipContent><p>Toggle multi-select</p></TooltipContent>
+                            </Tooltip>
+                         </TooltipProvider>
+                         {isManager && (
+                            <ManagerActionButton permission="assignUsers" tooltip="Bulk Actions">
+                                <Users className="h-5 w-5"/>
                             </ManagerActionButton>
-                             <ManagerActionButton permission="createSrcStructure" tooltip="Create Folder Structure">
-                                <FolderPlus className="h-4 w-4"/>
-                            </ManagerActionButton>
-                             <ManagerActionButton permission="syncTMT" tooltip="Refresh TMT">
-                                <RefreshCw className="h-4 w-4"/>
-                            </ManagerActionButton>
-                            <Separator orientation="vertical" className="h-6 mx-2" />
-                        </div>
-
+                         )}
+                         <ManagerActionButton permission="syncTMT" tooltip="Refresh TMT">
+                            <RefreshCw className="h-5 w-5"/>
+                         </ManagerActionButton>
+                        
                         <div className="relative flex-grow">
-                             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                             <Input placeholder="Search test cases by ID or summary..." className="pl-8" />
+                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                             <Input placeholder="Search test cases by ID or summary..." className="pl-10 h-10 text-base" />
                         </div>
-                        <Button variant="outline"><Filter className="mr-2 h-4 w-4"/> Filters</Button>
-                        <Button variant="outline" className="text-amber-600"><Star className="mr-2 h-4 w-4"/> Saved Filters</Button>
+                        <Button variant="outline" className="h-10 gap-2" onClick={() => setFilterPanelOpen(true)}>
+                          <FilterIcon className="h-4 w-4"/> Filters
+                        </Button>
+                        <Button variant="outline" className="h-10 gap-2">
+                          <Star className="h-4 w-4 text-amber-500"/> Saved Filters
+                        </Button>
                         <Button
+                          className="h-10"
                           disabled={selectedTestCases.size === 0 || !permissions.runPipelines}
                           onClick={() => setPipelineModalOpen(true)}
                         >
@@ -262,17 +283,37 @@ export function TMTView({ user }: TMTViewProps) {
                             Create Pipeline ({selectedTestCases.size})
                         </Button>
                     </div>
-                    <div className="flex gap-2 items-center">
-                        <span className="text-sm text-muted-foreground">Active filters:</span>
-                        <Badge variant="secondary">Status: To Do</Badge>
-                        <Button variant="ghost" size="sm" className="text-muted-foreground">Clear all</Button>
-                    </div>
+                    {activeFilters.length > 0 && (
+                      <div className="flex gap-2 items-center">
+                          <span className="text-sm text-muted-foreground">Active filters:</span>
+                           <AnimatePresence>
+                              {activeFilters.map((filter, index) => (
+                                <motion.div
+                                  key={filter.value}
+                                  layout
+                                  initial={{ opacity: 0, y: -10, scale: 0.8 }}
+                                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                                  exit={{ opacity: 0, x: -10, scale: 0.8 }}
+                                  transition={{ duration: 0.2, delay: index * 0.05 }}
+                                >
+                                  <Badge className={`flex items-center gap-1.5 ${filter.color} border border-transparent`}>
+                                    {filter.value}
+                                    <button onClick={() => removeFilter(filter)} className="rounded-full hover:bg-black/10 p-0.5">
+                                      <X className="h-3 w-3" />
+                                    </button>
+                                  </Badge>
+                                </motion.div>
+                              ))}
+                          </AnimatePresence>
+                          <Button variant="ghost" size="sm" className="text-muted-foreground h-auto p-1" onClick={() => setActiveFilters([])}>Clear all</Button>
+                      </div>
+                    )}
                 </div>
 
-                <Separator />
+                <Separator className="my-4"/>
                 
                 {/* Test Case Table */}
-                <div className="rounded-lg border mt-4">
+                <div className="rounded-lg border">
                     <Table>
                         <TableHeader>
                         <TableRow>
@@ -345,6 +386,7 @@ export function TMTView({ user }: TMTViewProps) {
                  )}
             </div>
         </div>
+        
         {selectedTestCase && (
             <AutomationWorkflowModal 
                 isOpen={isWorkflowModalOpen}
@@ -357,8 +399,10 @@ export function TMTView({ user }: TMTViewProps) {
             setIsOpen={setPipelineModalOpen}
             selectedTestCases={selectedTestCasesDetails}
         />
+        <AdvancedFilterPanel
+          isOpen={isFilterPanelOpen}
+          setIsOpen={setFilterPanelOpen}
+        />
       </>
     );
 }
-
-    
