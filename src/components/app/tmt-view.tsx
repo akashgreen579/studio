@@ -20,6 +20,7 @@ import {
   PlayCircle,
   X,
   ListTodo,
+  Users,
 } from "lucide-react";
 import { testCaseHierarchy, testCases as allTestCases, type TestCase, type User, getEffectivePermissions, permissionDescriptions } from "@/lib/data";
 import { Input } from "@/components/ui/input";
@@ -47,6 +48,7 @@ import { AutomationWorkflowModal } from "./automation-workflow-modal";
 import { CreatePipelineModal } from "./create-pipeline-modal";
 import { motion, AnimatePresence } from "framer-motion";
 import { AdvancedFilterPanel } from "./advanced-filter-panel";
+import { cn } from "@/lib/utils";
 
 interface HierarchyItem {
   id: string;
@@ -190,7 +192,7 @@ export function TMTView({ user }: TMTViewProps) {
       setActiveFilters(prev => prev.filter(f => f.value !== filterToRemove.value));
     };
 
-    const ManagerActionButton = ({ permission, tooltip, children, className }: { permission: keyof Permissions, tooltip: string, children: React.ReactNode, className?: string }) => {
+    const ManagerActionButton = ({ permission, tooltip, children, className }: { permission: keyof (Permissions), tooltip: string, children: React.ReactNode, className?: string }) => {
         const hasPermission = permissions[permission];
 
         if (hasPermission) {
