@@ -2,14 +2,13 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { allUsers, projects, permissionPresets, getEffectivePermissions, permissionDescriptions } from "@/lib/data";
-import type { User, Project, Permissions } from "@/lib/data";
+import { allUsers, projects } from "@/lib/data";
+import type { User } from "@/lib/data";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Search, User as UserIcon, Shield } from "lucide-react";
+import { Search, User as UserIcon } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { UserPermissionsEditor } from "./user-permissions-editor";
 
 export function UserManagement() {
@@ -24,7 +23,7 @@ export function UserManagement() {
     }, [searchQuery]);
 
     return (
-        <div className="grid md:grid-cols-[280px_1fr] gap-8 items-start">
+        <div className="grid md:grid-cols-[300px_1fr] gap-8 items-start">
             <Card>
                 <CardHeader>
                     <CardTitle>Users</CardTitle>
@@ -40,22 +39,22 @@ export function UserManagement() {
                     </div>
                 </CardHeader>
                 <CardContent className="p-0">
-                    <div className="flex flex-col">
+                    <div className="flex flex-col max-h-[60vh] overflow-y-auto">
                         {filteredUsers.map(user => (
                             <button 
                                 key={user.id}
-                                className={`flex items-center gap-4 p-4 text-left hover:bg-muted/50 transition-colors ${selectedUser?.id === user.id ? 'bg-muted' : ''}`}
+                                className={`flex items-center gap-4 p-4 text-left hover:bg-muted/50 transition-colors w-full ${selectedUser?.id === user.id ? 'bg-muted' : ''}`}
                                 onClick={() => setSelectedUser(user)}
                             >
                                 <Avatar className="h-10 w-10">
                                     <AvatarImage src={user.avatar} data-ai-hint="person face" />
                                     <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
                                 </Avatar>
-                                <div className="flex-1">
-                                    <p className="font-semibold">{user.name}</p>
-                                    <p className="text-sm text-muted-foreground">{user.email}</p>
+                                <div className="flex-1 truncate">
+                                    <p className="font-semibold truncate">{user.name}</p>
+                                    <p className="text-sm text-muted-foreground truncate">{user.email}</p>
                                 </div>
-                                <Badge variant={user.role === 'manager' ? 'default' : 'secondary'}>{user.role}</Badge>
+                                <Badge variant={user.role === 'manager' ? 'default' : 'secondary'} className="capitalize">{user.role}</Badge>
                             </button>
                         ))}
                     </div>
