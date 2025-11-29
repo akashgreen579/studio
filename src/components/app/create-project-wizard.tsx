@@ -74,7 +74,7 @@ export function CreateProjectWizard({
 }: CreateProjectWizardProps) {
   const [step, setStep] = useState(1);
   const [selectedMembers, setSelectedMembers] = useState<User[]>([currentUser]);
-  const [permissions, setPermissions] = useState<Record<string, Permissions>>({
+  const [permissions, setPermissions] = useState<Record<string, Partial<Permissions>>>({
     [currentUser.id]: permissionPresets.manager.permissions,
   });
   const [previewUser, setPreviewUser] = useState<string>("none");
@@ -183,6 +183,7 @@ export function CreateProjectWizard({
   }
   
   const isPreviewing = previewUser !== "none";
+  const allPermissionKeys = Object.keys(permissionDescriptions) as (keyof Permissions)[];
 
   const renderStep = () => {
     switch(step) {
@@ -284,8 +285,7 @@ export function CreateProjectWizard({
                                 </> : <>
                                     <FormItem className="flex items-center space-x-2 space-y-0">
                                         <FormControl><RadioGroupItem value="Pip" id="pip" /></FormControl>
-                                        <Label htmlFor="pip">Pip</Label>
-                                    </FormItem>
+                                        <Label htmlFor="pip">Pip</Label>                                    </FormItem>
                                 </>}
                             </RadioGroup>
                         </FormItem>
@@ -473,27 +473,30 @@ export function CreateProjectWizard({
                                         </Select>
                                     </div>
                                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                        {Object.entries(permissionDescriptions).map(([key, {label, icon: Icon, description}]) => (
-                                            <TooltipProvider key={key} delayDuration={100}>
-                                                <Tooltip>
-                                                    <TooltipTrigger asChild>
-                                                        <div className="flex items-center space-x-2">
-                                                            <Checkbox 
-                                                                id={`${member.id}-${key}`} 
-                                                                checked={permissions[member.id]?.[key as keyof Permissions]}
-                                                                onCheckedChange={(checked) => handlePermissionChange(member.id, key as keyof Permissions, !!checked)}
-                                                                disabled={(member.id === currentUser.id && key === 'approveMergePRs') || (isPreviewing && previewUser !== member.id)}
-                                                            />
-                                                            <Label htmlFor={`${member.id}-${key}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center">
-                                                                <Icon className="h-4 w-4 mr-2" />
-                                                                {label}
-                                                            </Label>
-                                                        </div>
-                                                    </TooltipTrigger>
-                                                    <TooltipContent><p>{description}</p></TooltipContent>
-                                                </Tooltip>
-                                            </TooltipProvider>
-                                        ))}
+                                        {allPermissionKeys.filter(key => permissionDescriptions[key].category === 'Project').map((key) => {
+                                            const {label, icon: Icon, description} = permissionDescriptions[key];
+                                            return (
+                                                <TooltipProvider key={key} delayDuration={100}>
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <div className="flex items-center space-x-2">
+                                                                <Checkbox 
+                                                                    id={`${member.id}-${key}`} 
+                                                                    checked={permissions[member.id]?.[key as keyof Permissions]}
+                                                                    onCheckedChange={(checked) => handlePermissionChange(member.id, key as keyof Permissions, !!checked)}
+                                                                    disabled={(member.id === currentUser.id && key === 'approveMergePRs') || (isPreviewing && previewUser !== member.id)}
+                                                                />
+                                                                <Label htmlFor={`${member.id}-${key}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center">
+                                                                    <Icon className="h-4 w-4 mr-2" />
+                                                                    {label}
+                                                                </Label>
+                                                            </div>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent><p>{description}</p></TooltipContent>
+                                                    </Tooltip>
+                                                </TooltipProvider>
+                                            )
+                                        })}
                                     </div>
                                 </div>
                             ))}
@@ -550,7 +553,3 @@ export function CreateProjectWizard({
     </Dialog>
   );
 }
-
-    
-
-    

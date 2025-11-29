@@ -7,6 +7,7 @@ import { useSearchParams } from 'next/navigation';
 import { Header } from "@/components/app/header";
 import { ManagerDashboard } from "@/components/app/manager-dashboard";
 import { EmployeeDashboard } from "@/components/app/employee-dashboard";
+import { UserManagement } from "@/components/app/user-management";
 import {
   users as initialUsers,
   projects as initialProjects,
@@ -20,7 +21,7 @@ import { Sidebar } from "@/components/app/sidebar";
 import { Home as PlaceholderHome } from "lucide-react";
 
 export type Role = "manager" | "employee";
-export type ActiveView = "dashboard" | "project-settings" | null;
+export type ActiveView = "dashboard" | "project-settings" | "user-management" | null;
 
 function DashboardContent() {
   const searchParams = useSearchParams();
@@ -80,7 +81,7 @@ function DashboardContent() {
   );
 
   const updateProjectPermissions = useCallback(
-    (projectId: string, newPermissions: Record<string, Permissions>) => {
+    (projectId: string, newPermissions: Record<string, Partial<Permissions>>) => {
       setProjects((prevProjects) =>
         prevProjects.map((p) => {
           if (p.id === projectId) {
@@ -143,6 +144,35 @@ function DashboardContent() {
   };
   const employeeProps = { user: currentUser, projects };
 
+  const renderActiveView = () => {
+    switch (activeView) {
+      case 'project-settings':
+        return role === "manager" ? (
+          <ManagerDashboard {...managerProps} />
+        ) : (
+          <EmployeeDashboard {...employeeProps} />
+        );
+      case 'user-management':
+        return role === "manager" ? (
+          <UserManagement />
+        ) : (
+          <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground rounded-lg border-2 border-dashed">
+            <h2 className="text-2xl font-semibold">Access Denied</h2>
+            <p>You do not have permission to view this page.</p>
+          </div>
+        );
+      case 'dashboard':
+      default:
+        return (
+          <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground rounded-lg border-2 border-dashed">
+            <PlaceholderHome className="h-16 w-16 mb-4"/>
+            <h2 className="text-2xl font-semibold">Welcome to TestCraft AI</h2>
+            <p>Select an item from the sidebar to get started.</p>
+          </div>
+        );
+    }
+  }
+
   return (
     <div className="flex min-h-screen w-full bg-muted/40">
       <Sidebar
@@ -155,19 +185,7 @@ function DashboardContent() {
       <div className="flex flex-1 flex-col sm:gap-4 sm:py-4 sm:pl-64">
         <Header user={currentUser} />
         <main className="flex-1 grid gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
-          {activeView === 'project-settings' ? (
-            role === "manager" ? (
-              <ManagerDashboard {...managerProps} />
-            ) : (
-              <EmployeeDashboard {...employeeProps} />
-            )
-          ) : (
-             <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground rounded-lg border-2 border-dashed">
-                <PlaceholderHome className="h-16 w-16 mb-4"/>
-                <h2 className="text-2xl font-semibold">Welcome to TestCraft AI</h2>
-                <p>Select an item from the sidebar to get started.</p>
-            </div>
-          )}
+          {renderActiveView()}
         </main>
       </div>
     </div>

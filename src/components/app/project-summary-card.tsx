@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -22,7 +23,7 @@ interface ProjectSummaryCardProps {
   currentUser: User;
   updateProjectPermissions: (
     projectId: string,
-    permissions: Record<string, Permissions>
+    permissions: Record<string, Partial<Permissions>>
   ) => void;
 }
 

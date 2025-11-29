@@ -19,7 +19,7 @@ interface ManagerDashboardProps {
   ) => void;
   updateProjectPermissions: (
     projectId: string,
-    permissions: Record<string, Permissions>
+    permissions: Record<string, Partial<Permissions>>
   ) => void;
   addAuditLogEntry: (
     entry: Omit<AuditLogEntry, "id" | "timestamp" | "impact">
@@ -38,7 +38,7 @@ export function ManagerDashboard({
   return (
     <>
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Manager Dashboard</h1>
+        <h1 className="text-2xl font-semibold">Project Settings</h1>
         <TooltipProvider>
             <Tooltip>
                 <TooltipTrigger asChild>

@@ -1,5 +1,5 @@
 import { PlaceHolderImages } from './placeholder-images';
-import { Eye, TestTube, FolderPlus, GitMerge, PlayCircle, type LucideIcon } from 'lucide-react';
+import { Eye, TestTube, FolderPlus, GitMerge, PlayCircle, type LucideIcon, FilePlus, Settings2, UserPlus, GitBranch, GitCommit, CheckCheck, UserCheck, ShieldAlert } from 'lucide-react';
 import { ComponentType } from 'react';
 
 // Types
@@ -14,11 +14,21 @@ export interface User {
 }
 
 export interface Permissions {
+  // Project Permissions
   viewAssignedProjects: boolean;
   automateTestCases: boolean;
   createSrcStructure: boolean;
-  approveMergePRs: boolean;
   runPipelines: boolean;
+  approveMergePRs: boolean; // Same as merge pull requests
+  
+  // Admin/Manager Permissions
+  createProject: boolean;
+  editProjectSettings: boolean;
+  assignUsers: boolean;
+  syncTMT: boolean;
+  commitAndPublish: boolean;
+  approveAccessRequests: boolean;
+  adminOverride: boolean;
 }
 
 export interface Project {
@@ -27,7 +37,7 @@ export interface Project {
   description: string;
   owner: User;
   members: User[];
-  permissions: Record<string, Permissions>; // key is userId
+  permissions: Record<string, Partial<Permissions>>; // key is userId. Now partial.
   lastUpdated: Date;
 }
 
@@ -40,12 +50,24 @@ export interface AuditLogEntry {
   impact: "Low" | "Medium" | "High";
 }
 
-export const permissionDescriptions: Record<keyof Permissions, { label: string; description: string; badge: string, icon: LucideIcon }> = {
-    viewAssignedProjects: { label: "View", description: "Can see projects they are assigned to in their dashboard.", badge: "View", icon: Eye },
-    automateTestCases: { label: "Automate", description: "Allows user to write and commit new test automation scripts.", badge: "Automate", icon: TestTube },
-    createSrcStructure: { label: "Structure", description: "Allows user to create new folders under the framework when automating tests.", badge: "Structure", icon: FolderPlus },
-    approveMergePRs: { label: "Approve/Merge", description: "Grants permissions to approve and merge pull requests to the main branch.", badge: "Approve", icon: GitMerge },
-    runPipelines: { label: "Run Tests", description: "Enables user to trigger CI/CD test execution pipelines.", badge: "Run Tests", icon: PlayCircle },
+export const permissionDescriptions: Record<keyof Permissions, { label: string; description: string; icon: LucideIcon; category: 'Project' | 'Management' | 'Admin' }> = {
+    // Project
+    viewAssignedProjects: { label: "View Projects", description: "Can see projects they are assigned to in their dashboard.", icon: Eye, category: 'Project' },
+    automateTestCases: { label: "Automate Tests", description: "Allows user to write and commit new test automation scripts.", icon: TestTube, category: 'Project' },
+    createSrcStructure: { label: "Create Folders", description: "Allows user to create new folders under the framework when automating tests.", icon: FolderPlus, category: 'Project' },
+    runPipelines: { label: "Run Pipelines", description: "Enables user to trigger CI/CD test execution pipelines.", icon: PlayCircle, category: 'Project' },
+    approveMergePRs: { label: "Approve/Merge PRs", description: "Grants permissions to approve and merge pull requests to the main branch.", icon: GitMerge, category: 'Project' },
+    commitAndPublish: { label: "Commit & Publish", description: "Allows user to commit code and publish artifacts.", icon: GitCommit, category: 'Project' },
+
+    // Management
+    createProject: { label: "Create Project", description: "Allows user to create new testing projects.", icon: FilePlus, category: 'Management' },
+    editProjectSettings: { label: "Edit Settings", description: "Can modify project settings, including framework and integrations.", icon: Settings2, category: 'Management' },
+    assignUsers: { label: "Assign Users", description: "Can add or remove users from a project and define their roles.", icon: UserPlus, category: 'Management' },
+    syncTMT: { label: "Sync TMT", description: "Can sync test cases with an integrated Test Management Tool.", icon: GitBranch, category: 'Management' },
+    
+    // Admin
+    approveAccessRequests: { label: "Approve Requests", description: "Can approve or deny requests for higher permissions.", icon: CheckCheck, category: 'Admin' },
+    adminOverride: { label: "Admin Override", description: "Provides unrestricted access to all projects and settings, bypassing standard permissions.", icon: ShieldAlert, category: 'Admin' },
 };
 
 
@@ -70,29 +92,41 @@ export const users = {
     employee: allUsers.find(u => u.role === 'employee')!,
 };
 
-const defaultPermissions: Record<string, Permissions> = {
-    "user-manager": { viewAssignedProjects: true, automateTestCases: true, createSrcStructure: true, approveMergePRs: true, runPipelines: true },
-    "user-employee": { viewAssignedProjects: true, automateTestCases: true, createSrcStructure: false, approveMergePRs: false, runPipelines: true },
-};
 
-export const permissionPresets: Record<string, {name: string, permissions: Permissions}> = {
+export const permissionPresets: Record<string, {name: string, permissions: Partial<Permissions>}> = {
     manager: {
         name: "Manager",
-        permissions: { viewAssignedProjects: true, automateTestCases: true, createSrcStructure: true, approveMergePRs: true, runPipelines: true }
+        permissions: { 
+            viewAssignedProjects: true, automateTestCases: true, createSrcStructure: true, approveMergePRs: true, runPipelines: true,
+            createProject: true, editProjectSettings: true, assignUsers: true, syncTMT: true, commitAndPublish: true,
+            approveAccessRequests: true, adminOverride: false,
+        }
     },
     senior_qa: {
         name: "Senior QA",
-        permissions: { viewAssignedProjects: true, automateTestCases: true, createSrcStructure: true, approveMergePRs: false, runPipelines: true }
+        permissions: { 
+            viewAssignedProjects: true, automateTestCases: true, createSrcStructure: true, approveMergePRs: false, runPipelines: true,
+            commitAndPublish: true,
+        }
     },
     tester: {
         name: "Tester",
-        permissions: { viewAssignedProjects: true, automateTestCases: true, createSrcStructure: false, approveMergePRs: false, runPipelines: true }
+        permissions: { 
+            viewAssignedProjects: true, automateTestCases: true, createSrcStructure: false, approveMergePRs: false, runPipelines: true,
+            commitAndPublish: true,
+        }
     },
     viewer: {
         name: "Viewer",
-        permissions: { viewAssignedProjects: true, automateTestCases: false, createSrcStructure: false, approveMergePRs: false, runPipelines: false }
+        permissions: { viewAssignedProjects: true }
     }
 }
+
+const defaultPermissions: Record<string, Partial<Permissions>> = {
+    "user-manager": permissionPresets.manager.permissions,
+    "user-employee": permissionPresets.tester.permissions,
+};
+
 
 export const projects: Project[] = [
   {
@@ -101,7 +135,11 @@ export const projects: Project[] = [
     description: "End-to-end testing for the new customer portal, focusing on user authentication, account management, and order history.",
     owner: users.manager,
     members: [users.manager, users.employee, allUsers[3]],
-    permissions: {...defaultPermissions, "user-2": permissionPresets.senior_qa.permissions },
+    permissions: {
+        "user-manager": permissionPresets.manager.permissions,
+        "user-employee": permissionPresets.senior_qa.permissions,
+        "user-2": permissionPresets.senior_qa.permissions 
+    },
     lastUpdated: new Date(new Date().setDate(new Date().getDate() - 1)),
   },
   {
@@ -111,7 +149,8 @@ export const projects: Project[] = [
     owner: users.manager,
     members: [users.manager, users.employee, allUsers[2], allUsers[4]],
     permissions: {
-        ...defaultPermissions,
+        "user-manager": permissionPresets.manager.permissions,
+        "user-employee": permissionPresets.tester.permissions,
         "user-1": permissionPresets.tester.permissions,
         "user-3": permissionPresets.viewer.permissions
     },
@@ -146,4 +185,27 @@ export const auditLog: AuditLogEntry[] = [
   },
 ];
 
+// This function merges project-specific permissions with global role-based permissions
+export const getEffectivePermissions = (userId: string, project?: Project): Permissions => {
+    const user = allUsers.find(u => u.id === userId);
+    if (!user) throw new Error("User not found");
+
+    let basePermissions: Partial<Permissions> = {};
+    if (user.role === 'manager') {
+        basePermissions = permissionPresets.manager.permissions;
+    } else {
+        basePermissions = permissionPresets.tester.permissions; // Default for employees
+    }
     
+    const projectPermissions = project?.permissions[userId] || {};
+
+    const allPermissionKeys = Object.keys(permissionDescriptions) as (keyof Permissions)[];
+
+    const finalPermissions = {} as Permissions;
+
+    for (const key of allPermissionKeys) {
+        finalPermissions[key] = projectPermissions[key] ?? basePermissions[key] ?? false;
+    }
+
+    return finalPermissions;
+}

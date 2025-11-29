@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -32,7 +33,7 @@ interface PermissionsEditorProps {
   setIsOpen: (open: boolean) => void;
   project: Project;
   currentUser: User;
-  updateProjectPermissions: (projectId: string, permissions: Record<string, Permissions>) => void;
+  updateProjectPermissions: (projectId: string, permissions: Record<string, Partial<Permissions>>) => void;
 }
 
 export function PermissionsEditor({
@@ -42,7 +43,7 @@ export function PermissionsEditor({
   currentUser,
   updateProjectPermissions,
 }: PermissionsEditorProps) {
-  const [permissions, setPermissions] = useState<Record<string, Permissions>>(project.permissions);
+  const [permissions, setPermissions] = useState<Record<string, Partial<Permissions>>>(project.permissions);
   const [previewUser, setPreviewUser] = useState<string>("none");
   const [error, setError] = useState<string | null>(null);
 
@@ -84,10 +85,12 @@ export function PermissionsEditor({
   };
 
   const isPreviewing = previewUser !== "none";
+  const allPermissionKeys = Object.keys(permissionDescriptions) as (keyof Permissions)[];
+
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="max-w-4xl">
+      <DialogContent className="max-w-5xl">
         <DialogHeader>
           <DialogTitle>Edit Permissions for "{project.name}"</DialogTitle>
           <DialogDescription>
@@ -127,32 +130,35 @@ export function PermissionsEditor({
 
         <ScrollArea className="h-[400px] border rounded-md">
             <Table>
-                <TableHeader className="sticky top-0 bg-card">
+                <TableHeader className="sticky top-0 bg-card z-10">
                     <TableRow>
                         <TableHead className="w-[200px]">Team Member</TableHead>
-                        {Object.entries(permissionDescriptions).map(([key, { label, description }]) => (
-                            <TableHead key={key} className="text-center">
-                                <TooltipProvider delayDuration={100}>
-                                    <Tooltip>
-                                        <TooltipTrigger asChild>
-                                            <span className="flex items-center justify-center gap-1.5 cursor-help">{label} <Info className="h-3 w-3" /></span>
-                                        </TooltipTrigger>
-                                        <TooltipContent><p>{description}</p></TooltipContent>
-                                    </Tooltip>
-                                </TooltipProvider>
-                            </TableHead>
-                        ))}
+                        {allPermissionKeys.map((key) => {
+                            const { label, description } = permissionDescriptions[key];
+                            return (
+                                <TableHead key={key} className="text-center">
+                                    <TooltipProvider delayDuration={100}>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <span className="flex items-center justify-center gap-1.5 cursor-help">{label} <Info className="h-3 w-3" /></span>
+                                            </TooltipTrigger>
+                                            <TooltipContent><p>{description}</p></TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
+                                </TableHead>
+                            )
+                        })}
                     </TableRow>
                 </TableHeader>
                 <TableBody>
                     {project.members.map((member) => (
                         <TableRow key={member.id}>
-                            <TableCell className="font-medium">
+                            <TableCell className="font-medium sticky left-0 bg-card">
                                 {member.name} {member.id === currentUser.id && "(You)"}
                                 <div className="text-xs text-muted-foreground">
                                     <Select 
                                         onValueChange={(preset) => handlePresetChange(member.id, preset)} 
-                                        defaultValue={Object.keys(permissionPresets).find(key => JSON.stringify(permissionPresets[key].permissions) === JSON.stringify(permissions[member.id]))}
+                                        value={Object.keys(permissionPresets).find(key => JSON.stringify(permissionPresets[key].permissions) === JSON.stringify(permissions[member.id])) || 'custom'}
                                         disabled={member.id === currentUser.id || isPreviewing}
                                     >
                                         <SelectTrigger className="h-7 mt-1 text-xs">
@@ -162,22 +168,20 @@ export function PermissionsEditor({
                                             {Object.entries(permissionPresets).map(([key, preset]) => (
                                                 <SelectItem key={key} value={key}>{preset.name}</SelectItem>
                                             ))}
+                                            <SelectItem value="custom" disabled>Custom</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
                             </TableCell>
-                            {Object.keys(permissionDescriptions).map((key) => {
-                                const permKey = key as keyof Permissions;
-                                return (
-                                    <TableCell key={key} className="text-center">
-                                        <Checkbox
-                                            checked={permissions[member.id]?.[permKey]}
-                                            onCheckedChange={(checked) => handlePermissionChange(member.id, permKey, !!checked)}
-                                            disabled={(member.id === currentUser.id && permKey === 'approveMergePRs') || isPreviewing}
-                                        />
-                                    </TableCell>
-                                );
-                            })}
+                            {allPermissionKeys.map((permKey) => (
+                                <TableCell key={permKey} className="text-center">
+                                    <Checkbox
+                                        checked={permissions[member.id]?.[permKey]}
+                                        onCheckedChange={(checked) => handlePermissionChange(member.id, permKey, !!checked)}
+                                        disabled={(member.id === currentUser.id && permKey === 'approveMergePRs') || isPreviewing}
+                                    />
+                                </TableCell>
+                            ))}
                         </TableRow>
                     ))}
                 </TableBody>

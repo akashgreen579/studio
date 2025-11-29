@@ -1,3 +1,4 @@
+
 "use client";
 
 import {
@@ -16,7 +17,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import type { Project, User, Permissions } from "@/lib/data";
-import { permissionDescriptions } from "@/lib/data";
+import { permissionDescriptions, getEffectivePermissions } from "@/lib/data";
 import { Button } from "../ui/button";
 import { ArrowRight, Shield } from "lucide-react";
 
@@ -26,7 +27,7 @@ interface EmployeeProjectCardProps {
 }
 
 export function EmployeeProjectCard({ project, user }: EmployeeProjectCardProps) {
-  const userPermissions = project.permissions[user.id];
+  const userPermissions = getEffectivePermissions(user.id, project);
 
   const getActivePermissions = () => {
     if (!userPermissions) return [];
@@ -55,6 +56,7 @@ export function EmployeeProjectCard({ project, user }: EmployeeProjectCardProps)
             {activePermissions.length > 0 ? (
               activePermissions.map((key) => {
                 const perm = permissionDescriptions[key];
+                if (!perm) return null;
                 const Icon = perm.icon;
                 return (
                     <Tooltip key={key}>

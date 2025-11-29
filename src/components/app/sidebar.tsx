@@ -117,7 +117,8 @@ const menuItems = [
       {
         href: "#",
         icon: Users,
-        label: "User Groups",
+        label: "User Management",
+        view: "user-management",
         tooltip: "Role assignment & access levels",
         roles: ["manager"],
       },
