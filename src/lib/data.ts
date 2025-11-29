@@ -117,7 +117,7 @@ export const permissionPresets: Record<string, {name: string, permissions: Parti
         permissions: { 
             viewAssignedProjects: true, automateTestCases: true, createSrcStructure: true, approveMergePRs: true, runPipelines: true,
             createProject: true, editProjectSettings: true, assignUsers: true, syncTMT: true, commitAndPublish: true,
-            approveAccessRequests: true, adminOverride: false,
+            approveAccessRequests: true, adminOverride: true,
         }
     },
     senior_qa: {
@@ -131,7 +131,7 @@ export const permissionPresets: Record<string, {name: string, permissions: Parti
         name: "Tester",
         permissions: { 
             viewAssignedProjects: true, automateTestCases: true, createSrcStructure: false, approveMergePRs: false, runPipelines: true,
-            commitAndPublish: true,
+            commitAndPublish: false,
         }
     },
     viewer: {
@@ -251,24 +251,39 @@ export const testCaseHierarchy: HierarchyItem[] = [
 // This function merges project-specific permissions with global role-based permissions
 export const getEffectivePermissions = (userId: string, project?: Project): Permissions => {
     const user = allUsers.find(u => u.id === userId);
-    if (!user) throw new Error("User not found");
+    if (!user) {
+        // Return a default set of no permissions if user not found
+        const allFalse = {} as Permissions;
+        (Object.keys(permissionDescriptions) as Array<keyof Permissions>).forEach(key => {
+            allFalse[key] = false;
+        });
+        return allFalse;
+    }
 
     let basePermissions: Partial<Permissions> = {};
     if (user.role === 'manager') {
         basePermissions = permissionPresets.manager.permissions;
-    } else {
-        basePermissions = permissionPresets.tester.permissions; // Default for employees
+    } else { // 'employee'
+        // Employees have no base permissions globally, they are granted per project.
+        basePermissions = {};
     }
     
+    // Project-specific permissions override the base role permissions.
     const projectPermissions = project?.permissions[userId] || {};
+
+    // Combine base and project-specific permissions
+    const combinedPermissions: Partial<Permissions> = { ...basePermissions, ...projectPermissions };
 
     const allPermissionKeys = Object.keys(permissionDescriptions) as (keyof Permissions)[];
 
     const finalPermissions = {} as Permissions;
 
+    // Ensure all permission keys are present and default to false if not specified.
     for (const key of allPermissionKeys) {
-        finalPermissions[key] = projectPermissions[key] ?? basePermissions[key] ?? false;
+        finalPermissions[key] = combinedPermissions[key] ?? false;
     }
 
     return finalPermissions;
 }
+
+    

@@ -19,7 +19,7 @@ import {
   Shield,
   PlayCircle,
 } from "lucide-react";
-import { testCaseHierarchy, testCases as allTestCases, type TestCase, type User } from "@/lib/data";
+import { testCaseHierarchy, testCases as allTestCases, type TestCase, type User, getEffectivePermissions, permissionDescriptions } from "@/lib/data";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -118,7 +118,11 @@ export function TMTView({ user }: TMTViewProps) {
     const [selectedTestCase, setSelectedTestCase] = useState<TestCase | null>(null);
     const [selectedTestCases, setSelectedTestCases] = useState<Set<string>>(new Set());
 
-    const isManager = user.role === 'manager';
+    // Get user permissions. For TMT view, project context is not strictly necessary
+    // but could be used for more granular control in the future. Here we get global permissions.
+    const permissions = getEffectivePermissions(user.id);
+    const canAutomate = permissions.automateTestCases;
+    const canManageTMT = permissions.syncTMT;
 
     const handleAutomateClick = (testCase: TestCase) => {
       setSelectedTestCase(testCase);
@@ -174,37 +178,39 @@ export function TMTView({ user }: TMTViewProps) {
         return allTestCases.filter(tc => selectedTestCases.has(tc.id));
     }, [selectedTestCases]);
 
-    const ManagerActions = () => (
-      <div className="flex items-center gap-2">
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="outline" size="icon">
-                <UserPlus className="h-4 w-4"/>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent><p>Assign User</p></TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="outline" size="icon">
-                <FolderPlus className="h-4 w-4"/>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent><p>Create Folder Structure</p></TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="outline" size="icon">
-                <RefreshCw className="h-4 w-4"/>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent><p>Refresh TMT</p></TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-        <Separator orientation="vertical" className="h-6 mx-2" />
-      </div>
-    );
+    const ManagerActionButton = ({ permission, tooltip, children }: { permission: keyof Permissions, tooltip: string, children: React.ReactNode }) => {
+        const hasPermission = permissions[permission];
+
+        if (hasPermission) {
+            return (
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button variant="outline" size="icon">
+                                {children}
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent><p>{tooltip}</p></TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+            )
+        }
+        return (
+            <TooltipProvider>
+                 <Tooltip>
+                    <TooltipTrigger asChild>
+                        <div tabIndex={0}>
+                            <Button variant="outline" size="icon" disabled>
+                                {children}
+                            </Button>
+                        </div>
+                    </TooltipTrigger>
+                    <TooltipContent><p>You do not have permission to perform this action.</p></TooltipContent>
+                </Tooltip>
+            </TooltipProvider>
+        )
+    };
+
 
     return (
       <>
@@ -229,7 +235,19 @@ export function TMTView({ user }: TMTViewProps) {
                 {/* Filter Bar */}
                 <div className="flex flex-col gap-4 mb-4">
                     <div className="flex gap-2 items-center">
-                        {isManager && <ManagerActions />}
+                        <div className="flex items-center gap-2">
+                            <ManagerActionButton permission="assignUsers" tooltip="Assign User">
+                                <UserPlus className="h-4 w-4"/>
+                            </ManagerActionButton>
+                             <ManagerActionButton permission="createSrcStructure" tooltip="Create Folder Structure">
+                                <FolderPlus className="h-4 w-4"/>
+                            </ManagerActionButton>
+                             <ManagerActionButton permission="syncTMT" tooltip="Refresh TMT">
+                                <RefreshCw className="h-4 w-4"/>
+                            </ManagerActionButton>
+                            <Separator orientation="vertical" className="h-6 mx-2" />
+                        </div>
+
                         <div className="relative flex-grow">
                              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                              <Input placeholder="Search test cases by ID or summary..." className="pl-8" />
@@ -237,7 +255,7 @@ export function TMTView({ user }: TMTViewProps) {
                         <Button variant="outline"><Filter className="mr-2 h-4 w-4"/> Filters</Button>
                         <Button variant="outline" className="text-amber-600"><Star className="mr-2 h-4 w-4"/> Saved Filters</Button>
                         <Button
-                          disabled={selectedTestCases.size === 0}
+                          disabled={selectedTestCases.size === 0 || !permissions.runPipelines}
                           onClick={() => setPipelineModalOpen(true)}
                         >
                             <PlayCircle className="mr-2 h-4 w-4"/>
@@ -272,7 +290,7 @@ export function TMTView({ user }: TMTViewProps) {
                             <TableHead>Assignee</TableHead>
                             <TableHead className="text-right">
                               <div className="flex items-center justify-end gap-2">
-                                {isManager && <Shield className="h-4 w-4 text-muted-foreground" title="Manager Actions"/>}
+                                {permissions.adminOverride && <Shield className="h-4 w-4 text-muted-foreground" title="Manager Actions"/>}
                                 <span>Actions</span>
                               </div>
                             </TableHead>
@@ -300,7 +318,16 @@ export function TMTView({ user }: TMTViewProps) {
                                     </TableCell>
                                     <TableCell>{tc.assignee}</TableCell>
                                     <TableCell className="text-right">
-                                        <Button variant="default" size="sm" onClick={() => handleAutomateClick(tc)}>Automate</Button>
+                                        <TooltipProvider>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <div tabIndex={canAutomate ? -1 : 0}>
+                                                        <Button variant="default" size="sm" onClick={() => handleAutomateClick(tc)} disabled={!canAutomate}>Automate</Button>
+                                                    </div>
+                                                </TooltipTrigger>
+                                                {!canAutomate && <TooltipContent><p>{permissionDescriptions.automateTestCases.description}</p></TooltipContent>}
+                                            </Tooltip>
+                                        </TooltipProvider>
                                     </TableCell>
                                 </TableRow>
                             ))}
@@ -333,3 +360,5 @@ export function TMTView({ user }: TMTViewProps) {
       </>
     );
 }
+
+    
