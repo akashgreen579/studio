@@ -12,7 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { ShieldCheck, Info, Eye, Download } from "lucide-react";
+import { ShieldCheck, Info, Eye, Download, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Switch } from "../ui/switch";
 
@@ -26,10 +26,8 @@ export function UserPermissionsEditor({ user: initialUser, projects }: UserPermi
     const [projectPermissions, setProjectPermissions] = useState<Record<string, Partial<Permissions>>>(() => {
         const perms: Record<string, Partial<Permissions>> = {};
         projects.forEach(p => {
-            if (p.permissions[user.id]) {
-                perms[p.id] = p.permissions[user.id];
-            } else if (p.members.some(m => m.id === user.id)) {
-                perms[p.id] = {}; // User is a member but has no specific overrides
+            if (p.members.some(m => m.id === initialUser.id)) {
+                perms[p.id] = p.permissions[initialUser.id] || {};
             }
         });
         return perms;
@@ -42,10 +40,8 @@ export function UserPermissionsEditor({ user: initialUser, projects }: UserPermi
         setUser(initialUser);
         const perms: Record<string, Partial<Permissions>> = {};
         projects.forEach(p => {
-            if (p.permissions[initialUser.id]) {
-                perms[p.id] = p.permissions[initialUser.id];
-            } else if (p.members.some(m => m.id === initialUser.id)) {
-                perms[p.id] = {};
+             if (p.members.some(m => m.id === initialUser.id)) {
+                perms[p.id] = p.permissions[initialUser.id] || {};
             }
         });
         setProjectPermissions(perms);
@@ -72,6 +68,10 @@ export function UserPermissionsEditor({ user: initialUser, projects }: UserPermi
                 ...prev,
                 [projectId]: preset.permissions,
             }));
+            toast({
+                title: `${preset.name} Preset Applied`,
+                description: `You can now tweak individual permissions for ${project.name}.`,
+            });
         }
     };
     
@@ -119,8 +119,8 @@ export function UserPermissionsEditor({ user: initialUser, projects }: UserPermi
                 <CardHeader>
                     <div className="flex justify-between items-center">
                         <div>
-                            <CardTitle>Permissions for {user.name}</CardTitle>
-                            <CardDescription>Read-only view of permissions for an employee.</CardDescription>
+                            <CardTitle>Previewing as {user.name}</CardTitle>
+                            <CardDescription>This is a read-only view of what an employee can see.</CardDescription>
                         </div>
                         <div className="flex items-center space-x-2">
                             <Label htmlFor="preview-toggle">Preview as Employee</Label>
@@ -133,9 +133,9 @@ export function UserPermissionsEditor({ user: initialUser, projects }: UserPermi
                         <Eye className="h-4 w-4" />
                         <AlertTitle>Read-Only Employee View</AlertTitle>
                         <AlertDescription>
-                           This is how {user.name} sees their permissions. To make changes, toggle off the preview.
+                           This is how {user.name} would see their permissions. To make changes, an employee would need to request access, and a manager would need to disable this preview toggle.
                            <div className="mt-4">
-                               <Button variant="outline">Request Access</Button>
+                               <Button variant="outline" disabled>Request Access Change</Button>
                            </div>
                         </AlertDescription>
                     </Alert>
@@ -150,6 +150,12 @@ export function UserPermissionsEditor({ user: initialUser, projects }: UserPermi
                             </CardContent>
                          </Card>
                      ))}
+                     {projects.filter(p => p.members.some(m => m.id === user.id)).length === 0 && (
+                        <div className="text-center text-muted-foreground border-2 border-dashed rounded-lg p-8">
+                            <Users className="mx-auto h-8 w-8 mb-2" />
+                            <p>{user.name} is not assigned to any projects.</p>
+                        </div>
+                     )}
                 </CardContent>
             </Card>
         )
@@ -163,10 +169,12 @@ export function UserPermissionsEditor({ user: initialUser, projects }: UserPermi
                         <CardTitle>Permissions for {user.name}</CardTitle>
                         <CardDescription>{user.email}</CardDescription>
                     </div>
-                    <div className="flex items-center space-x-2">
-                        <Label htmlFor="preview-toggle">Preview as Employee</Label>
-                        <Switch id="preview-toggle" checked={previewAsEmployee} onCheckedChange={setPreviewAsEmployee} />
-                    </div>
+                    {user.role === 'manager' && (
+                        <div className="flex items-center space-x-2">
+                            <Label htmlFor="preview-toggle">Preview as Employee</Label>
+                            <Switch id="preview-toggle" checked={previewAsEmployee} onCheckedChange={setPreviewAsEmployee} />
+                        </div>
+                    )}
                 </div>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -293,3 +301,5 @@ export function UserPermissionsEditor({ user: initialUser, projects }: UserPermi
         </Card>
     );
 }
+
+    
