@@ -1,8 +1,8 @@
 
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useState, useMemo, useEffect }from "react";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import {
@@ -38,11 +38,10 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { allUsers, permissionPresets, permissionDescriptions } from "@/lib/data";
 import type { User, Project, Permissions } from "@/lib/data";
-import { X, UserPlus, Info } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
-import { cn } from "@/lib/utils";
+import { X, UserPlus, Info, ArrowLeft, FileCode, CheckCircle, Code, Settings, Users, GitBranch } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Label } from "../ui/label";
+import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 
 interface CreateProjectWizardProps {
   isOpen: boolean;
@@ -55,7 +54,14 @@ interface CreateProjectWizardProps {
 const formSchema = z.object({
   name: z.string().min(1, "Project name is required"),
   description: z.string().optional(),
+  template: z.string().default("Standard QA Preset"),
+  language: z.enum(["Java", "Python"]).default("Java"),
+  buildTool: z.enum(["Maven", "Gradle", "Pip"]).default("Maven"),
+  logging: z.enum(["SLF4J", "Log4j2"]).default("SLF4J"),
+  reporting: z.enum(["Allure", "Extent"]).default("Allure"),
 });
+
+type FrameworkOptions = z.infer<typeof formSchema>;
 
 export function CreateProjectWizard({
   isOpen,
@@ -64,26 +70,34 @@ export function CreateProjectWizard({
   currentUser,
   existingProjectNames,
 }: CreateProjectWizardProps) {
+  const [step, setStep] = useState(1);
   const [selectedMembers, setSelectedMembers] = useState<User[]>([currentUser]);
   const [permissions, setPermissions] = useState<Record<string, Permissions>>({
     [currentUser.id]: permissionPresets.manager.permissions,
   });
-  const [nameWarning, setNameWarning] = useState<string | null>(null);
-  const [hoveredPermission, setHoveredPermission] = useState<keyof Permissions | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     mode: 'onBlur',
-    defaultValues: { name: "", description: "" },
+    defaultValues: {
+        name: "",
+        description: "",
+        template: "Standard QA Preset",
+        language: "Java",
+        buildTool: "Maven",
+        logging: "SLF4J",
+        reporting: "Allure"
+    },
   });
+
+  const frameworkOptions = form.watch();
 
   useEffect(() => {
     if(isOpen) {
       form.reset();
+      setStep(1);
       setSelectedMembers([currentUser]);
       setPermissions({ [currentUser.id]: permissionPresets.manager.permissions });
-      setNameWarning(null);
-      setHoveredPermission(null);
     }
   }, [isOpen, currentUser, form]);
 
@@ -108,26 +122,6 @@ export function CreateProjectWizard({
       delete newPerms[userId];
       return newPerms;
     });
-  };
-
-  const handlePresetChange = (userId: string, presetKey: string) => {
-    const preset = permissionPresets[presetKey];
-    if (preset) {
-      setPermissions((prev) => ({ ...prev, [userId]: preset.permissions }));
-    }
-  };
-
-  const handleGlobalPresetChange = (presetKey: string) => {
-    const preset = permissionPresets[presetKey];
-    if (preset) {
-        const newPermissions = {...permissions};
-        selectedMembers.forEach(member => {
-            if (member.id !== currentUser.id) {
-                newPermissions[member.id] = preset.permissions;
-            }
-        });
-        setPermissions(newPermissions);
-    }
   };
 
   const handlePermissionChange = (
@@ -159,6 +153,11 @@ export function CreateProjectWizard({
     }
   }
 
+  const handleNextStep = async () => {
+    const isValid = await form.trigger(["name", "description"]);
+    if (isValid) setStep(2);
+  }
+
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     if(selectedMembers.length === 0) {
       form.setError("root", { type: "custom", message: "Please add at least one team member." });
@@ -173,54 +172,194 @@ export function CreateProjectWizard({
     });
     setIsOpen(false);
   };
+  
+  const getBuildFile = (lang: string, tool: string) => {
+    if (lang === 'Java') return tool === 'Maven' ? 'pom.xml' : 'build.gradle';
+    return 'requirements.txt';
+  }
 
-  const permissionToDisplay = hoveredPermission ? permissionDescriptions[hoveredPermission] : null;
-
-  return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="max-w-6xl grid-cols-3">
-        <DialogHeader className="col-span-3">
-          <DialogTitle>Create New Project</DialogTitle>
-          <DialogDescription>
-            Fill in the details to set up your new testing project.
-          </DialogDescription>
-        </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="col-span-3 grid grid-cols-3 gap-6">
+  const renderStep = () => {
+    switch(step) {
+      case 1:
+        return (
+          <>
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Project Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g., 'Customer Portal'" {...field} onBlur={handleNameBlur}/>
+                  </FormControl>
+                  <FormDescription>Use a clear, unique name.</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Short Description (Optional)</FormLabel>
+                  <FormControl>
+                    <Textarea placeholder="A brief summary of the project's goals." {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+                control={form.control}
+                name="template"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Template / Preset</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Select a preset" />
+                        </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                        <SelectItem value="Standard QA Preset">Standard QA Preset</SelectItem>
+                        <SelectItem value="Custom" disabled>Custom (coming soon)</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    </FormItem>
+                )}
+             />
+          </>
+        );
+      case 2:
+        return (
+          <div className="grid grid-cols-3 gap-6">
             <div className="col-span-2 space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <FormField
+                <Controller
                     control={form.control}
-                    name="name"
+                    name="language"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Project Name</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g., 'Customer Portal'" {...field} onBlur={handleNameBlur}/>
-                        </FormControl>
-                        <FormDescription>Choose a unique name for easy identification.</FormDescription>
-                        <FormMessage />
-                      </FormItem>
+                        <FormItem>
+                            <FormLabel>Language</FormLabel>
+                            <RadioGroup onValueChange={value => {
+                                field.onChange(value);
+                                if (value === 'Java') form.setValue('buildTool', 'Maven');
+                                if (value === 'Python') form.setValue('buildTool', 'Pip');
+                            }} value={field.value} className="flex gap-4">
+                                <FormItem className="flex items-center space-x-2 space-y-0">
+                                    <FormControl><RadioGroupItem value="Java" id="java" /></FormControl>
+                                    <Label htmlFor="java">Java</Label>
+                                </FormItem>
+                                <FormItem className="flex items-center space-x-2 space-y-0">
+                                    <FormControl><RadioGroupItem value="Python" id="python" /></FormControl>
+                                    <Label htmlFor="python">Python</Label>
+                                </FormItem>
+                            </RadioGroup>
+                        </FormItem>
                     )}
-                  />
-                  <FormField
+                />
+                <Controller
                     control={form.control}
-                    name="description"
+                    name="buildTool"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Short Description (Optional)</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            placeholder="A brief summary of the project's goals."
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
+                        <FormItem>
+                            <FormLabel>Build Tool</FormLabel>
+                            <RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-4">
+                                {frameworkOptions.language === 'Java' ? <>
+                                    <FormItem className="flex items-center space-x-2 space-y-0">
+                                        <FormControl><RadioGroupItem value="Maven" id="maven" /></FormControl>
+                                        <Label htmlFor="maven">Maven</Label>
+                                    </FormItem>
+                                    <FormItem className="flex items-center space-x-2 space-y-0">
+                                        <FormControl><RadioGroupItem value="Gradle" id="gradle" /></FormControl>
+                                        <Label htmlFor="gradle">Gradle</Label>
+                                    </FormItem>
+                                </> : <>
+                                    <FormItem className="flex items-center space-x-2 space-y-0">
+                                        <FormControl><RadioGroupItem value="Pip" id="pip" /></FormControl>
+                                        <Label htmlFor="pip">Pip</Label>
+                                    </FormItem>
+                                </>}
+                            </RadioGroup>
+                        </FormItem>
                     )}
-                  />
-                </div>
+                />
+                 <FormField
+                    control={form.control}
+                    name="framework"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Framework</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value} disabled>
+                                <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                                <SelectContent><SelectItem value="Cucumber">Cucumber</SelectItem></SelectContent>
+                            </Select>
+                            <FormDescription>More frameworks coming in v2.</FormDescription>
+                        </FormItem>
+                    )}
+                 />
+                 <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                        control={form.control}
+                        name="logging"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Logging</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                                    <SelectContent>
+                                        <SelectItem value="SLF4J">SLF4J</SelectItem>
+                                        <SelectItem value="Log4j2">Log4j2</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </FormItem>
+                        )}
+                    />
+                     <FormField
+                        control={form.control}
+                        name="reporting"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Reporting</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                                    <SelectContent>
+                                        <SelectItem value="Allure">Allure</SelectItem>
+                                        <SelectItem value="Extent">Extent</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </FormItem>
+                        )}
+                    />
+                 </div>
+            </div>
+            <div className="col-span-1">
+                <Card className="sticky top-20 bg-muted/50">
+                    <CardHeader>
+                        <CardTitle className="text-base flex items-center gap-2"><FileCode className="h-5 w-5"/> Framework Summary</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3 text-sm">
+                       <p className="font-semibold">Baseline files to be created:</p>
+                       <ul className="space-y-2 text-muted-foreground">
+                            <li className="flex items-center gap-2"><GitBranch className="h-4 w-4 text-primary" /> <span>{getBuildFile(frameworkOptions.language, frameworkOptions.buildTool)}</span></li>
+                            <li className="flex items-center gap-2"><GitBranch className="h-4 w-4 text-primary" /> <span>README.md</span></li>
+                            <li className="flex items-center gap-2"><GitBranch className="h-4 w-4 text-primary" /> <span>src/... (skeleton)</span></li>
+                       </ul>
+                       <div className="pt-4 space-y-2">
+                            <p className="flex justify-between"><strong>Language:</strong> <span>{frameworkOptions.language}</span></p>
+                            <p className="flex justify-between"><strong>Build Tool:</strong> <span>{frameworkOptions.buildTool}</span></p>
+                            <p className="flex justify-between"><strong>Logging:</strong> <span>{frameworkOptions.logging}</span></p>
+                            <p className="flex justify-between"><strong>Reporting:</strong> <span>{frameworkOptions.reporting}</span></p>
+                       </div>
+                    </CardContent>
+                </Card>
+            </div>
+          </div>
+        );
+      case 3:
+        return (
+            <div className="space-y-6">
                 <div className="space-y-4">
                   <FormLabel>Team Members</FormLabel>
                   <div className="flex flex-wrap gap-2 min-h-[32px]">
@@ -241,7 +380,7 @@ export function CreateProjectWizard({
                               <UserPlus className="mr-2 h-4 w-4" /> Add Team Members
                           </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-80 p-0">
+                      <PopoverContent className="w-auto p-0">
                           <ScrollArea className="h-48">
                               {availableUsers.length > 0 ? availableUsers.map(user => (
                                   <div key={user.id} onClick={() => handleMemberSelect(user)} className="p-2 hover:bg-accent cursor-pointer text-sm">
@@ -251,33 +390,22 @@ export function CreateProjectWizard({
                           </ScrollArea>
                       </PopoverContent>
                   </Popover>
+                  {form.formState.errors.root && <p className="text-sm font-medium text-destructive">{form.formState.errors.root.message}</p>}
                 </div>
-              </div>
-
-              <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-semibold">Permissions</h3>
-                     <div className="flex items-center gap-2">
-                        <Label>Apply Role Template:</Label>
-                        <Select onValueChange={(preset) => handleGlobalPresetChange(preset)}>
-                            <SelectTrigger className="w-[180px]">
-                                <SelectValue placeholder="Select a template..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {Object.entries(permissionPresets).map(([key, preset]) => (
-                                    <SelectItem key={key} value={key}>{preset.name}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                  </div>
+                 <div className="space-y-4">
+                  <h3 className="font-semibold">Permissions</h3>
                   <ScrollArea className="h-[300px] rounded-md border p-4">
                       <div className="space-y-6">
                           {selectedMembers.map(member => (
                               <div key={member.id} className="rounded-lg border bg-card p-4">
                                   <div className="flex items-center justify-between mb-4">
                                       <p className="font-medium">{member.name} {member.id === currentUser.id && "(You)"}</p>
-                                      <Select onValueChange={(preset) => handlePresetChange(member.id, preset)} value={Object.keys(permissionPresets).find(key => JSON.stringify(permissionPresets[key].permissions) === JSON.stringify(permissions[member.id]))}>
+                                      <Select onValueChange={(preset) => {
+                                           const newPerms = permissionPresets[preset];
+                                           if (newPerms) {
+                                               setPermissions(prev => ({...prev, [member.id]: newPerms.permissions}))
+                                           }
+                                      }} value={Object.keys(permissionPresets).find(key => JSON.stringify(permissionPresets[key].permissions) === JSON.stringify(permissions[member.id]))}>
                                           <SelectTrigger className="w-[180px]" disabled={member.id === currentUser.id}>
                                               <SelectValue placeholder="Select a preset..." />
                                           </SelectTrigger>
@@ -290,7 +418,7 @@ export function CreateProjectWizard({
                                   </div>
                                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                                       {Object.entries(permissionDescriptions).map(([key, {label, icon: Icon}]) => (
-                                          <div key={key} className="flex items-center space-x-2" onMouseEnter={() => setHoveredPermission(key as keyof Permissions)} onMouseLeave={() => setHoveredPermission(null)}>
+                                          <div key={key} className="flex items-center space-x-2">
                                               <Checkbox 
                                                   id={`${member.id}-${key}`} 
                                                   checked={permissions[member.id]?.[key as keyof Permissions]}
@@ -312,44 +440,48 @@ export function CreateProjectWizard({
                   </ScrollArea>
               </div>
             </div>
+        )
+      default:
+        return null;
+    }
+  }
 
-            <div className="col-span-1">
-                <Card className="sticky top-20">
-                    <CardHeader>
-                        <CardTitle>Permission Impact</CardTitle>
-                    </CardHeader>
-                    <CardContent className="min-h-[600px]">
-                        {permissionToDisplay ? (
-                             <div className="space-y-4">
-                                <div className="flex items-center gap-3">
-                                    <permissionToDisplay.icon className="h-6 w-6 text-primary" />
-                                    <h4 className="text-lg font-semibold">{permissionToDisplay.label}</h4>
-                                </div>
-                                <p className="text-muted-foreground">{permissionToDisplay.description}</p>
-                            </div>
-                        ) : (
-                            <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
-                                <Info className="h-8 w-8 mb-4"/>
-                                <p>Hover over a permission to see its impact and what it allows a user to do.</p>
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
+  const getStepTitle = () => {
+    switch(step) {
+        case 1: return "Project Identity";
+        case 2: return "Framework Options";
+        case 3: return "Team & Permissions";
+        default: return "Create New Project";
+    }
+  }
+
+  return (
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogContent className="max-w-4xl">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-4">
+            Create New Project
+            <div className="flex items-center gap-2">
+                {[1,2,3].map(s => (
+                     <div key={s} className={`h-2 w-8 rounded-full ${step >= s ? 'bg-primary' : 'bg-muted'}`} />
+                ))}
+            </div>
+          </DialogTitle>
+          <DialogDescription>{getStepTitle()}</DialogDescription>
+        </DialogHeader>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <div className="p-1">
+             {renderStep()}
             </div>
             
-            <div className="col-span-3">
-              {form.formState.errors.root && <FormMessage>{form.formState.errors.root.message}</FormMessage>}
-            </div>
-
-            <DialogFooter className="col-span-3">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setIsOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={!form.formState.isValid}>Create Project</Button>
+            <DialogFooter>
+                {step > 1 && <Button type="button" variant="outline" onClick={() => setStep(s => s - 1)}><ArrowLeft className="mr-2 h-4 w-4" /> Back</Button>}
+                <div className="flex-grow"></div>
+                <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>Cancel</Button>
+                {step === 1 && <Button type="button" onClick={handleNextStep}>Next</Button>}
+                {step === 2 && <Button type="button" onClick={() => setStep(3)}>Next</Button>}
+                {step === 3 && <Button type="submit">Create Project</Button>}
             </DialogFooter>
           </form>
         </Form>
@@ -357,3 +489,5 @@ export function CreateProjectWizard({
     </Dialog>
   );
 }
+
+    
