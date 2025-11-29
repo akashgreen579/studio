@@ -199,6 +199,13 @@ export const notifications = [
     { id: 3, text: "System maintenance is scheduled for tonight at 10 PM.", category: "System", read: true },
 ];
 
+export const teamPerformanceData = [
+    { name: "Samira Khan", avatar: allUsers.find(u=>u.name === 'Samira Khan')?.avatar || '', completed: 12, drafts: 2, successRate: "98%", pending: 1 },
+    { name: "John Doe", avatar: allUsers.find(u=>u.name === 'John Doe')?.avatar || '', completed: 8, drafts: 4, successRate: "91%", pending: 0 },
+    { name: "Jane Smith", avatar: allUsers.find(u=>u.name === 'Jane Smith')?.avatar || '', completed: 15, drafts: 1, successRate: "99%", pending: 2 },
+    { name: "Peter Jones", avatar: allUsers.find(u=>u.name === 'Peter Jones')?.avatar || '', completed: 5, drafts: 0, successRate: "85%", pending: 0 },
+];
+
 
 // This function merges project-specific permissions with global role-based permissions
 export const getEffectivePermissions = (userId: string, project?: Project): Permissions => {
@@ -224,5 +231,3 @@ export const getEffectivePermissions = (userId: string, project?: Project): Perm
 
     return finalPermissions;
 }
-
-    

@@ -4,12 +4,13 @@
 import { useState } from "react";
 import type { User, Project } from "@/lib/data";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Users as UsersIcon, CheckCheck, LineChart } from "lucide-react";
+import { PlusCircle, Users as UsersIcon } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TeamOverview } from "./team-overview";
 import { EmployeeDashboard } from "./employee-dashboard";
 import type { ActiveView } from "@/app/dashboard/page";
 import { allUsers } from "@/lib/data";
+import { AnimatePresence, motion } from "framer-motion";
 
 interface ManagerDashboardProps {
   user: User;
@@ -61,11 +62,21 @@ export function ManagerDashboard({
         </div>
       </div>
       
-      {viewMode === "team" ? (
-        <TeamOverview teamMembers={teamMembers} projects={projects} />
-      ) : (
-        selectedUser && <EmployeeDashboard user={selectedUser} projects={projects.filter(p => p.members.some(m => m.id === selectedUser.id))} />
-      )}
+        <AnimatePresence mode="wait">
+            <motion.div
+                key={viewMode}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+            >
+                {viewMode === "team" ? (
+                    <TeamOverview teamMembers={teamMembers} projects={projects} />
+                ) : (
+                    selectedUser && <EmployeeDashboard user={selectedUser} projects={projects.filter(p => p.members.some(m => m.id === selectedUser.id))} />
+                )}
+            </motion.div>
+        </AnimatePresence>
     </div>
   );
 }

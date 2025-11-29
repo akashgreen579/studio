@@ -6,7 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter }
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
-import { mockRequests } from "@/lib/data";
+import { teamPerformanceData, mockRequests } from "@/lib/data";
 import type { User, Project } from "@/lib/data";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
@@ -22,13 +22,6 @@ const teamSummaryCards = [
     { title: "Team Success Rate (7d)", value: "94%", icon: BarChart },
 ];
 
-const teamPerformanceData = [
-    { name: "Samira Khan", avatar: "https://i.pravatar.cc/150?u=samira.khan@example.com", completed: 12, drafts: 2, successRate: "98%", pending: 1 },
-    { name: "John Doe", avatar: "https://i.pravatar.cc/150?u=john.doe@example.com", completed: 8, drafts: 4, successRate: "91%", pending: 0 },
-    { name: "Jane Smith", avatar: "https://i.pravatar.cc/150?u=jane.smith@example.com", completed: 15, drafts: 1, successRate: "99%", pending: 2 },
-    { name: "Peter Jones", avatar: "https://i.pravatar.cc/150?u=peter.jones@example.com", completed: 5, drafts: 0, successRate: "85%", pending: 0 },
-]
-
 const getApprovalIcon = (type: string) => {
     switch (type) {
         case "Access Request": return <CheckCheck className="h-4 w-4" />;
@@ -42,8 +35,8 @@ export function TeamOverview({ teamMembers, projects }: TeamOverviewProps) {
     return (
         <div className="grid gap-8">
              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                {teamSummaryCards.map(card => (
-                    <Card key={card.title}>
+                {teamSummaryCards.map((card, i) => (
+                    <Card key={card.title} className="hover:shadow-lg transition-shadow animate-in fade-in-0" style={{animationDelay: `${i * 100}ms`, animationFillMode: 'backwards'}}>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">{card.title}</CardTitle>
                             <card.icon className="h-4 w-4 text-muted-foreground" />
@@ -74,7 +67,7 @@ export function TeamOverview({ teamMembers, projects }: TeamOverviewProps) {
                             </TableHeader>
                             <TableBody>
                                 {teamPerformanceData.map(member => (
-                                <TableRow key={member.name}>
+                                <TableRow key={member.name} className="hover:bg-muted/50">
                                     <TableCell>
                                         <div className="flex items-center gap-3">
                                             <Avatar className="h-9 w-9">

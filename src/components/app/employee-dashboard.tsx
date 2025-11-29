@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { notifications } from "@/lib/data";
+import { AnimatePresence, motion } from "framer-motion";
 
 
 interface EmployeeDashboardProps {
@@ -172,5 +173,3 @@ export function EmployeeDashboard({ user, projects }: EmployeeDashboardProps) {
     </div>
   );
 }
-
-    
