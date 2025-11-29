@@ -2,6 +2,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Tooltip,
   TooltipContent,
@@ -21,19 +22,13 @@ import {
   ScrollText,
   Bell,
   TestTubeDiagonal,
+  LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Role, ActiveView } from "@/app/dashboard/page";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import type { User } from "@/lib/data";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
-import { Separator } from "../ui/separator";
+import { Button } from "../ui/button";
 
 interface SidebarProps {
   currentRole: Role;
@@ -144,7 +139,7 @@ const menuItems = [
         roles: ["manager", "employee"],
       },
     ],
-  }
+  },
 ];
 
 export function Sidebar({
@@ -156,6 +151,11 @@ export function Sidebar({
   onMenuClick,
 }: SidebarProps) {
   const isActive = (item: any) => item.view && item.view === activeView;
+  const router = useRouter();
+
+  const handleLogout = () => {
+    router.push('/login');
+  };
 
   return (
     <aside
@@ -190,7 +190,8 @@ export function Sidebar({
                                 className={cn(
                                   "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary",
                                   {
-                                    "bg-muted text-primary font-semibold": isActive(item),
+                                    "bg-muted text-primary font-semibold":
+                                      isActive(item),
                                   }
                                 )}
                                 href={item.href}
@@ -218,15 +219,33 @@ export function Sidebar({
         </nav>
       </div>
       <div className="mt-auto border-t p-4">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
             <Avatar className="h-9 w-9">
-              <AvatarImage src={user.avatar} alt={user.name} data-ai-hint="person face" />
+              <AvatarImage
+                src={user.avatar}
+                alt={user.name}
+                data-ai-hint="person face"
+              />
               <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
             </Avatar>
             <div>
-                <p className="text-sm font-medium leading-none">{user.name}</p>
-                <p className="text-xs text-muted-foreground">{user.email}</p>
+              <p className="text-sm font-medium leading-none">{user.name}</p>
+              <p className="text-xs text-muted-foreground">{user.email}</p>
             </div>
+          </div>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" onClick={handleLogout}>
+                  <LogOut className="h-5 w-5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Logout</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       </div>
     </aside>
