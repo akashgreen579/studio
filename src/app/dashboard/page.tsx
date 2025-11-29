@@ -41,6 +41,13 @@ function DashboardContent() {
   const currentUser = useMemo(() => {
     return allUsers.find((u) => u.role === role)!;
   }, [role]);
+  
+  const teamMembers = useMemo(() => {
+    if (currentUser.role === 'manager') {
+      return allUsers.filter(u => u.role === 'employee');
+    }
+    return [];
+  }, [currentUser]);
 
   const addAuditLogEntry = useCallback(
     (entry: Omit<AuditLogEntry, "id" | "timestamp" | "impact">) => {
@@ -161,9 +168,8 @@ function DashboardContent() {
   const managerProps = {
     user: currentUser,
     projects,
-    auditLog,
+    teamMembers,
     setActiveView,
-    updateProjectPermissions,
   };
   const employeeProps = { user: currentUser, projects };
 

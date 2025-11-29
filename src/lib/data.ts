@@ -1,3 +1,4 @@
+
 import { PlaceHolderImages } from './placeholder-images';
 import { Eye, TestTube, FolderPlus, GitMerge, PlayCircle, type LucideIcon, FilePlus, Settings2, UserPlus, GitBranch, GitCommit, CheckCheck, UserCheck, ShieldAlert } from 'lucide-react';
 import { ComponentType } from 'react';
@@ -184,6 +185,14 @@ export const auditLog: AuditLogEntry[] = [
     impact: "Medium",
   },
 ];
+
+
+export const mockRequests = [
+    { id: 1, user: "Samira Khan", project: "Customer Portal Relaunch", type: "Access Request", permissions: ["Approve/Merge PRs"], justification: "Need to manage hotfixes for the release.", date: new Date(Date.now() - 86400000), status: "Pending" },
+    { id: 2, user: "John Doe", project: "Payment Gateway Integration", type: "Merge Request", permissions: [], justification: "feat: add stripe payments", date: new Date(Date.now() - 172800000), status: "Pending" },
+    { id: 3, user: "Jane Smith", project: "Customer Portal Relaunch", type: "Folder Creation", permissions: [], justification: "/new_feature/tests", date: new Date(Date.now() - 172800000), status: "Pending" },
+];
+
 
 // This function merges project-specific permissions with global role-based permissions
 export const getEffectivePermissions = (userId: string, project?: Project): Permissions => {

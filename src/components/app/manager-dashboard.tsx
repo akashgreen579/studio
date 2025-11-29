@@ -2,94 +2,70 @@
 "use client";
 
 import { useState } from "react";
-import type { User, Project, AuditLogEntry, Permissions } from "@/lib/data";
+import type { User, Project } from "@/lib/data";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, ArrowRight, BarChart, Users, FileCheck } from "lucide-react";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../ui/card";
-import { ProjectSummaryCard } from "./project-summary-card";
+import { PlusCircle, Users as UsersIcon, CheckCheck, LineChart } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { TeamOverview } from "./team-overview";
+import { EmployeeDashboard } from "./employee-dashboard";
 import type { ActiveView } from "@/app/dashboard/page";
+import { allUsers } from "@/lib/data";
 
 interface ManagerDashboardProps {
   user: User;
   projects: Project[];
-  auditLog: AuditLogEntry[];
+  teamMembers: User[];
   setActiveView: (view: ActiveView) => void;
-  updateProjectPermissions: (
-    projectId: string,
-    permissions: Record<string, Partial<Permissions>>
-  ) => void;
 }
-
-const summaryCards = [
-    { title: "Total Projects", value: "12", icon: FileCheck, change: "+2 this month" },
-    { title: "Active Users", value: "23", icon: Users, change: "+3 this week" },
-    { title: "Success Rate (24h)", value: "92%", icon: BarChart, change: "-2.1% vs last week" },
-];
-
 
 export function ManagerDashboard({
   user,
   projects,
-  auditLog,
+  teamMembers,
   setActiveView,
-  updateProjectPermissions,
 }: ManagerDashboardProps) {
+  const [viewMode, setViewMode] = useState<"team" | string>("team");
+
+  const selectedUser = allUsers.find(u => u.id === viewMode);
 
   return (
     <div className="grid gap-8">
-        <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div>
             <h1 className="text-2xl font-semibold">Manager Dashboard</h1>
+            <p className="text-muted-foreground mt-1">{viewMode === 'team' ? "Team-wide performance and approvals." : `Viewing dashboard for ${selectedUser?.name}`}</p>
+        </div>
+        <div className="flex items-center gap-4">
+            <Select value={viewMode} onValueChange={setViewMode}>
+                <SelectTrigger className="w-[220px]">
+                    <SelectValue placeholder="Select a view" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="team">
+                        <div className="flex items-center gap-2">
+                            <UsersIcon className="h-4 w-4" />
+                            Team Overview
+                        </div>
+                    </SelectItem>
+                    {teamMembers.map(member => (
+                        <SelectItem key={member.id} value={member.id}>
+                           {member.name}
+                        </SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
             <Button onClick={() => setActiveView('project-settings')}>
                 <PlusCircle className="mr-2 h-4 w-4" />
-                Create New Project
+                Create Project
             </Button>
         </div>
-
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-             {summaryCards.map(card => (
-                <Card key={card.title}>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">{card.title}</CardTitle>
-                        <card.icon className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{card.value}</div>
-                        <p className="text-xs text-muted-foreground">{card.change}</p>
-                    </CardContent>
-                </Card>
-            ))}
-        </div>
-
-        <div className="grid grid-cols-1 gap-8">
-            <Card>
-                <CardHeader>
-                    <CardTitle>Projects Overview</CardTitle>
-                    <CardDescription>A summary of all active testing projects you own or manage.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    {projects.length > 0 ? (
-                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                        {projects.map((project) => (
-                            <ProjectSummaryCard
-                                key={project.id}
-                                project={project}
-                                currentUser={user}
-                                updateProjectPermissions={updateProjectPermissions}
-                             />
-                        ))}
-                        </div>
-                    ) : (
-                        <div className="text-center py-12 px-6 border-2 border-dashed rounded-lg">
-                            <h3 className="text-lg font-medium">No Projects Found</h3>
-                            <p className="mt-1 text-sm text-muted-foreground">
-                               Get started by creating a new project.
-                            </p>
-                             <Button variant="link" className="mt-2" onClick={() => setActiveView('project-settings')}>Create your first project</Button>
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
-        </div>
+      </div>
+      
+      {viewMode === "team" ? (
+        <TeamOverview teamMembers={teamMembers} projects={projects} />
+      ) : (
+        selectedUser && <EmployeeDashboard user={selectedUser} projects={projects.filter(p => p.members.some(m => m.id === selectedUser.id))} />
+      )}
     </div>
   );
 }
