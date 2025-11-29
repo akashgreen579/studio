@@ -184,7 +184,7 @@ function DashboardContent() {
           <EmployeeDashboard {...employeeProps} />
         );
        case 'tmt-view':
-        return <TMTView />;
+        return <TMTView user={currentUser} />;
       case 'project-settings':
         return role === "manager" ? (
           <ProjectSettings

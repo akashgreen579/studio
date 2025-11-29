@@ -9,13 +9,16 @@ import {
   File,
   Folder,
   Tag,
-  User,
   Filter,
   Search,
   MoreHorizontal,
-  Star
+  Star,
+  UserPlus,
+  FolderPlus,
+  RefreshCw,
+  Shield,
 } from "lucide-react";
-import { testCaseHierarchy, testCases as allTestCases, type TestCase } from "@/lib/data";
+import { testCaseHierarchy, testCases as allTestCases, type TestCase, type User } from "@/lib/data";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,6 +35,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -43,6 +47,10 @@ interface HierarchyItem {
   name: string;
   type: "epic" | "feature" | "folder" | "test-case";
   children?: HierarchyItem[];
+}
+
+interface TMTViewProps {
+  user: User;
 }
 
 const getIcon = (
@@ -100,11 +108,13 @@ const TreeItem = ({ item, level, onSelect, selectedId }: { item: HierarchyItem, 
 };
 
 
-export function TMTView() {
+export function TMTView({ user }: TMTViewProps) {
     const [selectedId, setSelectedId] = useState<string | null>('epic-1');
     const [selectedType, setSelectedType] = useState<HierarchyItem['type']>('epic');
     const [isWorkflowModalOpen, setWorkflowModalOpen] = useState(false);
     const [selectedTestCase, setSelectedTestCase] = useState<TestCase | null>(null);
+
+    const isManager = user.role === 'manager';
 
     const handleAutomateClick = (testCase: TestCase) => {
       setSelectedTestCase(testCase);
@@ -136,6 +146,38 @@ export function TMTView() {
         }
     }, [selectedId, selectedType]);
 
+    const ManagerActions = () => (
+      <div className="flex items-center gap-2">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="outline" size="icon">
+                <UserPlus className="h-4 w-4"/>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent><p>Assign User</p></TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="outline" size="icon">
+                <FolderPlus className="h-4 w-4"/>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent><p>Create Folder Structure</p></TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="outline" size="icon">
+                <RefreshCw className="h-4 w-4"/>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent><p>Refresh TMT</p></TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        <Separator orientation="vertical" className="h-6 mx-2" />
+      </div>
+    );
+
     return (
       <>
         <div className="grid grid-cols-1 md:grid-cols-[320px_1fr] gap-6 h-full">
@@ -158,7 +200,8 @@ export function TMTView() {
             <div>
                 {/* Filter Bar */}
                 <div className="flex flex-col gap-4 mb-4">
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 items-center">
+                        {isManager && <ManagerActions />}
                         <div className="relative flex-grow">
                              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                              <Input placeholder="Search test cases by ID or summary..." className="pl-8" />
@@ -187,7 +230,12 @@ export function TMTView() {
                             <TableHead>Priority</TableHead>
                             <TableHead>Status</TableHead>
                             <TableHead>Assignee</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
+                            <TableHead className="text-right">
+                              <div className="flex items-center justify-end gap-2">
+                                {isManager && <Shield className="h-4 w-4 text-muted-foreground" title="Manager Actions"/>}
+                                <span>Actions</span>
+                              </div>
+                            </TableHead>
                         </TableRow>
                         </TableHeader>
                         <TableBody>
