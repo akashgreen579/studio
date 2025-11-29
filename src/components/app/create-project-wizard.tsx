@@ -43,7 +43,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Label } from "../ui/label";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { Tooltip, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 
 interface CreateProjectWizardProps {
   isOpen: boolean;
@@ -550,5 +550,7 @@ export function CreateProjectWizard({
     </Dialog>
   );
 }
+
+    
 
     
