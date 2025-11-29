@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "../ui/dialog";
 import { Button } from "../ui/button";
-import { Loader, Check, AlertTriangle, FileCode, GitBranch, Share2, Bot, GitMerge, FolderPlus, FolderCheck, FolderSearch } from "lucide-react";
+import { Loader, Check, AlertTriangle, FileCode, GitBranch, Share2, Bot, GitMerge, FolderPlus, FolderCheck, FolderSearch, BrainCircuit, Wand, TestTube, FileText, BotMessageSquare } from "lucide-react";
 import { type TestCase } from "@/lib/data";
 import { Separator } from "../ui/separator";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
@@ -152,10 +152,65 @@ const MergeAnimation = ({ onComplete }: { onComplete: () => void }) => {
     )
 }
 
+const WorkspacePrepAnimation = ({ onComplete }: { onComplete: () => void }) => {
+    const prepSteps = [
+        { name: "NLP Cleanup", icon: BotMessageSquare },
+        { name: "Gherkin Preparation", icon: FileText },
+        { name: "Keyword Analysis", icon: Wand },
+        { name: "Action Simulation Setup", icon: TestTube },
+        { name: "Code Generation", icon: BrainCircuit }
+    ];
+    const [currentStep, setCurrentStep] = useState(0);
+
+    useEffect(() => {
+        if (currentStep < prepSteps.length) {
+            const timer = setTimeout(() => setCurrentStep(s => s + 1), 700);
+            return () => clearTimeout(timer);
+        } else {
+            const finalTimer = setTimeout(onComplete, 1000);
+            return () => clearTimeout(finalTimer);
+        }
+    }, [currentStep, onComplete, prepSteps.length]);
+    
+    return (
+        <div className="p-4">
+            <h3 className="text-lg font-semibold text-center mb-6">Preparing Automation Workspace...</h3>
+            <div className="space-y-4">
+                {prepSteps.map((step, index) => (
+                    <motion.div
+                        key={step.name}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: currentStep >= index ? 1 : 0.4, y: currentStep >= index ? 0 : 20 }}
+                        transition={{ delay: index * 0.1 }}
+                        className="flex items-center gap-4"
+                    >
+                        <div className={`p-2 rounded-full ${currentStep > index ? 'bg-green-100 text-green-600' : 'bg-muted text-muted-foreground'}`}>
+                            {currentStep > index ? <Check className="h-5 w-5"/> : <step.icon className="h-5 w-5"/>}
+                        </div>
+                        <p className={`text-sm font-medium ${currentStep < index && 'text-muted-foreground'}`}>{step.name}</p>
+                         {currentStep === index && <Loader className="h-4 w-4 animate-spin text-primary ml-auto"/>}
+                    </motion.div>
+                ))}
+            </div>
+             {currentStep === prepSteps.length && (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="text-center mt-8 text-primary font-medium"
+                >
+                    Transitioning to TestAI Lab...
+                </motion.div>
+             )}
+        </div>
+    )
+}
+
+type WorkflowStage = "merge" | "prepareWorkspace";
 
 export function AutomationWorkflowModal({ isOpen, setIsOpen, testCase }: AutomationWorkflowModalProps) {
     const { toast } = useToast();
     const [currentStepIndex, setCurrentStepIndex] = useState(0);
+    const [workflowStage, setWorkflowStage] = useState<WorkflowStage>("merge");
     const [steps, setSteps] = useState<Step[]>([
         { name: "Initialize", status: "pending", description: "Connecting to Git repository..." },
         { name: "Validate Folder Structure", status: "pending", description: "Checking for existing automation folders..." },
@@ -170,6 +225,7 @@ export function AutomationWorkflowModal({ isOpen, setIsOpen, testCase }: Automat
             setTimeout(() => {
                 setCurrentStepIndex(0);
                 setSteps(prev => prev.map(s => ({ ...s, status: 'pending', component: undefined })));
+                setWorkflowStage("merge");
             }, 300);
             return;
         }
@@ -219,6 +275,14 @@ export function AutomationWorkflowModal({ isOpen, setIsOpen, testCase }: Automat
 
     }, [isOpen]);
 
+    const handleFinalCompletion = () => {
+        toast({
+            title: "Workspace Ready!",
+            description: `Now entering the TestAI Lab for ${testCase.id}.`,
+        });
+        setTimeout(() => setIsOpen(false), 500);
+    };
+
     const proceedToStep3 = () => {
         // Step 3: Generate & Merge
         setSteps(prev => {
@@ -230,13 +294,10 @@ export function AutomationWorkflowModal({ isOpen, setIsOpen, testCase }: Automat
                 setSteps(prev => {
                     const finalSteps = [...prev];
                     finalSteps[2].status = 'success';
+                    finalSteps[2].description = "Baseline script merged. Preparing workspace...";
                     return finalSteps;
                 });
-                 toast({
-                    title: "Automation Script Created!",
-                    description: `${testCase.id} is ready for refinement in the TestAI Lab.`,
-                });
-                setTimeout(() => setIsOpen(false), 2000);
+                setWorkflowStage("prepareWorkspace");
             }}/>;
             return newSteps;
         });
@@ -257,26 +318,40 @@ export function AutomationWorkflowModal({ isOpen, setIsOpen, testCase }: Automat
         </DialogHeader>
 
         <div className="py-4 space-y-6">
-            {steps.map((step, index) => (
-                <div key={step.name}>
-                    <div className="flex items-center gap-4">
-                        <StatusIcon status={step.status} />
-                        <div className="flex-1">
-                            <h4 className={`font-medium ${currentStepIndex < index && 'text-muted-foreground'}`}>{step.name}</h4>
-                            <p className="text-sm text-muted-foreground">{step.description}</p>
-                        </div>
-                    </div>
-                     {currentStepIndex === index && step.component && (
-                        <motion.div 
-                            initial={{opacity: 0, y: 10}}
-                            animate={{opacity: 1, y: 0}}
-                            className="mt-4 pl-9"
-                        >
-                            {step.component}
-                        </motion.div>
-                     )}
-                </div>
-            ))}
+            <AnimatePresence mode="wait">
+                {workflowStage === 'merge' ? (
+                     <motion.div key="merge-steps">
+                        {steps.map((step, index) => (
+                            <div key={step.name} className="space-y-6">
+                                <div className="flex items-center gap-4">
+                                    <StatusIcon status={step.status} />
+                                    <div className="flex-1">
+                                        <h4 className={`font-medium ${currentStepIndex < index && 'text-muted-foreground'}`}>{step.name}</h4>
+                                        <p className="text-sm text-muted-foreground">{step.description}</p>
+                                    </div>
+                                </div>
+                                {currentStepIndex === index && step.component && (
+                                    <motion.div 
+                                        initial={{opacity: 0, y: 10}}
+                                        animate={{opacity: 1, y: 0}}
+                                        className="mt-4 pl-9"
+                                    >
+                                        {step.component}
+                                    </motion.div>
+                                )}
+                            </div>
+                        ))}
+                    </motion.div>
+                ) : (
+                    <motion.div 
+                        key="prep-workspace"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                    >
+                        <WorkspacePrepAnimation onComplete={handleFinalCompletion} />
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
 
         <DialogFooter>
