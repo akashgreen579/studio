@@ -1,14 +1,16 @@
 
+
 "use client";
 
 import { useState } from "react";
 import type { User, Project, AuditLogEntry, Permissions } from "@/lib/data";
 import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, ArrowRight } from "lucide-react";
 import { CreateProjectWizard } from "./create-project-wizard";
 import { ProjectSummaryCard } from "./project-summary-card";
-import { AuditLog } from "./audit-log";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../ui/card";
+import type { ActiveView } from "@/app/dashboard/page";
 
 interface ManagerDashboardProps {
   user: User;
@@ -24,6 +26,7 @@ interface ManagerDashboardProps {
   addAuditLogEntry: (
     entry: Omit<AuditLogEntry, "id" | "timestamp" | "impact">
   ) => void;
+  setActiveView: (view: ActiveView) => void;
 }
 
 export function ManagerDashboard({
@@ -32,6 +35,7 @@ export function ManagerDashboard({
   auditLog,
   addProject,
   updateProjectPermissions,
+  setActiveView,
 }: ManagerDashboardProps) {
   const [isWizardOpen, setIsWizardOpen] = useState(false);
 
@@ -71,7 +75,25 @@ export function ManagerDashboard({
             </div>
           )}
         </div>
-        <AuditLog log={auditLog} />
+        <Card>
+            <CardHeader>
+                <CardTitle>Recent Activity</CardTitle>
+                <CardDescription>A summary of recent administrative actions across all projects.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                    {auditLog.slice(0, 3).map(log => (
+                         <li key={log.id} className="flex justify-between">
+                            <span>{log.action}: "{log.details}" by {log.user.name}</span>
+                            <span>{new Date(log.timestamp).toLocaleDateString()}</span>
+                         </li>
+                    ))}
+                </ul>
+                <Button variant="outline" size="sm" className="mt-4" onClick={() => setActiveView('audit-log')}>
+                    View Full Audit Log <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+            </CardContent>
+        </Card>
       </div>
       <CreateProjectWizard
         isOpen={isWizardOpen}

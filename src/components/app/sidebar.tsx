@@ -126,6 +126,7 @@ const menuItems = [
         href: "#",
         icon: ScrollText,
         label: "Audit Log",
+        view: "audit-log",
         tooltip: "Track all administrative actions",
         roles: ["manager"],
       },

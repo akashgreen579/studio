@@ -19,9 +19,10 @@ import { useToast } from "@/hooks/use-toast";
 import { ProjectCreationConfirmation } from "@/components/app/project-creation-confirmation";
 import { Sidebar } from "@/components/app/sidebar";
 import { Home as PlaceholderHome } from "lucide-react";
+import { AuditLogScreen } from "@/components/app/audit-log-screen";
 
 export type Role = "manager" | "employee";
-export type ActiveView = "dashboard" | "project-settings" | "user-management" | null;
+export type ActiveView = "dashboard" | "project-settings" | "user-management" | "audit-log" | null;
 
 function DashboardContent() {
   const searchParams = useSearchParams();
@@ -141,6 +142,7 @@ function DashboardContent() {
     addProject,
     updateProjectPermissions,
     addAuditLogEntry,
+    setActiveView,
   };
   const employeeProps = { user: currentUser, projects };
 
@@ -155,6 +157,15 @@ function DashboardContent() {
       case 'user-management':
         return role === "manager" ? (
           <UserManagement />
+        ) : (
+          <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground rounded-lg border-2 border-dashed">
+            <h2 className="text-2xl font-semibold">Access Denied</h2>
+            <p>You do not have permission to view this page.</p>
+          </div>
+        );
+      case 'audit-log':
+        return role === "manager" ? (
+          <AuditLogScreen log={auditLog} />
         ) : (
           <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground rounded-lg border-2 border-dashed">
             <h2 className="text-2xl font-semibold">Access Denied</h2>
