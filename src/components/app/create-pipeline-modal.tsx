@@ -23,14 +23,14 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, Play, Clock, Tag, Globe, Monitor, Users, Repeat } from "lucide-react";
+import { Play, Clock, Tag, Globe, Monitor, Users, Repeat, Bell, Bookmark, CalendarIcon } from "lucide-react";
 import { type TestCase } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "../ui/checkbox";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { Calendar } from "../ui/calendar";
 
 interface CreatePipelineModalProps {
   isOpen: boolean;
@@ -38,12 +38,15 @@ interface CreatePipelineModalProps {
   selectedTestCases: TestCase[];
 }
 
+const browsers = ["Chrome", "Firefox", "Safari", "Edge"];
+
 export function CreatePipelineModal({ isOpen, setIsOpen, selectedTestCases }: CreatePipelineModalProps) {
     const { toast } = useToast();
     const [schedule, setSchedule] = useState<"now" | "later">("now");
     const [scheduledDate, setScheduledDate] = useState<Date | undefined>();
     const [tags, setTags] = useState<string[]>([]);
     const [currentTag, setCurrentTag] = useState("");
+    const [selectedBrowsers, setSelectedBrowsers] = useState<string[]>(["Chrome"]);
 
     const handleRunPipeline = () => {
         toast({
@@ -63,11 +66,17 @@ export function CreatePipelineModal({ isOpen, setIsOpen, selectedTestCases }: Cr
         }
     }
     
-    const browsers = ["Chrome", "Firefox", "Safari", "Edge"];
+    const toggleBrowser = (browser: string) => {
+        setSelectedBrowsers(prev => 
+            prev.includes(browser) 
+                ? prev.filter(b => b !== browser)
+                : [...prev, browser]
+        );
+    }
 
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogContent className="max-w-3xl">
+            <DialogContent className="max-w-4xl">
                 <DialogHeader>
                     <DialogTitle>Create New Execution Pipeline</DialogTitle>
                     <DialogDescription>
@@ -92,12 +101,16 @@ export function CreatePipelineModal({ isOpen, setIsOpen, selectedTestCases }: Cr
                         
                         <div className="space-y-3">
                              <Label className="flex items-center gap-2"><Monitor className="h-4 w-4"/> Browsers</Label>
-                             <div className="grid grid-cols-2 gap-2">
+                             <div className="flex flex-wrap gap-2">
                                 {browsers.map(browser => (
-                                    <div key={browser} className="flex items-center gap-2">
-                                        <Checkbox id={`browser-${browser}`} defaultChecked={browser === "Chrome"}/>
-                                        <Label htmlFor={`browser-${browser}`} className="font-normal">{browser}</Label>
-                                    </div>
+                                    <Button 
+                                        key={browser} 
+                                        variant={selectedBrowsers.includes(browser) ? "default" : "outline"}
+                                        onClick={() => toggleBrowser(browser)}
+                                        className="transition-transform transform active:scale-95"
+                                    >
+                                        {browser}
+                                    </Button>
                                 ))}
                              </div>
                         </div>
@@ -106,11 +119,11 @@ export function CreatePipelineModal({ isOpen, setIsOpen, selectedTestCases }: Cr
 
                          <div className="space-y-4">
                             <div className="flex items-center justify-between">
-                                <Label htmlFor="parallel-toggle" className="flex items-center gap-2"><Users className="h-4 w-4"/> Parallel Execution</Label>
+                                <Label htmlFor="parallel-toggle" className="flex items-center gap-2 cursor-pointer"><Users className="h-4 w-4"/> Parallel Execution</Label>
                                 <Switch id="parallel-toggle" defaultChecked/>
                             </div>
                              <div className="flex items-center justify-between">
-                                <Label htmlFor="retry-count" className="flex items-center gap-2"><Repeat className="h-4 w-4"/> Retry on Failure</Label>
+                                <Label htmlFor="retry-count" className="flex items-center gap-2 cursor-pointer"><Repeat className="h-4 w-4"/> Retry on Failure</Label>
                                 <Input id="retry-count" type="number" defaultValue={1} className="w-20"/>
                             </div>
                          </div>
@@ -132,14 +145,33 @@ export function CreatePipelineModal({ isOpen, setIsOpen, selectedTestCases }: Cr
                                 onKeyDown={handleAddTag}
                              />
                          </div>
+                         
+                         <Separator />
+
+                        <div className="space-y-4">
+                           <Label className="flex items-center gap-2"><Bell className="h-4 w-4"/> Notifications</Label>
+                            <div className="flex items-center space-x-2">
+                                <Checkbox id="notify-me" defaultChecked/>
+                                <Label htmlFor="notify-me" className="font-normal">Notify me on completion</Label>
+                            </div>
+                             <div className="flex items-center space-x-2">
+                                <Checkbox id="notify-channel"/>
+                                <Label htmlFor="notify-channel" className="font-normal">Post results to #qa-channel in Slack</Label>
+                            </div>
+                        </div>
+
 
                     </div>
                     {/* Right Column: Summary & Scheduling */}
-                    <div className="space-y-6 rounded-lg bg-muted/50 p-6">
-                        <div>
+                    <div className="space-y-6 rounded-lg bg-muted/50 p-6 flex flex-col">
+                        <div className="flex-grow">
                             <h3 className="font-semibold mb-2">Summary</h3>
                             <div className="p-4 rounded-md border bg-background">
                                 <p className="font-bold text-lg">You are about to run <span className="text-primary">{selectedTestCases.length}</span> automated test cases.</p>
+                                <div className="text-sm mt-2 text-muted-foreground flex justify-between">
+                                    <span>Est. Duration: ~{Math.ceil(selectedTestCases.length * 1.5)} mins</span>
+                                    <span>Parallel Slots: 4/8</span>
+                                </div>
                                 <ScrollArea className="h-24 mt-2">
                                     <ul className="text-sm text-muted-foreground list-disc pl-5">
                                         {selectedTestCases.map(tc => <li key={tc.id} className="truncate">{tc.id.toUpperCase()}: {tc.summary}</li>)}
@@ -191,6 +223,9 @@ export function CreatePipelineModal({ isOpen, setIsOpen, selectedTestCases }: Cr
                 </div>
 
                 <DialogFooter>
+                    <div className="flex-grow">
+                        <Button variant="ghost"><Bookmark className="mr-2 h-4 w-4"/>Save as Template</Button>
+                    </div>
                     <Button variant="outline" onClick={() => setIsOpen(false)}>Cancel</Button>
                     <Button onClick={handleRunPipeline}>
                         {schedule === 'now' ? 'Run Pipeline' : 'Schedule Pipeline'}
