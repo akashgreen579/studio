@@ -86,11 +86,7 @@ export function ProjectSummaryCard({
              <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={() => setIsPermissionsEditorOpen(true)}>
                     <Settings className="mr-2 h-4 w-4" />
-                    Permissions
-                </Button>
-                <Button variant="outline" size="sm">
-                    <Users className="mr-2 h-4 w-4" />
-                    Assign
+                    Manage
                 </Button>
             </div>
              <Button size="sm" variant="secondary">
