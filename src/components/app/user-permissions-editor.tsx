@@ -286,6 +286,12 @@ export function UserPermissionsEditor({ user: initialUser, projects }: UserPermi
                             </Card>
                         )
                     })}
+                     {projects.filter(p => p.members.some(m => m.id === user.id)).length === 0 && (
+                        <div className="text-center text-muted-foreground border-2 border-dashed rounded-lg p-8">
+                            <Users className="mx-auto h-8 w-8 mb-2" />
+                            <p>{user.name} is not currently assigned to any projects.</p>
+                        </div>
+                     )}
                 </div>
             </CardContent>
             <CardFooter className="flex justify-between items-center bg-muted/50 p-4 border-t">
@@ -301,5 +307,3 @@ export function UserPermissionsEditor({ user: initialUser, projects }: UserPermi
         </Card>
     );
 }
-
-    
