@@ -1,0 +1,24 @@
+{
+    "app": {
+        "name": "TestCraft AI"
+    },
+    "dashboard": {
+        "title": "Dashboard",
+        "manager_title": "Manager Dashboard",
+        "employee_title": "Employee Dashboard"
+    },
+    "buttons": {
+        "create_project": "Create New Project",
+        "trigger_pipeline": "Trigger Pipeline",
+        "open_testai_lab": "Open TestAI Lab",
+        "approve": "Approve",
+        "deny": "Deny"
+    },
+    "tooltips": {
+        "manager_only": "You do not have permission to perform this action."
+    },
+    "empty_states": {
+        "no_projects": "No projects created yet.",
+        "no_test_cases": "No test cases found. Select a module or adjust filters."
+    }
+}

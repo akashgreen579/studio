@@ -37,6 +37,14 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async rewrites() {
+    return [
+      {
+        source: '/microcopy.json',
+        destination: '/src/lib/microcopy.json',
+      },
+    ]
+  },
 };
 
 export default nextConfig;

@@ -4,48 +4,67 @@
 
 @layer base {
   :root {
-    --background: 240 10% 97%;
-    --foreground: 224 71% 4%;
-    --card: 240 10% 100%;
-    --card-foreground: 224 71% 4%;
-    --popover: 240 10% 100%;
-    --popover-foreground: 224 71% 4%;
-    --primary: 221 83% 53%;
+    /* TestCraft AI Design System - Light Theme */
+    --background: 220 20% 97%; /* Light Gray (#E8E8EA) */
+    --foreground: 225 25% 20%; /* Deep Blue Text */
+    
+    --card: 220 20% 100%;
+    --card-foreground: 225 25% 20%;
+    
+    --popover: 220 20% 100%;
+    --popover-foreground: 225 25% 20%;
+    
+    --primary: 225 35% 28%; /* Deep Blue (#293B5F) */
     --primary-foreground: 210 40% 98%;
-    --secondary: 240 5% 90%;
-    --secondary-foreground: 222 47% 11%;
-    --muted: 240 5% 90%;
-    --muted-foreground: 240 4% 46%;
-    --accent: 240 5% 90%;
-    --accent-foreground: 222 47% 11%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 6% 90%;
-    --input: 240 6% 90%;
-    --ring: 221 83% 53%;
-    --radius: 0.75rem; /* 12px */
+    
+    --secondary: 220 15% 91%;
+    --secondary-foreground: 225 25% 20%;
+    
+    --muted: 220 15% 91%;
+    --muted-foreground: 225 10% 45%;
+    
+    --accent: 265 48% 63%; /* Soft Violet (#845EC2) */
+    --accent-foreground: 210 40% 98%;
+    
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 210 40% 98%;
+    
+    --border: 220 15% 88%;
+    --input: 220 15% 88%;
+    --ring: 265 48% 63%;
+    
+    --radius: 0.75rem;
   }
  
   .dark {
-    --background: 222 47% 11%;
-    --foreground: 210 40% 98%;
-    --card: 222 47% 11%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222 47% 11%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 210 40% 98%;
-    --primary-foreground: 222 47% 11%;
-    --secondary: 217 33% 17%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 217 33% 17%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 63% 31%;
+    /* TestCraft AI Design System - Dark Theme */
+    --background: 225 25% 15%; 
+    --foreground: 220 20% 90%;
+    
+    --card: 225 25% 18%;
+    --card-foreground: 220 20% 90%;
+    
+    --popover: 225 25% 18%;
+    --popover-foreground: 220 20% 90%;
+    
+    --primary: 225 35% 55%; 
+    --primary-foreground: 220 20% 98%;
+    
+    --secondary: 225 25% 25%;
+    --secondary-foreground: 220 20% 90%;
+    
+    --muted: 225 25% 25%;
+    --muted-foreground: 225 10% 65%;
+    
+    --accent: 265 48% 63%;
+    --accent-foreground: 220 20% 98%;
+    
+    --destructive: 0 63% 45%;
     --destructive-foreground: 210 40% 98%;
-    --border: 217 33% 17%;
-    --input: 217 33% 17%;
-    --ring: 215 20% 65%;
+    
+    --border: 225 25% 30%;
+    --input: 225 25% 30%;
+    --ring: 265 48% 63%;
   }
 }
  
@@ -55,5 +74,6 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-sans), sans-serif;
   }
 }

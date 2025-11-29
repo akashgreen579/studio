@@ -25,6 +25,7 @@ import {
   TestTubeDiagonal,
   LogOut,
   UserCheck,
+  Palette,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Role, ActiveView } from "@/app/dashboard/page";
@@ -143,8 +144,15 @@ const menuItems = [
     ],
   },
   {
-    section: "OTHER",
+    section: "SYSTEM",
     items: [
+      {
+        href: "/design-system",
+        icon: Palette,
+        label: "Design System",
+        tooltip: "View the component and style guide",
+        roles: ["manager", "employee"],
+      },
       {
         href: "#",
         icon: Bell,
@@ -210,9 +218,11 @@ export function Sidebar({
                                 )}
                                 href={item.href}
                                 onClick={(e) => {
-                                  e.preventDefault();
-                                  if (item.view) {
+                                  if (item.href === "#" && item.view) {
+                                    e.preventDefault();
                                     onMenuClick(item.view as ActiveView);
+                                  } else if (item.href.startsWith('/')) {
+                                    router.push(item.href);
                                   }
                                 }}
                               >
