@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState, useMemo, useCallback, Suspense } from "react";
@@ -89,24 +88,45 @@ function DashboardContent() {
       setProjects((prevProjects) =>
         prevProjects.map((p) => {
           if (p.id === projectId) {
+            const updatedProject = {
+              ...p,
+              permissions: { ...p.permissions, ...newPermissions }, // Deep merge permissions
+              lastUpdated: new Date(),
+            };
+             // Add new members if they don't exist
+            const existingMemberIds = p.members.map(m => m.id);
+            const newMemberIds = Object.keys(newPermissions);
+            const membersToAdd = newMemberIds
+              .filter(id => !existingMemberIds.includes(id))
+              .map(id => allUsers.find(u => u.id === id))
+              .filter((u): u is User => !!u);
+            
+            if (membersToAdd.length > 0) {
+               updatedProject.members = [...p.members, ...membersToAdd];
+               membersToAdd.forEach(member => {
+                 addAuditLogEntry({
+                   user: currentUser,
+                   action: `Assigned member to "${p.name}"`,
+                   details: `${member.name} was added to the project.`,
+                 });
+               });
+            }
+            
+            // Remove members if they are no longer in permissions
+            const memberIdsInNewPerms = Object.keys(newPermissions);
+            updatedProject.members = updatedProject.members.filter(m => memberIdsInNewPerms.includes(m.id));
+
+
             addAuditLogEntry({
               user: currentUser,
               action: `Updated permissions for "${p.name}"`,
               details: `Changed permissions for project members.`,
             });
-            return {
-              ...p,
-              permissions: newPermissions,
-              lastUpdated: new Date(),
-            };
+            return updatedProject;
           }
           return p;
         })
       );
-      toast({
-        title: "Permissions Updated",
-        description: "Project permissions have been saved.",
-      });
     },
     [currentUser, addAuditLogEntry, toast]
   );
@@ -142,10 +162,8 @@ function DashboardContent() {
     user: currentUser,
     projects,
     auditLog,
-    addProject,
-    updateProjectPermissions,
-    addAuditLogEntry,
     setActiveView,
+    updateProjectPermissions,
   };
   const employeeProps = { user: currentUser, projects };
 

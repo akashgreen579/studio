@@ -53,10 +53,12 @@ export function PermissionsEditor({
   const { toast } = useToast();
 
   useEffect(() => {
-    setPermissions(project.permissions);
-    setMembers(project.members);
-    setPreviewUser("none");
-    setError(null);
+    if (isOpen) {
+      setPermissions(project.permissions);
+      setMembers(project.members);
+      setPreviewUser("none");
+      setError(null);
+    }
   }, [project, isOpen]);
 
   const availableUsers = useMemo(
@@ -104,11 +106,18 @@ export function PermissionsEditor({
   const handlePresetChange = (userId: string, presetKey: string) => {
     const preset = permissionPresets[presetKey];
     if (preset) {
-      if (userId === currentUser.id) return; // Prevent manager from demoting themselves
+      if (userId === currentUser.id && presetKey !== 'manager') { // Prevent manager from demoting themselves to a non-manager role
+        toast({
+            variant: "destructive",
+            title: "Action blocked",
+            description: "You cannot change your own role from Manager.",
+        });
+        return;
+      }
       setPermissions((prev) => ({ ...prev, [userId]: preset.permissions }));
       toast({
         title: `${preset.name} Preset Applied`,
-        description: `You can now tweak individual permissions for ${project.name}.`,
+        description: `You can now tweak individual permissions for ${members.find(m=>m.id === userId)?.name}.`,
       });
     }
   };
@@ -120,7 +129,14 @@ export function PermissionsEditor({
         return;
     }
     
-    updateProjectPermissions(project.id, permissions);
+    // Pass a combined object of permissions for both existing and new members
+    const updatedPermissions = members.reduce((acc, member) => {
+      acc[member.id] = permissions[member.id] || permissionPresets.tester.permissions;
+      return acc;
+    }, {} as Record<string, Partial<Permissions>>);
+
+    updateProjectPermissions(project.id, updatedPermissions);
+
     toast({
         title: `Permissions updated for ${project.name}`,
         description: "Audit entry recorded.",
@@ -181,7 +197,7 @@ export function PermissionsEditor({
                         </ScrollArea>
                     </PopoverContent>
                 </Popover>
-                <p className="text-xs text-muted-foreground">User not found? Try a different email or name. If they're new, sync with your organization's directory.</p>
+                <p className="text-xs text-muted-foreground">User not found? Add them via User Management or sync with your organization's directory.</p>
             </div>
             <div className="col-span-1">
                  <div className="flex items-center gap-2">
@@ -219,11 +235,11 @@ export function PermissionsEditor({
             <Table>
                 <TableHeader className="sticky top-0 bg-card z-10">
                     <TableRow>
-                        <TableHead className="w-[200px]">Team Member</TableHead>
+                        <TableHead className="w-[200px] sticky left-0 bg-card z-20">Team Member</TableHead>
                         {allPermissionKeys.map((key) => {
                             const { label, description } = permissionDescriptions[key];
                             return (
-                                <TableHead key={key} className="text-center">
+                                <TableHead key={key} className="text-center min-w-[120px]">
                                     <TooltipProvider delayDuration={100}>
                                         <Tooltip>
                                             <TooltipTrigger asChild>
@@ -240,13 +256,13 @@ export function PermissionsEditor({
                 <TableBody>
                     {members.map((member) => (
                         <TableRow key={member.id}>
-                            <TableCell className="font-medium sticky left-0 bg-card">
+                            <TableCell className="font-medium sticky left-0 bg-card z-10">
                                 {member.name} {member.id === currentUser.id && "(You)"}
                                 <div className="text-xs text-muted-foreground">
                                     <Select 
                                         onValueChange={(preset) => handlePresetChange(member.id, preset)} 
                                         value={Object.keys(permissionPresets).find(key => JSON.stringify(permissionPresets[key].permissions) === JSON.stringify(permissions[member.id])) || 'custom'}
-                                        disabled={member.id === currentUser.id || isPreviewing}
+                                        disabled={isPreviewing}
                                     >
                                         <SelectTrigger className="h-7 mt-1 text-xs">
                                             <SelectValue placeholder="Role" />
@@ -285,5 +301,3 @@ export function PermissionsEditor({
     </Dialog>
   );
 }
-
-    

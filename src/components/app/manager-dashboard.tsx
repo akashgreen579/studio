@@ -14,6 +14,10 @@ interface ManagerDashboardProps {
   projects: Project[];
   auditLog: AuditLogEntry[];
   setActiveView: (view: ActiveView) => void;
+  updateProjectPermissions: (
+    projectId: string,
+    permissions: Record<string, Partial<Permissions>>
+  ) => void;
 }
 
 const summaryCards = [
@@ -28,6 +32,7 @@ export function ManagerDashboard({
   projects,
   auditLog,
   setActiveView,
+  updateProjectPermissions,
 }: ManagerDashboardProps) {
 
   return (
@@ -59,64 +64,29 @@ export function ManagerDashboard({
             <Card>
                 <CardHeader>
                     <CardTitle>Projects Overview</CardTitle>
-                    <CardDescription>A summary of all active testing projects.</CardDescription>
+                    <CardDescription>A summary of all active testing projects you own or manage.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     {projects.length > 0 ? (
                         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                         {projects.map((project) => (
-                            <Card key={project.id} className="flex flex-col">
-                                <CardHeader>
-                                    <CardTitle>{project.name}</CardTitle>
-                                    <CardDescription className="h-10 line-clamp-2">{project.description}</CardDescription>
-                                </CardHeader>
-                                <CardContent className="flex-grow">
-                                    <div className="flex -space-x-2 overflow-hidden">
-                                        {project.members.slice(0, 5).map(member => (
-                                            <div key={member.id} className="h-8 w-8 rounded-full border-2 border-background bg-muted text-xs font-medium flex items-center justify-center">
-                                                {member.name.charAt(0)}
-                                            </div>
-                                        ))}
-                                        {project.members.length > 5 && (
-                                            <div className="h-8 w-8 rounded-full flex items-center justify-center bg-muted text-xs font-medium border-2 border-background">
-                                                +{project.members.length - 5}
-                                            </div>
-                                        )}
-                                    </div>
-                                </CardContent>
-                                <CardContent>
-                                    <Button variant="outline" size="sm" onClick={() => setActiveView('project-settings')}>
-                                        Manage Project
-                                    </Button>
-                                </CardContent>
-                            </Card>
+                            <ProjectSummaryCard
+                                key={project.id}
+                                project={project}
+                                currentUser={user}
+                                updateProjectPermissions={updateProjectPermissions}
+                             />
                         ))}
                         </div>
                     ) : (
-                        <div className="text-center py-12">
-                            <p className="text-muted-foreground">No projects created yet.</p>
+                        <div className="text-center py-12 px-6 border-2 border-dashed rounded-lg">
+                            <h3 className="text-lg font-medium">No Projects Found</h3>
+                            <p className="mt-1 text-sm text-muted-foreground">
+                               Get started by creating a new project.
+                            </p>
+                             <Button variant="link" className="mt-2" onClick={() => setActiveView('project-settings')}>Create your first project</Button>
                         </div>
                     )}
-                </CardContent>
-            </Card>
-
-            <Card>
-                <CardHeader>
-                    <CardTitle>Recent Activity</CardTitle>
-                    <CardDescription>A summary of recent administrative actions across all projects.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <ul className="space-y-2 text-sm text-muted-foreground">
-                        {auditLog.slice(0, 3).map(log => (
-                            <li key={log.id} className="flex justify-between">
-                                <span>{log.action}: "{log.details}" by {log.user.name}</span>
-                                <span>{new Date(log.timestamp).toLocaleDateString()}</span>
-                            </li>
-                        ))}
-                    </ul>
-                    <Button variant="outline" size="sm" className="mt-4" onClick={() => setActiveView('audit-log')}>
-                        View Full Audit Log <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
                 </CardContent>
             </Card>
         </div>
