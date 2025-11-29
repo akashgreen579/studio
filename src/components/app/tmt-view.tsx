@@ -15,7 +15,7 @@ import {
   MoreHorizontal,
   Star
 } from "lucide-react";
-import { testCaseHierarchy, testCases as allTestCases } from "@/lib/data";
+import { testCaseHierarchy, testCases as allTestCases, type TestCase } from "@/lib/data";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -36,6 +36,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { AutomationWorkflowModal } from "./automation-workflow-modal";
 
 interface HierarchyItem {
   id: string;
@@ -102,6 +103,13 @@ const TreeItem = ({ item, level, onSelect, selectedId }: { item: HierarchyItem, 
 export function TMTView() {
     const [selectedId, setSelectedId] = useState<string | null>('epic-1');
     const [selectedType, setSelectedType] = useState<HierarchyItem['type']>('epic');
+    const [isWorkflowModalOpen, setWorkflowModalOpen] = useState(false);
+    const [selectedTestCase, setSelectedTestCase] = useState<TestCase | null>(null);
+
+    const handleAutomateClick = (testCase: TestCase) => {
+      setSelectedTestCase(testCase);
+      setWorkflowModalOpen(true);
+    };
 
     const handleSelect = (id: string, type: HierarchyItem['type']) => {
         setSelectedId(id);
@@ -129,6 +137,7 @@ export function TMTView() {
     }, [selectedId, selectedType]);
 
     return (
+      <>
         <div className="grid grid-cols-1 md:grid-cols-[320px_1fr] gap-6 h-full">
             {/* Left Panel */}
             <div className="border-r pr-6">
@@ -198,7 +207,7 @@ export function TMTView() {
                                     </TableCell>
                                     <TableCell>{tc.assignee}</TableCell>
                                     <TableCell className="text-right">
-                                        <Button variant="default" size="sm">Automate</Button>
+                                        <Button variant="default" size="sm" onClick={() => handleAutomateClick(tc)}>Automate</Button>
                                     </TableCell>
                                 </TableRow>
                             ))}
@@ -216,5 +225,13 @@ export function TMTView() {
                  )}
             </div>
         </div>
+        {selectedTestCase && (
+            <AutomationWorkflowModal 
+                isOpen={isWorkflowModalOpen}
+                setIsOpen={setWorkflowModalOpen}
+                testCase={selectedTestCase}
+            />
+        )}
+      </>
     );
 }
