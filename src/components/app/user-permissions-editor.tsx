@@ -55,7 +55,6 @@ export function UserPermissionsEditor({ user: initialUser, projects }: UserPermi
             [projectId]: {
                 ...prev[projectId],
                 [permissionKey]: value,
-                // Dependency logic: If automating, must be able to view.
                 ...(permissionKey === 'automateTestCases' && value && { viewAssignedProjects: true }),
             }
         }));
@@ -70,7 +69,7 @@ export function UserPermissionsEditor({ user: initialUser, projects }: UserPermi
             }));
             toast({
                 title: `${preset.name} Preset Applied`,
-                description: `You can now tweak individual permissions for ${project.name}.`,
+                description: `You may tweak individual permissions for this project.`,
             });
         }
     };
@@ -80,8 +79,8 @@ export function UserPermissionsEditor({ user: initialUser, projects }: UserPermi
         console.log("Saving new role:", user.role);
         console.log("Saving new permissions:", projectPermissions);
         toast({
-            title: "Permissions Saved",
-            description: `Permissions for ${user.name} have been updated.`,
+            title: "Permissions updated for " + user.name,
+            description: "Audit entry recorded.",
         });
     };
     
@@ -111,7 +110,7 @@ export function UserPermissionsEditor({ user: initialUser, projects }: UserPermi
         return categories;
     }, []);
 
-    const userIsManager = user.role === 'manager';
+    const userIsManager = user.role === 'manager' && !previewAsEmployee;
 
     if (previewAsEmployee) {
         return (
@@ -119,8 +118,8 @@ export function UserPermissionsEditor({ user: initialUser, projects }: UserPermi
                 <CardHeader>
                     <div className="flex justify-between items-center">
                         <div>
-                            <CardTitle>Previewing as {user.name}</CardTitle>
-                            <CardDescription>This is a read-only view of what an employee can see.</CardDescription>
+                            <CardTitle>Preview UI as: Employee</CardTitle>
+                            <CardDescription>This is a read-only view of what {user.name} can see and do.</CardDescription>
                         </div>
                         <div className="flex items-center space-x-2">
                             <Label htmlFor="preview-toggle">Preview as Employee</Label>
@@ -135,7 +134,7 @@ export function UserPermissionsEditor({ user: initialUser, projects }: UserPermi
                         <AlertDescription>
                            This is how {user.name} would see their permissions. To make changes, an employee would need to request access, and a manager would need to disable this preview toggle.
                            <div className="mt-4">
-                               <Button variant="outline" disabled>Request Access Change</Button>
+                               <Button variant="outline">Request Access Change</Button>
                            </div>
                         </AlertDescription>
                     </Alert>
@@ -171,7 +170,7 @@ export function UserPermissionsEditor({ user: initialUser, projects }: UserPermi
                     </div>
                     {user.role === 'manager' && (
                         <div className="flex items-center space-x-2">
-                            <Label htmlFor="preview-toggle">Preview as Employee</Label>
+                            <Label htmlFor="preview-toggle">Preview UI as: Employee</Label>
                             <Switch id="preview-toggle" checked={previewAsEmployee} onCheckedChange={setPreviewAsEmployee} />
                         </div>
                     )}
@@ -273,6 +272,7 @@ export function UserPermissionsEditor({ user: initialUser, projects }: UserPermi
                                                                     <TooltipContent>
                                                                         <p className="max-w-xs">{description}</p>
                                                                         {isDisabled && <p className="text-amber-400 mt-2">Managers have this permission by default.</p>}
+                                                                        {key === 'automateTestCases' && !isChecked && effectivePermissions['viewAssignedProjects'] && <p className="text-amber-400 mt-2">This permission requires "View Projects". Select 'Auto-add' to include it.</p>}
                                                                     </TooltipContent>
                                                                 </Tooltip>
                                                             </TooltipProvider>

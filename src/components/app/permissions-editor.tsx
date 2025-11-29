@@ -29,6 +29,7 @@ import { allUsers, permissionPresets, permissionDescriptions } from "@/lib/data"
 import { Label } from "../ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { useToast } from "@/hooks/use-toast";
 
 interface PermissionsEditorProps {
   isOpen: boolean;
@@ -49,11 +50,13 @@ export function PermissionsEditor({
   const [members, setMembers] = useState<User[]>(project.members);
   const [previewUser, setPreviewUser] = useState<string>("none");
   const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     setPermissions(project.permissions);
     setMembers(project.members);
     setPreviewUser("none");
+    setError(null);
   }, [project, isOpen]);
 
   const availableUsers = useMemo(
@@ -87,7 +90,7 @@ export function PermissionsEditor({
     setError(null);
     const ownerCount = members.filter(m => permissions[m.id]?.approveMergePRs).length;
     if (permissionKey === 'approveMergePRs' && ownerCount === 1 && permissions[userId]?.approveMergePRs && !value) {
-        setError("At least one owner (with Approve/Merge permission) is required.");
+        setError("Action blocked: at least one project manager is required.");
         setTimeout(() => setError(null), 4000);
         return;
     }
@@ -103,15 +106,25 @@ export function PermissionsEditor({
     if (preset) {
       if (userId === currentUser.id) return; // Prevent manager from demoting themselves
       setPermissions((prev) => ({ ...prev, [userId]: preset.permissions }));
+      toast({
+        title: `${preset.name} Preset Applied`,
+        description: `You can now tweak individual permissions for ${project.name}.`,
+      });
     }
   };
 
   const handleSave = () => {
-    // This is a temporary update. In a real app, we'd update the project object.
-    const updatedProject = { ...project, members, permissions }; 
-    console.log("Updated Project State:", updatedProject)
+    const ownerCount = members.filter(m => permissions[m.id]?.approveMergePRs).length;
+    if (ownerCount === 0) {
+        setError("Action blocked: at least one project manager is required.");
+        return;
+    }
     
     updateProjectPermissions(project.id, permissions);
+    toast({
+        title: `Permissions updated for ${project.name}`,
+        description: "Audit entry recorded.",
+    });
     setIsOpen(false);
   };
 
@@ -173,16 +186,16 @@ export function PermissionsEditor({
             <div className="col-span-1">
                  <div className="flex items-center gap-2">
                     <Eye className="h-5 w-5 text-muted-foreground"/>
-                    <Label htmlFor="preview-user">Preview as:</Label>
+                    <Label htmlFor="preview-user">Preview UI as:</Label>
                 </div>
                 <Select value={previewUser} onValueChange={setPreviewUser}>
                     <SelectTrigger id="preview-user" className="w-full mt-2">
                         <SelectValue placeholder="Select a user to preview" />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="none">Yourself (Manager)</SelectItem>
+                        <SelectItem value="none">Manager</SelectItem>
                         {members.filter(m => m.id !== currentUser.id).map(member => (
-                            <SelectItem key={member.id} value={member.id}>{member.name}</SelectItem>
+                            <SelectItem key={member.id} value={member.id}>{member.name} (Employee)</SelectItem>
                         ))}
                     </SelectContent>
                 </Select>
@@ -272,3 +285,5 @@ export function PermissionsEditor({
     </Dialog>
   );
 }
+
+    

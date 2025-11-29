@@ -133,10 +133,10 @@ export function CreateProjectWizard({
     permissionKey: keyof Permissions,
     value: boolean
   ) => {
-    const isLastOwner = selectedMembers.filter(m => permissions[m.id]?.approveMergePRs).length === 1;
-    if (permissionKey === 'approveMergePRs' && isLastOwner && permissions[userId]?.approveMergePRs && !value) {
-        form.setError("root", { type: "custom", message: "At least one project owner (with Approve/Merge permission) is required." });
-        setTimeout(() => form.clearErrors("root"), 3000);
+    const ownerCount = selectedMembers.filter(m => permissions[m.id]?.approveMergePRs).length;
+    if (permissionKey === 'approveMergePRs' && ownerCount === 1 && permissions[userId]?.approveMergePRs && !value) {
+        form.setError("root", { type: "custom", message: "Action blocked: at least one project manager is required." });
+        setTimeout(() => form.clearErrors("root"), 4000);
         return;
     }
     setPermissions((prev) => ({
@@ -165,6 +165,11 @@ export function CreateProjectWizard({
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     if(selectedMembers.length === 0) {
       form.setError("root", { type: "custom", message: "Please add at least one team member." });
+      return;
+    }
+    const ownerCount = selectedMembers.filter(m => permissions[m.id]?.approveMergePRs).length;
+    if (ownerCount === 0) {
+      form.setError("root", { type: "custom", message: "Action blocked: at least one project manager is required." });
       return;
     }
     
@@ -473,7 +478,7 @@ export function CreateProjectWizard({
                                         </Select>
                                     </div>
                                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                        {allPermissionKeys.filter(key => permissionDescriptions[key].category === 'Project').map((key) => {
+                                        {allPermissionKeys.filter(key => permissionDescriptions[key].category === 'Project' || permissionDescriptions[key].category === 'Management').map((key) => {
                                             const {label, icon: Icon, description} = permissionDescriptions[key];
                                             return (
                                                 <TooltipProvider key={key} delayDuration={100}>
@@ -553,3 +558,5 @@ export function CreateProjectWizard({
     </Dialog>
   );
 }
+
+    
