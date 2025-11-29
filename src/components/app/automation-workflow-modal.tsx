@@ -7,7 +7,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Button } from "../ui/button";
 import { Loader, Check, AlertTriangle, FileCode, GitBranch, Share2, Bot, GitMerge, FolderPlus, FolderCheck, FolderSearch, BrainCircuit, Wand, TestTube, FileText, BotMessageSquare } from "lucide-react";
 import { type TestCase } from "@/lib/data";
-import { Separator } from "../ui/separator";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { useToast } from "@/hooks/use-toast";
 
@@ -205,12 +204,12 @@ const WorkspacePrepAnimation = ({ onComplete }: { onComplete: () => void }) => {
     )
 }
 
-type WorkflowStage = "merge" | "prepareWorkspace";
+type WorkflowStage = "validation" | "workspacePrep";
 
 export function AutomationWorkflowModal({ isOpen, setIsOpen, testCase }: AutomationWorkflowModalProps) {
     const { toast } = useToast();
     const [currentStepIndex, setCurrentStepIndex] = useState(0);
-    const [workflowStage, setWorkflowStage] = useState<WorkflowStage>("merge");
+    const [workflowStage, setWorkflowStage] = useState<WorkflowStage>("validation");
     const [steps, setSteps] = useState<Step[]>([
         { name: "Initialize", status: "pending", description: "Connecting to Git repository..." },
         { name: "Validate Folder Structure", status: "pending", description: "Checking for existing automation folders..." },
@@ -225,7 +224,7 @@ export function AutomationWorkflowModal({ isOpen, setIsOpen, testCase }: Automat
             setTimeout(() => {
                 setCurrentStepIndex(0);
                 setSteps(prev => prev.map(s => ({ ...s, status: 'pending', component: undefined })));
-                setWorkflowStage("merge");
+                setWorkflowStage("validation");
             }, 300);
             return;
         }
@@ -297,7 +296,7 @@ export function AutomationWorkflowModal({ isOpen, setIsOpen, testCase }: Automat
                     finalSteps[2].description = "Baseline script merged. Preparing workspace...";
                     return finalSteps;
                 });
-                setWorkflowStage("prepareWorkspace");
+                setWorkflowStage("workspacePrep");
             }}/>;
             return newSteps;
         });
@@ -319,11 +318,11 @@ export function AutomationWorkflowModal({ isOpen, setIsOpen, testCase }: Automat
 
         <div className="py-4 space-y-6">
             <AnimatePresence mode="wait">
-                {workflowStage === 'merge' ? (
-                     <motion.div key="merge-steps">
+                {workflowStage === 'validation' ? (
+                     <motion.div key="validation-steps" className="space-y-6">
                         {steps.map((step, index) => (
-                            <div key={step.name} className="space-y-6">
-                                <div className="flex items-center gap-4">
+                            <div key={step.name} className="space-y-4">
+                                <div className="flex items-start gap-4">
                                     <StatusIcon status={step.status} />
                                     <div className="flex-1">
                                         <h4 className={`font-medium ${currentStepIndex < index && 'text-muted-foreground'}`}>{step.name}</h4>
@@ -354,12 +353,19 @@ export function AutomationWorkflowModal({ isOpen, setIsOpen, testCase }: Automat
             </AnimatePresence>
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={handleClose}>
-            Cancel
-          </Button>
+        <DialogFooter className="justify-between">
+          <div>
+            <Button variant="ghost">Run in Background</Button>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={handleClose}>
+                Cancel
+            </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 }
+
+    
