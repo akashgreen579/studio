@@ -228,23 +228,6 @@ export function Sidebar({
                 <p className="text-xs text-muted-foreground">{user.email}</p>
             </div>
         </div>
-         <Separator className="my-4"/>
-         <Select
-            value={currentRole}
-            onValueChange={(value) => onRoleChange(value as Role)}
-          >
-            <SelectTrigger className="w-full">
-                <div className="flex items-center gap-2 text-sm">
-                    <span>Viewing as:</span>
-                    <span className="font-semibold">{currentRole.charAt(0).toUpperCase() + currentRole.slice(1)}</span>
-                </div>
-              <SelectValue/>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="manager">Manager</SelectItem>
-              <SelectItem value="employee">Employee</SelectItem>
-            </SelectContent>
-          </Select>
       </div>
     </aside>
   );
