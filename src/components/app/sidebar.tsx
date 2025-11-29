@@ -57,6 +57,7 @@ const menuItems = [
         href: "#",
         icon: FileCheck,
         label: "TMT View",
+        view: "tmt-view",
         tooltip: "Test case selection & filtering (Phase 3)",
         roles: ["manager", "employee"],
       },
