@@ -17,6 +17,7 @@ import {
   FolderPlus,
   RefreshCw,
   Shield,
+  PlayCircle,
 } from "lucide-react";
 import { testCaseHierarchy, testCases as allTestCases, type TestCase, type User } from "@/lib/data";
 import { Input } from "@/components/ui/input";
@@ -41,6 +42,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { AutomationWorkflowModal } from "./automation-workflow-modal";
+import { CreatePipelineModal } from "./create-pipeline-modal";
 
 interface HierarchyItem {
   id: string;
@@ -112,7 +114,9 @@ export function TMTView({ user }: TMTViewProps) {
     const [selectedId, setSelectedId] = useState<string | null>('epic-1');
     const [selectedType, setSelectedType] = useState<HierarchyItem['type']>('epic');
     const [isWorkflowModalOpen, setWorkflowModalOpen] = useState(false);
+    const [isPipelineModalOpen, setPipelineModalOpen] = useState(false);
     const [selectedTestCase, setSelectedTestCase] = useState<TestCase | null>(null);
+    const [selectedTestCases, setSelectedTestCases] = useState<Set<string>>(new Set());
 
     const isManager = user.role === 'manager';
 
@@ -145,6 +149,30 @@ export function TMTView({ user }: TMTViewProps) {
                 return allTestCases;
         }
     }, [selectedId, selectedType]);
+
+    const handleTestCaseSelection = (testCaseId: string, isSelected: boolean) => {
+      setSelectedTestCases(prev => {
+        const newSet = new Set(prev);
+        if (isSelected) {
+          newSet.add(testCaseId);
+        } else {
+          newSet.delete(testCaseId);
+        }
+        return newSet;
+      });
+    };
+
+    const handleSelectAll = (isSelected: boolean) => {
+      if (isSelected) {
+        setSelectedTestCases(new Set(filteredTestCases.map(tc => tc.id)));
+      } else {
+        setSelectedTestCases(new Set());
+      }
+    };
+
+    const selectedTestCasesDetails = useMemo(() => {
+        return allTestCases.filter(tc => selectedTestCases.has(tc.id));
+    }, [selectedTestCases]);
 
     const ManagerActions = () => (
       <div className="flex items-center gap-2">
@@ -208,7 +236,13 @@ export function TMTView({ user }: TMTViewProps) {
                         </div>
                         <Button variant="outline"><Filter className="mr-2 h-4 w-4"/> Filters</Button>
                         <Button variant="outline" className="text-amber-600"><Star className="mr-2 h-4 w-4"/> Saved Filters</Button>
-                        <Button>Query Builder</Button>
+                        <Button
+                          disabled={selectedTestCases.size === 0}
+                          onClick={() => setPipelineModalOpen(true)}
+                        >
+                            <PlayCircle className="mr-2 h-4 w-4"/>
+                            Create Pipeline ({selectedTestCases.size})
+                        </Button>
                     </div>
                     <div className="flex gap-2 items-center">
                         <span className="text-sm text-muted-foreground">Active filters:</span>
@@ -224,7 +258,13 @@ export function TMTView({ user }: TMTViewProps) {
                     <Table>
                         <TableHeader>
                         <TableRow>
-                            <TableHead className="w-[50px]"><Checkbox /></TableHead>
+                            <TableHead className="w-[50px]">
+                              <Checkbox 
+                                onCheckedChange={(checked) => handleSelectAll(!!checked)}
+                                checked={filteredTestCases.length > 0 && selectedTestCases.size === filteredTestCases.length}
+                                indeterminate={selectedTestCases.size > 0 && selectedTestCases.size < filteredTestCases.length}
+                              />
+                            </TableHead>
                             <TableHead className="w-[100px]">ID</TableHead>
                             <TableHead>Summary</TableHead>
                             <TableHead>Priority</TableHead>
@@ -240,8 +280,13 @@ export function TMTView({ user }: TMTViewProps) {
                         </TableHeader>
                         <TableBody>
                             {filteredTestCases.map(tc => (
-                                <TableRow key={tc.id}>
-                                    <TableCell><Checkbox /></TableCell>
+                                <TableRow key={tc.id} data-state={selectedTestCases.has(tc.id) && "selected"}>
+                                    <TableCell>
+                                      <Checkbox 
+                                        checked={selectedTestCases.has(tc.id)}
+                                        onCheckedChange={(checked) => handleTestCaseSelection(tc.id, !!checked)}
+                                      />
+                                    </TableCell>
                                     <TableCell className="font-medium">{tc.id.toUpperCase()}</TableCell>
                                     <TableCell>{tc.summary}</TableCell>
                                     <TableCell>
@@ -280,6 +325,11 @@ export function TMTView({ user }: TMTViewProps) {
                 testCase={selectedTestCase}
             />
         )}
+         <CreatePipelineModal
+            isOpen={isPipelineModalOpen}
+            setIsOpen={setPipelineModalOpen}
+            selectedTestCases={selectedTestCasesDetails}
+        />
       </>
     );
 }
