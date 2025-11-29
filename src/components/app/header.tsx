@@ -23,35 +23,11 @@ interface HeaderProps {
 export function Header({ currentRole, onRoleChange, user }: HeaderProps) {
   return (
     <header className={cn(
-        "sticky top-0 z-30 flex h-16 items-center gap-4 border-b  px-4 md:px-6 transition-colors",
-        currentRole === 'manager' ? "bg-card" : "bg-card"
+        "sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6 transition-colors"
     )}>
-      <div className="flex items-center gap-2">
-        <TestTubeDiagonal className="h-6 w-6 text-primary" />
-        <h1 className="text-lg font-bold text-foreground">TestCraft AI</h1>
-      </div>
+      {/* Search, Breadcrumbs, etc. can go here */}
       <div className="ml-auto flex items-center gap-4">
-        <div className="flex items-center gap-2">
-          <span className="hidden text-sm text-muted-foreground sm:inline">
-            Viewing as:
-          </span>
-          <Select
-            value={currentRole}
-            onValueChange={(value) => onRoleChange(value as Role)}
-          >
-            <SelectTrigger className="w-[140px]">
-              <SelectValue placeholder="Select a role" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="manager">Manager</SelectItem>
-              <SelectItem value="employee">Employee</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <Avatar className="h-9 w-9">
-          <AvatarImage src={user.avatar} alt={user.name} data-ai-hint="person face" />
-          <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
-        </Avatar>
+        <p className="text-sm">Welcome back, <span className="font-semibold">{user.name}</span>!</p>
       </div>
     </header>
   );

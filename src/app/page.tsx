@@ -13,6 +13,7 @@ import {
 import type { User, Project, AuditLogEntry, Permissions } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
 import { ProjectCreationConfirmation } from "@/components/app/project-creation-confirmation";
+import { Sidebar } from "@/components/app/sidebar";
 
 export type Role = "manager" | "employee";
 
@@ -94,6 +95,16 @@ export default function Home() {
     },
     [currentUser, addAuditLogEntry, toast]
   );
+  
+  const handleRoleChange = (newRole: Role) => {
+    setRole(newRole);
+    const newUser = allUsers.find((u) => u.role === newRole)!;
+    toast({
+      title: "Switched Role",
+      description: `You are now viewing the dashboard as ${newUser.name} (${newRole}).`,
+    });
+  };
+
 
   if (lastCreatedProject) {
     return (
@@ -115,26 +126,26 @@ export default function Home() {
   const employeeProps = { user: currentUser, projects };
 
   return (
-    <div className="flex min-h-screen w-full flex-col bg-background font-body">
-      <Header
+    <div className="flex min-h-screen w-full flex-col bg-muted/40 font-body">
+      <Sidebar
         currentRole={role}
-        onRoleChange={(newRole) => {
-          setRole(newRole);
-          const newUser = allUsers.find((u) => u.role === newRole)!;
-          toast({
-            title: "Switched Role",
-            description: `You are now viewing the dashboard as ${newUser.name} (${newRole}).`,
-          });
-        }}
+        onRoleChange={handleRoleChange}
         user={currentUser}
       />
-      <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-        {role === "manager" ? (
-          <ManagerDashboard {...managerProps} />
-        ) : (
-          <EmployeeDashboard {...employeeProps} />
-        )}
-      </main>
+      <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
+        <Header
+          currentRole={role}
+          onRoleChange={handleRoleChange}
+          user={currentUser}
+        />
+        <main className="flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8 grid">
+          {role === "manager" ? (
+            <ManagerDashboard {...managerProps} />
+          ) : (
+            <EmployeeDashboard {...employeeProps} />
+          )}
+        </main>
+      </div>
     </div>
   );
 }
