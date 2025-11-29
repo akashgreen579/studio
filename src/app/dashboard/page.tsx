@@ -20,7 +20,7 @@ import { Sidebar } from "@/components/app/sidebar";
 import { Home as PlaceholderHome } from "lucide-react";
 
 export type Role = "manager" | "employee";
-export type ActiveView = "dashboard" | null;
+export type ActiveView = "dashboard" | "project-settings" | null;
 
 function DashboardContent() {
   const searchParams = useSearchParams();
@@ -155,7 +155,7 @@ function DashboardContent() {
       <div className="flex flex-1 flex-col sm:gap-4 sm:py-4 sm:pl-64">
         <Header user={currentUser} />
         <main className="flex-1 grid gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
-          {activeView === 'dashboard' ? (
+          {activeView === 'project-settings' ? (
             role === "manager" ? (
               <ManagerDashboard {...managerProps} />
             ) : (

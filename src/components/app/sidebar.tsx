@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import Link from "next/link";
@@ -103,6 +104,7 @@ const menuItems = [
         href: "#",
         icon: Settings,
         label: "Project Settings",
+        view: "project-settings",
         tooltip: "Framework Scaffold + TMT Integration (Phase 1 & 2)",
         roles: ["manager"],
       },
