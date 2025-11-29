@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import type { User, Project, Permissions } from "@/lib/data";
+import type { User, Project, Permissions, Role } from "@/lib/data";
 import { permissionPresets, getEffectivePermissions, permissionDescriptions, allUsers } from "@/lib/data";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
