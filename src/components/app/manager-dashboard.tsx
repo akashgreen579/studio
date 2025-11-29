@@ -38,7 +38,7 @@ export function ManagerDashboard({
   return (
     <>
       <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold tracking-tight">Manager Dashboard</h2>
+        <h1 className="text-2xl font-semibold">Manager Dashboard</h1>
         <TooltipProvider>
             <Tooltip>
                 <TooltipTrigger asChild>
@@ -53,22 +53,19 @@ export function ManagerDashboard({
             </Tooltip>
         </TooltipProvider>
       </div>
-      <div className="grid gap-8">
-        <div>
-          <h3 className="text-xl font-semibold mb-4">Your Managed Projects</h3>
+      <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
+        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {projects.length > 0 ? (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {projects.map((project) => (
-                <ProjectSummaryCard
-                  key={project.id}
-                  project={project}
-                  currentUser={user}
-                  updateProjectPermissions={updateProjectPermissions}
-                />
-              ))}
-            </div>
+            projects.map((project) => (
+              <ProjectSummaryCard
+                key={project.id}
+                project={project}
+                currentUser={user}
+                updateProjectPermissions={updateProjectPermissions}
+              />
+            ))
           ) : (
-             <div className="text-center py-12 px-6 border-2 border-dashed rounded-lg">
+             <div className="col-span-full text-center py-12 px-6 border-2 border-dashed rounded-lg">
                 <p className="text-muted-foreground">No projects created yet.</p>
                 <Button variant="link" className="mt-2" onClick={() => setIsWizardOpen(true)}>Create your first project</Button>
             </div>

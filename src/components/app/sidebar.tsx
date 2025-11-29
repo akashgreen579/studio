@@ -133,6 +133,18 @@ const menuItems = [
       },
     ],
   },
+  {
+    section: "OTHER",
+    items: [
+      {
+        href: "#",
+        icon: Bell,
+        label: "Notifications",
+        tooltip: "View recent notifications",
+        roles: ["manager", "employee"],
+      },
+    ],
+  }
 ];
 
 export function Sidebar({
@@ -166,11 +178,9 @@ export function Sidebar({
                 (section.roles === undefined ||
                   section.roles.includes(currentRole)) && (
                   <div key={section.section} className="py-2">
-                    {section.section !== "MAIN" && (
-                      <h3 className="mb-2 px-4 text-xs font-semibold uppercase text-muted-foreground">
-                        {section.section}
-                      </h3>
-                    )}
+                    <h3 className="mb-2 px-4 text-xs font-semibold uppercase text-muted-foreground tracking-wider">
+                      {section.section}
+                    </h3>
                     {section.items.map(
                       (item) =>
                         item.roles.includes(currentRole) && (
@@ -180,7 +190,7 @@ export function Sidebar({
                                 className={cn(
                                   "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary",
                                   {
-                                    "bg-muted text-primary": isActive(item),
+                                    "bg-muted text-primary font-semibold": isActive(item),
                                   }
                                 )}
                                 href={item.href}

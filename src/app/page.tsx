@@ -69,7 +69,7 @@ export default function Home() {
       });
 
       setLastCreatedProject(newProject);
-      setActiveView('dashboard');
+      setActiveView(null);
     },
     [projects.length, currentUser, addAuditLogEntry]
   );
@@ -103,6 +103,7 @@ export default function Home() {
   
   const handleRoleChange = (newRole: Role) => {
     setRole(newRole);
+    setActiveView(null);
     const newUser = allUsers.find((u) => u.role === newRole)!;
     toast({
       title: "Switched Role",
@@ -115,7 +116,7 @@ export default function Home() {
   };
 
 
-  if (lastCreatedProject && activeView !== 'dashboard') {
+  if (lastCreatedProject && activeView === null) {
     return (
       <ProjectCreationConfirmation
         project={lastCreatedProject}
@@ -138,7 +139,7 @@ export default function Home() {
   const employeeProps = { user: currentUser, projects };
 
   return (
-    <div className="flex min-h-screen w-full bg-muted/40 font-body">
+    <div className="flex min-h-screen w-full bg-muted/40">
       <Sidebar
         currentRole={role}
         onRoleChange={handleRoleChange}
@@ -147,12 +148,8 @@ export default function Home() {
         onMenuClick={handleMenuClick}
       />
       <div className="flex flex-1 flex-col sm:gap-4 sm:py-4 sm:pl-64">
-        <Header
-          currentRole={role}
-          onRoleChange={handleRoleChange}
-          user={currentUser}
-        />
-        <main className="flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8 grid">
+        <Header user={currentUser} />
+        <main className="flex-1 grid gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
           {activeView === 'dashboard' ? (
             role === "manager" ? (
               <ManagerDashboard {...managerProps} />
@@ -160,10 +157,10 @@ export default function Home() {
               <EmployeeDashboard {...employeeProps} />
             )
           ) : (
-             <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
+             <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground rounded-lg border-2 border-dashed">
                 <PlaceholderHome className="h-16 w-16 mb-4"/>
                 <h2 className="text-2xl font-semibold">Welcome to TestCraft AI</h2>
-                <p>Select an item from the menu to get started.</p>
+                <p>Select an item from the sidebar to get started.</p>
             </div>
           )}
         </main>
