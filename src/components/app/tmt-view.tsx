@@ -165,7 +165,7 @@ export function TMTView({ user }: TMTViewProps) {
     const [isRefreshing, setIsRefreshing] = useState(false);
     const { toast } = useToast();
 
-    const permissions = getEffectivePermissions(user.id);
+    const permissions = getEffectivePermissions(user);
     const isManager = user.role === 'manager';
 
     const handleAutomateClick = (testCase: TestCase) => {
@@ -566,13 +566,23 @@ export function TMTView({ user }: TMTViewProps) {
                         className="mt-4 p-3 bg-card border rounded-lg shadow-lg flex items-center justify-between"
                      >
                         <p className="font-medium">{selectedTestCases.size} test case{selectedTestCases.size > 1 ? 's' : ''} selected</p>
-                         <Button
-                          disabled={!permissions.runPipelines}
-                          onClick={() => setPipelineModalOpen(true)}
-                        >
-                            <PlayCircle className="mr-2 h-4 w-4"/>
-                            Create Pipeline
-                        </Button>
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <div tabIndex={permissions.runPipelines ? -1 : 0}>
+                                         <Button
+                                          disabled={!permissions.runPipelines}
+                                          onClick={() => setPipelineModalOpen(true)}
+                                        >
+                                            <PlayCircle className="mr-2 h-4 w-4"/>
+                                            Create Pipeline
+                                        </Button>
+                                    </div>
+                                </TooltipTrigger>
+                                {!permissions.runPipelines && <TooltipContent><p>You do not have permission to run pipelines.</p></TooltipContent>}
+                            </Tooltip>
+                        </TooltipProvider>
+
                     </motion.div>
                 )}
             </div>
