@@ -139,10 +139,7 @@ export function TMTView({ user }: TMTViewProps) {
     const [selectedTestCase, setSelectedTestCase] = useState<TestCase | null>(null);
     const [selectedTestCases, setSelectedTestCases] = useState<Set<string>>(new Set());
     const [searchQuery, setSearchQuery] = useState("");
-    const [activeFilters, setActiveFilters] = useState<any[]>([
-      { id: "s1", type: 'Status', value: 'To Do', color: 'bg-blue-100 text-blue-800' },
-      { id: "p1", type: 'Priority', value: 'High', color: 'bg-red-100 text-red-800' }
-    ]);
+    const [activeFilters, setActiveFilters] = useState<any[]>([]);
     const [isMultiSelectActive, setIsMultiSelectActive] = useState(false);
     const [isJQLOpen, setJQLOpen] = useState(false);
     const [jqlQuery, setJqlQuery] = useState("");
@@ -170,13 +167,15 @@ export function TMTView({ user }: TMTViewProps) {
                 tc.id.toLowerCase().includes(searchQuery.toLowerCase())
             );
         }
-        // This is a mock filter application. A real implementation would be more robust.
-        if (activeFilters.some(f => f.type === 'Status' && f.value === 'To Do')) {
-            cases = cases.filter(tc => tc.status === 'To Do');
-        }
-         if (activeFilters.some(f => f.type === 'Priority' && f.value === 'High')) {
-            cases = cases.filter(tc => tc.priority === 'High');
-        }
+        
+        activeFilters.forEach(filter => {
+            if (filter.type === 'Status') {
+                cases = cases.filter(tc => tc.status === filter.value);
+            }
+            if (filter.type === 'Priority') {
+                cases = cases.filter(tc => tc.priority === filter.value);
+            }
+        });
 
         return cases;
     }, [searchQuery, activeFilters]);
@@ -388,7 +387,7 @@ export function TMTView({ user }: TMTViewProps) {
                                             {isJqlValid === null && <div className="h-2.5 w-2.5 rounded-full bg-border"></div>}
                                         </div>
                                         <Input 
-                                            placeholder="Enter JQL query (e.g., status:done or priority:high)" 
+                                            placeholder="Enter JQL query (e.g., status:todo or priority:high)" 
                                             className="pl-8 h-9"
                                             value={jqlQuery}
                                             onChange={e => setJqlQuery(e.target.value)}
@@ -553,3 +552,5 @@ export function TMTView({ user }: TMTViewProps) {
       </>
     );
 }
+
+    
