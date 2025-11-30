@@ -167,8 +167,7 @@ const WorkspacePrepAnimation = ({ onComplete }: { onComplete: () => void }) => {
             const timer = setTimeout(() => setCurrentStep(s => s + 1), 700);
             return () => clearTimeout(timer);
         } else {
-            const finalTimer = setTimeout(onComplete, 100);
-            return () => clearTimeout(finalTimer);
+            onComplete();
         }
     }, [currentStep, onComplete, prepSteps.length]);
     
@@ -276,8 +275,8 @@ export function AutomationWorkflowModal({ isOpen, setIsOpen, testCase }: Automat
 
     }, [isOpen]);
 
-    const handleFinalCompletion = () => {
-        router.push('/dashboard?view=test-ai-lab');
+    const handleFinalCompletion = async () => {
+        await router.push('/dashboard?view=test-ai-lab');
         setIsOpen(false);
         toast({
             title: "Workspace Ready!",
