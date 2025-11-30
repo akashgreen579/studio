@@ -113,7 +113,7 @@ export default function TestAiLabPage() {
           <KeywordMappingView
             user={currentUser}
             testCase={testCase}
-            steps={gherkinSteps}
+            steps={gherkinSteps.length > 0 ? gherkinSteps : cleanedSteps.map(s => s.cleaned)}
             onComplete={handleKeywordMappingComplete}
           />
         );
