@@ -1,17 +1,14 @@
 
 "use client";
 
-import { useState, useMemo } from "react";
-import { Header } from "@/components/app/header";
-import { Sidebar } from "@/components/app/sidebar";
-import { allUsers } from "@/lib/data";
-import type { Role, ActiveView, LabStage } from "@/lib/data";
+import { useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import type { LabStage } from "@/lib/data";
 import { NlpCleanupView } from "@/components/app/test-ai-lab/nlp-cleanup-view";
 import { GherkinPreparationView } from "@/components/app/test-ai-lab/gherkin-preparation-view";
 import { KeywordMappingView } from "@/components/app/test-ai-lab/keyword-mapping-view";
 import { ActionSimulationView } from "@/components/app/test-ai-lab/action-simulation-view";
 import { CodeGenerationView } from "@/components/app/test-ai-lab/code-generation-view";
-import { AnimatePresence, motion } from "framer-motion";
 
 const testCase = {
   id: "TC-101",
@@ -64,29 +61,10 @@ const cleanedStepsInitial = [
 ];
 
 export default function TestAiLabPage() {
-  const [activeView, setActiveView] = useState<ActiveView>("test-ai-lab");
-  const [currentRole, setCurrentRole] = useState<Role>("manager");
   const [labStage, setLabStage] = useState<LabStage>("nlp-cleanup");
 
   const [cleanedSteps, setCleanedSteps] = useState(cleanedStepsInitial);
   const [gherkinSteps, setGherkinSteps] = useState<string[]>([]);
-
-  const currentUser = useMemo(() => {
-    return allUsers.find((u) => u.role === currentRole)!;
-  }, [currentRole]);
-
-  const handleRoleChange = (newRole: Role) => {
-    setCurrentRole(newRole);
-    // In a real app, you might want to reset the view or redirect
-    setActiveView("dashboard");
-  };
-
-  const handleMenuClick = (view: ActiveView) => {
-    if (view === "keyword-mapping") {
-      setLabStage("keyword-mapping");
-    }
-    setActiveView(view);
-  };
 
   const handleNlpComplete = (finalSteps: typeof cleanedStepsInitial) => {
     setCleanedSteps(finalSteps);
@@ -158,29 +136,16 @@ export default function TestAiLabPage() {
   };
 
   return (
-    <div className="flex min-h-screen w-full bg-muted/40">
-      <Sidebar
-        currentRole={currentRole}
-        onRoleChange={handleRoleChange}
-        user={currentUser}
-        activeView={activeView}
-        onMenuClick={handleMenuClick}
-      />
-      <div className="flex flex-1 flex-col sm:gap-4 sm:py-4 sm:pl-64">
-        <main className="flex-1 grid gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={labStage}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
-            >
-              {renderLabStage()}
-            </motion.div>
-          </AnimatePresence>
-        </main>
-      </div>
-    </div>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={labStage}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.3 }}
+        >
+          {renderLabStage()}
+        </motion.div>
+      </AnimatePresence>
   );
 }

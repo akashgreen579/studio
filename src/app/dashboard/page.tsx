@@ -22,9 +22,10 @@ import { Home as PlaceholderHome } from "lucide-react";
 import { AuditLogScreen } from "@/components/app/audit-log-screen";
 import { ApprovalInbox } from "@/components/app/approval-inbox";
 import { ProjectSettings } from "@/components/app/project-settings";
+import TestAiLabPage from "@/app/test-ai-lab/page";
 
 export type Role = "manager" | "employee";
-export type ActiveView = "dashboard" | "project-settings" | "user-management" | "audit-log" | "approvals" | "tmt-view" | null;
+export type ActiveView = "dashboard" | "project-settings" | "user-management" | "audit-log" | "approvals" | "tmt-view" | "test-ai-lab" | null;
 
 function DashboardContent() {
   const searchParams = useSearchParams();
@@ -185,6 +186,8 @@ function DashboardContent() {
         );
        case 'tmt-view':
         return <TMTView user={currentUser} />;
+      case 'test-ai-lab':
+        return <TestAiLabPage />;
       case 'project-settings':
         return role === "manager" ? (
           <ProjectSettings

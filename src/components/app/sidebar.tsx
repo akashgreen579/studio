@@ -2,7 +2,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import {
   Tooltip,
   TooltipContent,
@@ -55,7 +55,7 @@ const menuItems = [
         roles: ["manager", "employee"],
       },
       {
-        href: "/dashboard", // Should go to dashboard then have TMT view selected
+        href: "/dashboard",
         icon: FileCheck,
         label: "TMT View",
         view: "tmt-view",
@@ -63,9 +63,10 @@ const menuItems = [
         roles: ["manager", "employee"],
       },
       {
-        href: "#",
+        href: "/dashboard",
         icon: FlaskConical,
         label: "TestAI Lab",
+        view: "test-ai-lab",
         tooltip: "Automation workspace (Phase 4)",
         roles: ["manager", "employee"],
       },
@@ -181,7 +182,17 @@ export function Sidebar({
 }: SidebarProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const isActive = (item: any) => item.view && item.view === activeView || (item.href && item.href !== '#' && pathname.startsWith(item.href));
+  const searchParams = useSearchParams();
+  
+  const isActive = (item: any) => {
+    if (item.view) {
+        return item.view === activeView;
+    }
+    if (item.href && item.href !== '#') {
+        return pathname.startsWith(item.href) && !item.view;
+    }
+    return false;
+  }
 
   const handleLogout = () => {
     router.push('/login');
@@ -189,11 +200,26 @@ export function Sidebar({
   
   const handleLinkClick = (e: React.MouseEvent, item: any) => {
     e.preventDefault();
-    if (item.view) {
-        onMenuClick(item.view as ActiveView);
-    }
     if (item.href && item.href !== '#') {
-        router.push(item.href);
+        const currentParams = new URLSearchParams(Array.from(searchParams.entries()));
+        if (item.view) {
+            currentParams.set('view', item.view);
+        } else {
+            currentParams.delete('view');
+        }
+        const newUrl = `${item.href}?${currentParams.toString()}`;
+        if (item.href === pathname && item.view === activeView) {
+            // Already on the right page and view, do nothing.
+        } else if (item.href === pathname) {
+            // On the same page, just update view and push history state.
+            onMenuClick(item.view as ActiveView);
+            window.history.pushState(null, '', newUrl);
+        } else {
+             // Different page, so navigate.
+            router.push(newUrl);
+        }
+    } else if (item.view) {
+        onMenuClick(item.view as ActiveView);
     }
   }
 
