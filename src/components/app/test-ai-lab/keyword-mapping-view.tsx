@@ -1,34 +1,31 @@
 
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { ArrowRight, Link2, GitBranch, Sparkles, Copy, Download, Search, Info, PlusCircle, Video } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { existingKeywords, type ExistingKeyword } from "@/lib/data";
-import { formatDistanceToNow } from "date-fns";
+import { ArrowRight, Sparkles, Wand, RefreshCw } from "lucide-react";
+import { existingKeywords, type ExistingKeyword, type TestCase } from "@/lib/data";
 import { AnimatePresence, motion } from "framer-motion";
+import { Progress } from "@/components/ui/progress";
+import { KeywordMappingCard } from "./keyword-mapping-card";
+import { CreateKeywordModal, RecordKeywordModal } from "./keyword-action-modals";
 
 interface KeywordMappingViewProps {
-  testCase: {
-    id: string;
-    summary: string;
-  };
+  testCase: TestCase;
   steps: string[];
   onComplete: () => void;
 }
 
-type StepMapping = {
+export type StepMapping = {
   gherkinStep: string;
   suggestion: ExistingKeyword | null;
   similarity: number | null;
-  action: "reuse" | "create" | "ignore";
+  action: "reuse" | "create" | "record" | "pending";
+  status: "pending" | "resolved";
 };
 
 // A simple fuzzy match function for demonstration
@@ -45,8 +42,11 @@ const fuzzyMatch = (step1: string, step2: string): number => {
 }
 
 export function KeywordMappingView({ testCase, steps, onComplete }: KeywordMappingViewProps) {
-    const { toast } = useToast();
     const [autoSuggest, setAutoSuggest] = useState(true);
+    const [similarityThreshold, setSimilarityThreshold] = useState(80);
+    const [isCreateModalOpen, setCreateModalOpen] = useState(false);
+    const [isRecordModalOpen, setRecordModalOpen] = useState(false);
+    const [selectedStep, setSelectedStep] = useState<StepMapping | null>(null);
 
     const initialMappings = useMemo((): StepMapping[] => {
         return steps.map(step => {
@@ -61,145 +61,169 @@ export function KeywordMappingView({ testCase, steps, onComplete }: KeywordMappi
                 }
             }
             
-            if (bestSimilarity > 70) {
-                 return {
-                    gherkinStep: step,
-                    suggestion: bestMatch,
-                    similarity: bestSimilarity,
-                    action: "reuse"
-                 }
-            }
-
             return {
                 gherkinStep: step,
-                suggestion: null,
-                similarity: null,
-                action: "create"
-            }
+                suggestion: autoSuggest && bestSimilarity > 50 ? bestMatch : null,
+                similarity: autoSuggest && bestSimilarity > 50 ? bestSimilarity : null,
+                action: "pending",
+                status: "pending"
+             }
         });
-    }, [steps]);
+    }, [steps, autoSuggest]);
     
     const [mappings, setMappings] = useState<StepMapping[]>(initialMappings);
 
-    const handleActionChange = (index: number, action: "reuse" | "create") => {
+    useEffect(() => {
+        setMappings(initialMappings);
+    }, [initialMappings]);
+
+    const handleUpdateMapping = (index: number, newMapping: Partial<StepMapping>) => {
         setMappings(prev => {
             const newMappings = [...prev];
-            newMappings[index].action = action;
+            newMappings[index] = { ...newMappings[index], ...newMapping };
             return newMappings;
-        })
+        });
+    };
+    
+    const openCreateModal = (mapping: StepMapping, index: number) => {
+        setSelectedStep(mapping);
+        setCreateModalOpen(true);
     }
     
-    const getSimilarityBadge = (similarity: number | null) => {
-        if (!similarity) return null;
-        if (similarity > 95) return <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-300">Exact Match</Badge>
-        if (similarity > 80) return <Badge variant="secondary" className="bg-sky-100 text-sky-800 border-sky-300">{Math.round(similarity)}% Similar</Badge>
-        if (similarity > 70) return <Badge variant="secondary" className="bg-amber-100 text-amber-800 border-amber-300">{Math.round(similarity)}% Similar</Badge>
-        return <Badge variant="outline">{Math.round(similarity)}% Similar</Badge>
+    const openRecordModal = (mapping: StepMapping, index: number) => {
+        setSelectedStep(mapping);
+        setRecordModalOpen(true);
     }
 
-  return (
-    <div className="space-y-6">
-        <header>
-            <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
-                <Link2 className="h-8 w-8 text-primary"/>
-                TestAI Lab: Keyword Mapping
-            </h1>
-            <p className="text-lg text-muted-foreground mt-2">
-                Map Gherkin steps to reusable code keywords or create new ones.
-            </p>
-        </header>
+    const handleReuseAll = () => {
+        setMappings(prev => prev.map(m => {
+            if (m.suggestion && m.similarity && m.similarity >= similarityThreshold) {
+                return { ...m, action: 'reuse', status: 'resolved' };
+            }
+            return m;
+        }));
+    };
+    
+    const progress = useMemo(() => {
+        const resolvedCount = mappings.filter(m => m.status === 'resolved').length;
+        return (resolvedCount / mappings.length) * 100;
+    }, [mappings]);
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-            <div className="lg:col-span-2">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Step to Keyword Mapping</CardTitle>
-                        <CardDescription>Review the AI's suggestions for mapping your test steps to existing code keywords.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Gherkin Step</TableHead>
-                                    <TableHead>Suggested Keyword</TableHead>
-                                    <TableHead className="text-center">Action</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                <AnimatePresence>
-                                    {mappings.map((mapping, index) => (
-                                         <motion.tr 
-                                            key={index} 
-                                            layout
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ delay: index * 0.05 }}
-                                         >
-                                            <TableCell className="font-medium">{mapping.gherkinStep}</TableCell>
-                                            <TableCell>
-                                                {mapping.suggestion && autoSuggest ? (
-                                                    <div className="space-y-1">
-                                                        <div className="flex items-center gap-2">
-                                                            {getSimilarityBadge(mapping.similarity)}
-                                                            <p className="text-sm truncate">{mapping.suggestion.stepText}</p>
-                                                        </div>
-                                                        <p className="text-xs text-muted-foreground truncate">{mapping.suggestion.filePath}</p>
-                                                    </div>
-                                                ) : (
-                                                     <p className="text-sm text-muted-foreground italic">No suggestion</p>
-                                                )}
-                                            </TableCell>
-                                            <TableCell className="text-center">
-                                                {mapping.action === "reuse" && mapping.suggestion && autoSuggest ? (
-                                                    <div className="flex items-center gap-2 justify-center">
-                                                        <Button variant="secondary" size="sm">Reuse</Button>
-                                                        <Button variant="outline" size="sm" onClick={() => handleActionChange(index, "create")}>Create New</Button>
-                                                    </div>
-                                                ) : (
-                                                    <div className="flex items-center gap-2 justify-center">
-                                                         <Button variant="outline" size="sm"><PlusCircle className="h-4 w-4 mr-2"/>Create</Button>
-                                                         <Button variant="outline" size="sm"><Video className="h-4 w-4 mr-2"/>Record</Button>
-                                                    </div>
-                                                )}
-                                            </TableCell>
-                                        </motion.tr>
-                                    ))}
-                                </AnimatePresence>
-                            </TableBody>
-                        </Table>
-                    </CardContent>
-                </Card>
-            </div>
-            
-            <div className="space-y-6 sticky top-20">
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><Sparkles className="h-5 w-5"/> AI Suggestions</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="flex items-center space-x-2">
-                            <Switch id="auto-suggest-toggle" checked={autoSuggest} onCheckedChange={setAutoSuggest}/>
-                            <Label htmlFor="auto-suggest-toggle">Auto-Suggest Reuse</Label>
-                        </div>
-                        <p className="text-sm text-muted-foreground">Automatically suggest reusing existing keywords that are a fuzzy match with your Gherkin steps.</p>
-                         <Button className="w-full" disabled={!autoSuggest}>
-                           Reuse all suggestions &gt; 80%
-                        </Button>
-                    </CardContent>
-                </Card>
-                <Card className="bg-gradient-to-br from-primary/90 to-primary text-primary-foreground">
-                    <CardContent className="p-6 flex items-center justify-between">
-                       <div>
-                         <h3 className="font-bold">Ready to generate code?</h3>
-                         <p className="text-sm opacity-80">Next, we'll record actions or generate boilerplate.</p>
-                       </div>
-                        <Button variant="secondary" size="lg" onClick={onComplete}>
-                           Continue <ArrowRight className="ml-2 h-5 w-5" />
-                        </Button>
-                    </CardContent>
-                </Card>
+  return (
+    <>
+        <div className="space-y-6">
+            <header>
+                <h1 className="text-3xl font-bold tracking-tight">
+                    TestAI Lab: Keyword Mapping
+                </h1>
+                <p className="text-lg text-muted-foreground mt-1">
+                    Map Gherkin steps to reusable code keywords or create new ones for <span className="font-semibold text-foreground">{testCase.id}</span>.
+                </p>
+            </header>
+
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-8 items-start pb-24">
+                {/* Left Pane: Mapping Cards */}
+                <div className="space-y-4">
+                     <AnimatePresence>
+                        {mappings.map((mapping, index) => (
+                             <motion.div 
+                                key={mapping.gherkinStep}
+                                layout
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: index * 0.05, ease: "circOut" }}
+                             >
+                                <KeywordMappingCard
+                                    mapping={mapping}
+                                    onUpdate={(newMapping) => handleUpdateMapping(index, newMapping)}
+                                    onCreate={() => openCreateModal(mapping, index)}
+                                    onRecord={() => openRecordModal(mapping, index)}
+                                />
+                             </motion.div>
+                        ))}
+                    </AnimatePresence>
+                </div>
+                
+                {/* Right Sidebar */}
+                <div className="space-y-6 sticky top-20">
+                    <Card className="shadow-subtle">
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2 text-lg"><Sparkles className="h-5 w-5 text-amber-500"/> AI Assistance</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                            <div className="flex items-center space-x-2">
+                                <Switch id="auto-suggest-toggle" checked={autoSuggest} onCheckedChange={setAutoSuggest}/>
+                                <Label htmlFor="auto-suggest-toggle">Auto-Suggest Reuse</Label>
+                            </div>
+                            
+                            <div className="space-y-3">
+                                <Label>Fuzzy Match Threshold: {similarityThreshold}%</Label>
+                                <Slider
+                                    defaultValue={[similarityThreshold]}
+                                    max={100}
+                                    step={5}
+                                    onValueChange={(value) => setSimilarityThreshold(value[0])}
+                                />
+                            </div>
+
+                             <Button className="w-full" onClick={handleReuseAll} disabled={!autoSuggest}>
+                               <Wand className="h-4 w-4 mr-2"/> Reuse all suggestions ≥ {similarityThreshold}%
+                            </Button>
+                             <Button className="w-full" variant="outline">
+                               <RefreshCw className="h-4 w-4 mr-2"/> Re-analyze All Steps
+                            </Button>
+                        </CardContent>
+                    </Card>
+                     <Card>
+                        <CardHeader>
+                            <CardTitle className="text-base">Summary</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="flex justify-between text-sm">
+                                <span className="text-muted-foreground">Steps Mapped</span>
+                                <span>{mappings.filter(m => m.status === 'resolved').length} / {mappings.length}</span>
+                            </div>
+                            <Progress value={progress} className="mt-2" />
+                        </CardContent>
+                    </Card>
+                </div>
             </div>
         </div>
-    </div>
+        
+        {/* Sticky Footer */}
+        <motion.div 
+            initial={{ y: 100 }}
+            animate={{ y: 0 }}
+            transition={{ type: "spring", stiffness: 100, damping: 20 }}
+            className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-background/80 backdrop-blur-sm border-t"
+        >
+            <div className="max-w-7xl mx-auto flex items-center justify-between pl-64">
+                <div className="flex items-center gap-4">
+                    <Progress value={progress} className="w-64 h-2"/>
+                    <p className="text-sm text-muted-foreground font-medium">{Math.round(progress)}% Complete</p>
+                </div>
+                <Button 
+                    size="lg" 
+                    disabled={progress < 100} 
+                    onClick={onComplete}
+                    className="glow-on-enable"
+                >
+                   Continue to Action Simulation <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+            </div>
+        </motion.div>
+        
+        <CreateKeywordModal
+            isOpen={isCreateModalOpen}
+            setIsOpen={setCreateModalOpen}
+            gherkinStep={selectedStep?.gherkinStep || ""}
+        />
+        <RecordKeywordModal
+            isOpen={isRecordModalOpen}
+            setIsOpen={setRecordModalOpen}
+            gherkinStep={selectedStep?.gherkinStep || ""}
+        />
+    </>
   );
 }
+

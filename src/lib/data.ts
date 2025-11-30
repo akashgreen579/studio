@@ -60,7 +60,7 @@ export interface TestCase {
     id: string;
     summary: string;
     priority: "Low" | "Medium" | "High";
-    status: "To Do" | "In Progress" | "Done";
+    status: "To Do" | "In Progress" | "Done" | "Automated";
     assignee: string;
     tags: string[];
 }
@@ -78,6 +78,7 @@ export interface ExistingKeyword {
     filePath: string;
     lastUsed: Date;
     usageCount: number;
+    code: string;
 }
 
 export type RecordedAction = {
@@ -248,6 +249,9 @@ export const testCases: TestCase[] = [
     { id: "tc-101", summary: "Verify user can log in with valid credentials", priority: "High", status: "To Do", assignee: "Samira Khan", tags: ["auth", "smoke"] },
     { id: "tc-102", summary: "Verify user sees error on invalid login", priority: "High", status: "To Do", assignee: "Samira Khan", tags: ["auth"] },
     { id: "tc-201", summary: "Verify user can add item to cart", priority: "Medium", status: "In Progress", assignee: "John Doe", tags: ["cart", "regression"] },
+    { id: "tc-202", summary: "Verify user can remove item from cart", priority: "Medium", status: "Done", assignee: "John Doe", tags: ["cart", "regression"] },
+    { id: "tc-203", summary: "Verify cart total updates correctly", priority: "High", status: "Automated", assignee: "Jane Smith", tags: ["cart", "smoke"] },
+    { id: "tc-301", summary: "Verify user can view order history", priority: "Low", status: "To Do", assignee: "Peter Jones", tags: ["account"] },
 ];
 
 export const testCaseHierarchy: HierarchyItem[] = [
@@ -263,17 +267,25 @@ export const testCaseHierarchy: HierarchyItem[] = [
     ]},
     { id: "epic-2", name: "Shopping Cart", type: 'epic', children: [
          { id: "feat-2-1", name: "Cart Management", type: 'feature', children: [
-             { id: "tc-201", name: "TC-201: Add to Cart", type: 'test-case' }
+             { id: "tc-201", name: "TC-201: Add to Cart", type: 'test-case' },
+             { id: "tc-202", name: "TC-202: Remove from Cart", type: 'test-case' },
+             { id: "tc-203", name: "TC-203: Verify cart total", type: 'test-case' }
+         ]}
+    ]},
+    { id: "epic-3", name: "User Account", type: 'epic', children: [
+         { id: "feat-3-1", name: "Order History", type: 'feature', children: [
+             { id: "tc-301", name: "TC-301: View order history", type: 'test-case' }
          ]}
     ]}
 ];
 
 export const existingKeywords: ExistingKeyword[] = [
-    { id: 'kw-1', stepText: "Given I am on the login page", filePath: "com/testcraft/steps/AuthSteps.java", lastUsed: new Date(Date.now() - 86400000 * 5), usageCount: 42 },
-    { id: 'kw-2', stepText: "When I enter my username and password", filePath: "com/testcraft/steps/AuthSteps.java", lastUsed: new Date(Date.now() - 86400000 * 2), usageCount: 15 },
-    { id: 'kw-3', stepText: "And I click the 'Login' button", filePath: "com/testcraft/steps/AuthSteps.java", lastUsed: new Date(Date.now() - 86400000 * 3), usageCount: 23 },
-    { id: 'kw-4', stepText: "Then I should be redirected to the dashboard", filePath: "com/testcraft/steps/NavigationSteps.java", lastUsed: new Date(Date.now() - 86400000 * 10), usageCount: 18 },
-    { id: 'kw-5', stepText: "And a 'Welcome' message should be displayed", filePath: "com/testcraft/steps/DashboardSteps.java", lastUsed: new Date(Date.now() - 86400000 * 1), usageCount: 5 },
+    { id: 'kw-1', stepText: "Given I am on the login page", filePath: "com/testcraft/steps/AuthSteps.java", lastUsed: new Date(Date.now() - 86400000 * 5), usageCount: 42, code: `public void onLoginPage() { driver.get("https://example.com/login"); }` },
+    { id: 'kw-2', stepText: "When I enter my username and password", filePath: "com/testcraft/steps/AuthSteps.java", lastUsed: new Date(Date.now() - 86400000 * 2), usageCount: 15, code: `public void enterCredentials(String user, String pass) { ... }` },
+    { id: 'kw-3', stepText: "And I click the 'Login' button", filePath: "com/testcraft/steps/AuthSteps.java", lastUsed: new Date(Date.now() - 86400000 * 3), usageCount: 23, code: `public void clickLogin() { loginButton.click(); }` },
+    { id: 'kw-4', stepText: "Then I should be redirected to the dashboard", filePath: "com/testcraft/steps/NavigationSteps.java", lastUsed: new Date(Date.now() - 86400000 * 10), usageCount: 18, code: `public void verifyDashboardRedirect() { ... }` },
+    { id: 'kw-5', stepText: "And a 'Welcome' message should be displayed", filePath: "com/testcraft/steps/DashboardSteps.java", lastUsed: new Date(Date.now() - 86400000 * 1), usageCount: 5, code: `public void checkWelcomeMessage() { ... }` },
+    { id: 'kw-6', stepText: 'I add the "{}" to my cart', filePath: "com/testcraft/steps/CartSteps.java", lastUsed: new Date(Date.now() - 86400000 * 7), usageCount: 31, code: `public void addToCart(String item) { ... }` },
 ];
 
 export const recordedActions: RecordedAction[] = [
@@ -352,6 +364,7 @@ export const draftAutomations = [
     { id: "draft-1", name: "TC-101: User Login", project: "Customer Portal", updated: new Date(Date.now() - 3600000), status: "Code Generation" },
     { id: "draft-2", name: "TC-205: Add to Cart", project: "Payment Gateway", updated: new Date(Date.now() - 86400000 * 2), status: "Keyword Mapping" },
     { id: "draft-3", name: "TC-310: Profile Update", project: "Customer Portal", updated: new Date(Date.now() - 86400000 * 4), status: "NLP Cleanup" },
+    { id: "draft-4", name: "TC-415: Search Functionality", project: "Customer Portal", updated: new Date(Date.now() - 86400000 * 5), status: "Gherkin Preparation" },
 ];
 
 
