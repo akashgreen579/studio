@@ -282,8 +282,7 @@ export function AutomationWorkflowModal({ isOpen, setIsOpen, testCase }: Automat
             description: `Now entering the TestAI Lab for ${testCase.id}.`,
         });
         setIsOpen(false);
-        // After modal closes, navigate to the TestAI Lab
-        setTimeout(() => router.push('/dashboard?view=test-ai-lab'), 300);
+        router.push('/dashboard?view=test-ai-lab');
     };
 
     const proceedToStep3 = () => {

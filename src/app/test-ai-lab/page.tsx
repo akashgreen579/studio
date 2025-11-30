@@ -136,6 +136,11 @@ export default function TestAiLabPage() {
   };
 
   return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
       <AnimatePresence mode="wait">
         <motion.div
           key={labStage}
@@ -147,5 +152,6 @@ export default function TestAiLabPage() {
           {renderLabStage()}
         </motion.div>
       </AnimatePresence>
+    </motion.div>
   );
 }
