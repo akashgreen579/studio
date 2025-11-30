@@ -177,3 +177,5 @@ export function EmployeeDashboard({ user, projects }: EmployeeDashboardProps) {
     </div>
   );
 }
+
+    

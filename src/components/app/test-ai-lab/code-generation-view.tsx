@@ -179,3 +179,5 @@ export function CodeGenerationView({ testCase, onRestart }: CodeGenerationViewPr
     </>
   );
 }
+
+    

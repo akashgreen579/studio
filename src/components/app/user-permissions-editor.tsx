@@ -362,3 +362,5 @@ export function UserPermissionsEditor({ user: initialUser, projects }: UserPermi
         </Card>
     );
 }
+
+    
