@@ -52,11 +52,12 @@ export default function DesignSystemPage() {
         <Card>
           <CardContent className="p-6 grid grid-cols-3 md:grid-cols-6 gap-6">
             <ColorSwatch name="Primary" className="bg-primary" hex="#163f7a" />
+            <ColorSwatch name="Accent" className="bg-accent" hex="#1f4970" />
+            <ColorSwatch name="Success" className="bg-success-500" hex="#17A589" />
+            <ColorSwatch name="Warning" className="bg-warning" hex="#F6A623" />
+            <ColorSwatch name="Danger" className="bg-destructive" hex="#E04545" />
             <ColorSwatch name="Background" className="bg-background" hex="#F6F7F9" />
             <ColorSwatch name="Surface" className="bg-card" hex="#FFFFFF" />
-            <ColorSwatch name="Accent" className="bg-accent" hex="#17A589" />
-            <ColorSwatch name="Warning" className="bg-warning" hex="#F6A623" />
-            <ColorSwatch name="Destructive" className="bg-destructive" hex="#E04545" />
           </CardContent>
         </Card>
       </section>
@@ -70,9 +71,9 @@ export default function DesignSystemPage() {
              <CardContent className="space-y-4">
                 <TypoSample name="Heading 1" size="2.25rem" weight="Bold" className="text-4xl font-bold" />
                 <TypoSample name="Heading 2" size="1.875rem" weight="Semi-bold" className="text-3xl font-semibold" />
-                <TypoSample name="Heading 3" size="1.5rem" weight="Semi-bold" className="text-2xl font-semibold" />
-                <TypoSample name="Body" size="1rem" weight="Regular" className="text-base" />
-                <TypoSample name="Small" size="0.875rem" weight="Medium" className="text-sm font-medium" />
+                <TypoSample name="Headline" size="18-22px" weight="Bold" className="text-xl font-bold" />
+                <TypoSample name="Body" size="14-16px" weight="Regular" className="text-base" />
+                <TypoSample name="Label" size="12-13px" weight="Medium" className="text-sm font-medium" />
             </CardContent>
         </Card>
       </section>

@@ -5,7 +5,7 @@
 @layer base {
   :root {
     /* TestCraft AI Design System - Light Theme */
-    --background: 222 47% 97%; /* #F6F7F9 */
+    --background: 220 20% 97%; /* #F6F7F9 */
     --foreground: 222 84% 10%;
 
     --card: 0 0% 100%; /* #FFFFFF */
@@ -14,7 +14,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222 84% 10%;
     
-    --primary: 221 63% 28%; /* #163f7a */
+    --primary: 219 66% 28%; /* #163f7a */
     --primary-foreground: 210 40% 98%;
     
     --secondary: 210 40% 96.1%;
@@ -23,7 +23,7 @@
     --muted: 210 40% 96.1%;
     --muted-foreground: 215 20% 45.1%;
     
-    --accent: 170 70% 30%; /* #17A589 */
+    --accent: 212 58% 28%; /* #1f4970 - Navy for actions */
     --accent-foreground: 210 40% 98%;
     
     --destructive: 0 72% 51%; /* #E04545 */
@@ -31,10 +31,13 @@
 
     --warning: 38 92% 56%; /* #F6A623 */
     --warning-foreground: 210 40% 98%;
+
+    --success: 170 70% 30%; /* #17A589 - Teal */
+    --success-foreground: 210 40% 98%;
     
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 221 63% 28%;
+    --ring: 219 66% 28%;
     
     --radius: 0.75rem; /* 12px */
   }
@@ -59,7 +62,7 @@
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20% 65.1%;
     
-    --accent: 170 70% 40%;
+    --accent: 212 58% 38%;
     --accent-foreground: 210 40% 98%;
     
     --destructive: 0 63% 40%; /* #E04545 */
@@ -67,6 +70,9 @@
 
     --warning: 38 92% 50%;
     --warning-foreground: 210 40% 98%;
+
+    --success: 170 70% 40%;
+    --success-foreground: 210 40% 98%;
     
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;

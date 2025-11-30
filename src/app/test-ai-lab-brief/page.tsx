@@ -119,11 +119,12 @@ export default function TestAiLabBriefPage() {
                 <CardHeader><CardTitle className="flex items-center gap-2"><Palette/> Color System</CardTitle></CardHeader>
                 <CardContent className="grid md:grid-cols-2 gap-8">
                    <ColorSwatch name="Primary" className="bg-primary" hex="#163f7a" description="Deep Indigo for primary actions, active states, and links." />
-                   <ColorSwatch name="Background" className="bg-background" hex="#F6F7F9" description="The main canvas color for a clean, spacious feel." />
-                   <ColorSwatch name="Surface" className="bg-card" hex="#FFFFFF" description="For primary content panes like cards, modals, and panels." />
-                   <ColorSwatch name="Accent" className="bg-accent" hex="#17A589" description="Teal for success states, confirmations, and positive feedback." />
+                   <ColorSwatch name="Accent / Action" className="bg-accent" hex="#1f4970" description="Navy for secondary actions and highlights." />
+                   <ColorSwatch name="Success" className="bg-success-500" hex="#17A589" description="Teal for success states, confirmations, and positive feedback." />
                    <ColorSwatch name="Warning" className="bg-warning" hex="#F6A623" description="Amber for warnings, in-progress states, and areas needing attention." />
                    <ColorSwatch name="Danger" className="bg-destructive" hex="#E04545" description="For errors, destructive actions, and critical alerts." />
+                   <ColorSwatch name="Background" className="bg-background" hex="#F6F7F9" description="The main canvas color for a clean, spacious feel." />
+                   <ColorSwatch name: "Surface" className="bg-card" hex="#FFFFFF" description="For primary content panes like cards, modals, and panels." />
                 </CardContent>
             </Card>
 
@@ -133,9 +134,9 @@ export default function TestAiLabBriefPage() {
                     <CardTitle className="flex items-center gap-2"><Text/> Typography</CardTitle>
                 </CardHeader>
                  <CardContent className="space-y-4">
-                    <TypoSample name="Heading 1" size="2.25rem" weight="Bold" className="text-4xl font-bold" />
-                    <TypoSample name="Heading 2" size="1.875rem" weight="Semi-bold" className="text-3xl font-semibold" />
-                    <TypoSample name="Body" size="1rem" weight="Regular" className="text-base" />
+                    <TypoSample name="Headline" size="18-22px" weight="Bold" className="text-xl font-bold" />
+                    <TypoSample name="Body" size="14-16px" weight="Regular" className="text-base" />
+                    <TypoSample name="Label" size="12-13px" weight="Medium" className="text-sm" />
                     <p className="mt-4 text-sm text-muted-foreground">Use <code className="font-mono bg-muted px-1 rounded">Inter</code> for all UI text to ensure clarity and readability.</p>
                 </CardContent>
             </Card>
@@ -143,13 +144,12 @@ export default function TestAiLabBriefPage() {
             {/* Spacing & Motion */}
             <div className="grid md:grid-cols-2 gap-8">
                 <Card>
-                    <CardHeader><CardTitle className="flex items-center gap-2"><Scale/> Spacing Grid</CardTitle></CardHeader>
+                    <CardHeader><CardTitle className="flex items-center gap-2"><Scale/> Spacing & Radius</CardTitle></CardHeader>
                     <CardContent>
-                        <p className="text-muted-foreground">Based on an 8px grid system. Use Tailwind's spacing scale for consistency.</p>
+                        <p className="text-muted-foreground">Based on an 8px grid system. Corner radius is 12px for main containers.</p>
                         <ul className="list-disc list-inside mt-4 space-y-2 text-sm">
-                            <li><span className="font-medium">p-2 (8px):</span> Inner padding for small elements.</li>
-                            <li><span className="font-medium">p-4 (16px):</span> Content padding inside cards.</li>
-                            <li><span className="font-medium">p-6 (24px):</span> Gutters between major layout panes.</li>
+                            <li><span className="font-medium">Base Grid:</span> 8px</li>
+                            <li><span className="font-medium">Radius:</span> 12px (--radius)</li>
                         </ul>
                     </CardContent>
                 </Card>
@@ -168,12 +168,10 @@ export default function TestAiLabBriefPage() {
         <section>
             <h2 className="text-3xl font-semibold mb-6 text-center">Core Deliverables</h2>
             <div className="grid md:grid-cols-2 gap-6">
-                <DeliverableItem title="1. TestAI Lab Screens" description="High-fidelity mockups for the main multi-pane view, including responsive variants for desktop and tablet." icon={Monitor}/>
-                <DeliverableItem title="2. Interactive Prototype" description="A working prototype demonstrating the end-to-end flow, from step generation and code refinement to the final dry run." icon={MousePointer}/>
+                <DeliverableItem title="1. High-Fidelity Screens" description="Mockups for all TestAI Lab stages, including responsive variants for desktop and tablet." icon={Monitor}/>
+                <DeliverableItem title="2. Interactive Prototype" description="A working prototype demonstrating the end-to-end flow, from step generation to the final dry run." icon={MousePointer}/>
                 <DeliverableItem title="3. Component Library" description="Reusable components for the stepper, code viewer, simulation window, and staging area." icon={FileCode}/>
                 <DeliverableItem title="4. Motion & Accessibility Spec" description="Documentation for all key animations and accessibility requirements, including reduced motion variants." icon={Wind}/>
-                <DeliverableItem title="5. Microcopy & QA Checklist" description="All user-facing text and a comprehensive checklist for QA acceptance testing." icon={FileText}/>
-                <DeliverableItem title="6. Git Integration Flow" description="UI and logic for committing the generated script to a new branch in a controlled, safe manner." icon={GitBranch}/>
             </div>
         </section>
 
@@ -184,17 +182,17 @@ export default function TestAiLabBriefPage() {
                 <Card>
                     <CardHeader><CardTitle className="flex items-center gap-2"><Accessibility/> Accessibility</CardTitle></CardHeader>
                     <CardContent className="space-y-2 text-muted-foreground">
-                        <p>All interactive elements must be keyboard-navigable and have clear focus states.</p>
+                        <p>All interactive elements must be keyboard-navigable and have clear focus states (2px, #163f7a ring).</p>
                         <p>Ensure sufficient color contrast for all text and UI elements.</p>
-                        <p>Implement a "reduced motion" mode that disables non-essential animations.</p>
+                        <p>Implement and respect a "prefers-reduced-motion" mode.</p>
                         <p>Use ARIA attributes to describe dynamic content regions and live updates from the AI.</p>
                     </CardContent>
                 </Card>
                  <Card>
                     <CardHeader><CardTitle className="flex items-center gap-2"><Monitor/> Responsiveness</CardTitle></CardHeader>
                     <CardContent className="space-y-2 text-muted-foreground">
-                        <p><span className="font-semibold text-foreground">Desktop (1280px+):</span> Full three-pane layout (Navigator, Editor, Terminal).</p>
-                        <p><span className="font-semibold text-foreground">Tablet (768px+):</span> Tabbed interface to switch between Editor and Terminal panes to conserve space.</p>
+                        <p><span className="font-semibold text-foreground">Desktop (1280px+):</span> Full three-column layout (Left Nav, Main Workspace, Right Rail).</p>
+                        <p><span className="font-semibold text-foreground">Tablet (768px+):</span> Left Nav collapses to icons; Right Rail becomes an optional drawer.</p>
                         <p><span className="font-semibold text-foreground">Mobile (&lt;768px):</span> A "desktop required" message should be displayed, as the Lab is not designed for mobile use in v1.</p>
                     </CardContent>
                 </Card>
