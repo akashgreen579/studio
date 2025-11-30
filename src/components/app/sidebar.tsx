@@ -26,11 +26,12 @@ import {
   UserCheck,
   Palette,
   Bot,
+  Link2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { Role, ActiveView } from "@/app/dashboard/page";
+import type { ActiveView } from "@/app/dashboard/page";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import type { User } from "@/lib/data";
+import type { User, Role } from "@/lib/data";
 import { Button } from "../ui/button";
 
 interface SidebarProps {
@@ -68,6 +69,14 @@ const menuItems = [
         label: "TestAI Lab",
         view: "test-ai-lab",
         tooltip: "Automation workspace (Phase 4)",
+        roles: ["manager", "employee"],
+      },
+      {
+        href: "/test-ai-lab",
+        icon: Link2,
+        label: "Keyword Mapping",
+        view: "keyword-mapping",
+        tooltip: "Keyword mapping workspace (Phase 4)",
         roles: ["manager", "employee"],
       },
       {
@@ -189,7 +198,12 @@ export function Sidebar({
   };
   
   const handleLinkClick = (e: React.MouseEvent, item: any) => {
-     if (item.href === "#" && item.view) {
+     if (item.view === 'keyword-mapping') {
+        e.preventDefault();
+        router.push(item.href);
+        // This is a bit of a hack to ensure the view is set after navigation
+        setTimeout(() => onMenuClick(item.view as ActiveView), 0);
+    } else if (item.href === "#" && item.view) {
         e.preventDefault();
         onMenuClick(item.view as ActiveView);
     } else if (item.href === "/dashboard" && item.view) {
@@ -292,3 +306,5 @@ export function Sidebar({
     </aside>
   );
 }
+
+    

@@ -6,7 +6,7 @@ import { ComponentType } from 'react';
 // Types
 export type Role = "manager" | "employee" | "admin";
 
-export type ActiveView = "dashboard" | "project-settings" | "user-management" | "audit-log" | "approvals" | "tmt-view" | "test-ai-lab" | null;
+export type ActiveView = "dashboard" | "project-settings" | "user-management" | "audit-log" | "approvals" | "tmt-view" | "test-ai-lab" | "keyword-mapping" | null;
 
 
 export interface User {
@@ -68,6 +68,14 @@ export interface HierarchyItem {
   name: string;
   type: "epic" | "feature" | "folder" | "test-case";
   children?: HierarchyItem[];
+}
+
+export interface ExistingKeyword {
+    id: string;
+    stepText: string;
+    filePath: string;
+    lastUsed: Date;
+    usageCount: number;
 }
 
 
@@ -250,6 +258,14 @@ export const testCaseHierarchy: HierarchyItem[] = [
     ]}
 ];
 
+export const existingKeywords: ExistingKeyword[] = [
+    { id: 'kw-1', stepText: "Given I am on the login page", filePath: "com/testcraft/steps/AuthSteps.java", lastUsed: new Date(Date.now() - 86400000 * 5), usageCount: 42 },
+    { id: 'kw-2', stepText: "When I enter my username and password", filePath: "com/testcraft/steps/AuthSteps.java", lastUsed: new Date(Date.now() - 86400000 * 2), usageCount: 15 },
+    { id: 'kw-3', stepText: "And I click the 'Login' button", filePath: "com/testcraft/steps/AuthSteps.java", lastUsed: new Date(Date.now() - 86400000 * 3), usageCount: 23 },
+    { id: 'kw-4', stepText: "Then I should be redirected to the dashboard", filePath: "com/testcraft/steps/NavigationSteps.java", lastUsed: new Date(Date.now() - 86400000 * 10), usageCount: 18 },
+    { id: 'kw-5', stepText: "And a 'Welcome' message should be displayed", filePath: "com/testcraft/steps/DashboardSteps.java", lastUsed: new Date(Date.now() - 86400000 * 1), usageCount: 5 },
+];
+
 
 // This function merges project-specific permissions with global role-based permissions
 export const getEffectivePermissions = (userId: string, project?: Project): Permissions => {
@@ -288,3 +304,5 @@ export const getEffectivePermissions = (userId: string, project?: Project): Perm
 
     return finalPermissions;
 }
+
+    

@@ -5,12 +5,13 @@ import { useState, useMemo } from "react";
 import { Header } from "@/components/app/header";
 import { Sidebar } from "@/components/app/sidebar";
 import { allUsers } from "@/lib/data";
-import type { Role, ActiveView, User } from "@/lib/data";
+import type { Role, ActiveView } from "@/lib/data";
 import { NlpCleanupView } from "@/components/app/test-ai-lab/nlp-cleanup-view";
 import { GherkinPreparationView } from "@/components/app/test-ai-lab/gherkin-preparation-view";
+import { KeywordMappingView } from "@/components/app/test-ai-lab/keyword-mapping-view";
 import { AnimatePresence, motion } from "framer-motion";
 
-export type LabStage = "nlp-cleanup" | "gherkin-preparation";
+export type LabStage = "nlp-cleanup" | "gherkin-preparation" | "keyword-mapping";
 
 const testCase = {
   id: "TC-101",
@@ -63,11 +64,12 @@ const cleanedStepsInitial = [
 ];
 
 export default function TestAiLabPage() {
-  const [activeView, setActiveView] = useState<ActiveView>("tmt-view");
+  const [activeView, setActiveView] = useState<ActiveView>("test-ai-lab");
   const [currentRole, setCurrentRole] = useState<Role>("manager");
   const [labStage, setLabStage] = useState<LabStage>("nlp-cleanup");
 
   const [cleanedSteps, setCleanedSteps] = useState(cleanedStepsInitial);
+  const [gherkinSteps, setGherkinSteps] = useState<string[]>([]);
 
   const currentUser = useMemo(() => {
     return allUsers.find((u) => u.role === currentRole)!;
@@ -80,12 +82,21 @@ export default function TestAiLabPage() {
   };
 
   const handleMenuClick = (view: ActiveView) => {
+    if (view === "keyword-mapping") {
+      setLabStage("keyword-mapping");
+    }
     setActiveView(view);
   };
   
   const handleNlpComplete = (finalSteps: typeof cleanedStepsInitial) => {
     setCleanedSteps(finalSteps);
+    setGherkinSteps(finalSteps.map(s => s.cleaned));
     setLabStage("gherkin-preparation");
+  }
+
+  const handleGherkinComplete = (finalSteps: string[]) => {
+      setGherkinSteps(finalSteps);
+      setLabStage("keyword-mapping");
   }
 
   const renderLabStage = () => {
@@ -102,9 +113,17 @@ export default function TestAiLabPage() {
         return (
            <GherkinPreparationView 
               testCase={testCase}
-              steps={cleanedSteps.map(s => s.cleaned)}
+              steps={gherkinSteps}
+              onComplete={handleGherkinComplete}
            />
         );
+      case "keyword-mapping":
+        return (
+            <KeywordMappingView
+                testCase={testCase}
+                steps={gherkinSteps}
+            />
+        )
       default:
         return <div>Unknown stage</div>;
     }
@@ -116,7 +135,7 @@ export default function TestAiLabPage() {
         currentRole={currentRole}
         onRoleChange={handleRoleChange}
         user={currentUser}
-        activeView={"test-ai-lab"}
+        activeView={activeView}
         onMenuClick={handleMenuClick}
       />
       <div className="flex flex-1 flex-col sm:gap-4 sm:py-4 sm:pl-64">
@@ -137,3 +156,5 @@ export default function TestAiLabPage() {
     </div>
   );
 }
+
+    

@@ -16,9 +16,10 @@ interface GherkinPreparationViewProps {
     summary: string;
   };
   steps: string[];
+  onComplete: (finalSteps: string[]) => void;
 }
 
-export function GherkinPreparationView({ testCase, steps }: GherkinPreparationViewProps) {
+export function GherkinPreparationView({ testCase, steps, onComplete }: GherkinPreparationViewProps) {
     const { toast } = useToast();
     const [tags, setTags] = useState<string[]>(["smoke-test", testCase.id.toLowerCase()]);
     const [currentTag, setCurrentTag] = useState("");
@@ -146,7 +147,7 @@ export function GherkinPreparationView({ testCase, steps }: GherkinPreparationVi
                          <h3 className="font-bold">Ready for the next step?</h3>
                          <p className="text-sm opacity-80">Next, we'll map keywords and generate the code.</p>
                        </div>
-                        <Button variant="secondary" size="lg">
+                        <Button variant="secondary" size="lg" onClick={() => onComplete(steps)}>
                            Continue <ArrowRight className="ml-2 h-5 w-5" />
                         </Button>
                     </CardContent>
@@ -156,3 +157,5 @@ export function GherkinPreparationView({ testCase, steps }: GherkinPreparationVi
     </div>
   );
 }
+
+    
