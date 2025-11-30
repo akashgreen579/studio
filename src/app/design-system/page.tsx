@@ -51,12 +51,12 @@ export default function DesignSystemPage() {
         <h2 className="text-2xl font-semibold">Color Palette</h2>
         <Card>
           <CardContent className="p-6 grid grid-cols-3 md:grid-cols-6 gap-6">
-            <ColorSwatch name="Primary" className="bg-primary" hex="#293B5F" />
-            <ColorSwatch name="Background" className="bg-background" hex="#E8E8EA" />
-            <ColorSwatch name="Accent" className="bg-accent" hex="#845EC2" />
-            <ColorSwatch name="Card" className="bg-card" hex="#FFFFFF" />
-            <ColorSwatch name="Destructive" className="bg-destructive" hex="#DC2626" />
-            <ColorSwatch name="Ring" className="bg-ring" hex="#845EC2" />
+            <ColorSwatch name="Primary" className="bg-primary" hex="#163f7a" />
+            <ColorSwatch name="Background" className="bg-background" hex="#F6F7F9" />
+            <ColorSwatch name="Surface" className="bg-card" hex="#FFFFFF" />
+            <ColorSwatch name="Accent" className="bg-accent" hex="#17A589" />
+            <ColorSwatch name="Warning" className="bg-yellow-500" hex="#F6A623" />
+            <ColorSwatch name="Destructive" className="bg-destructive" hex="#E04545" />
           </CardContent>
         </Card>
       </section>
@@ -106,12 +106,12 @@ export default function DesignSystemPage() {
             <CardHeader>
                 <CardTitle>Animation & Transitions</CardTitle>
                 <p className="text-muted-foreground">Motion should be purposeful, providing feedback and guiding the user without being distracting.</p>
-            </CardHeader>
+            </Header>
             <CardContent className="space-y-2">
-                <MotionSpec property="--ease-standard" value="cubic-bezier(0.4, 0, 0.2, 1)" description="Standard easing for most transitions."/>
-                <MotionSpec property="--duration-fast" value="150ms" description="For micro-interactions like hover effects."/>
-                <MotionSpec property="--duration-moderate" value="300ms" description="For component transitions like modal popups."/>
-                <MotionSpec property="--duration-slow" value="500ms" description="For larger screen or layout transitions."/>
+                <MotionSpec property="--ease-standard" value="cubic-bezier(0.2, 0.8, 0.2, 1)" description="Standard easing for most transitions."/>
+                <MotionSpec property="--duration-fast" value="200ms" description="For micro-interactions like hover effects."/>
+                <MotionSpec property="--duration-moderate" value="320ms" description="For component transitions like modal popups."/>
+                <MotionSpec property="--stagger" value="60-100ms" description="For staggered list animations."/>
             </CardContent>
         </Card>
       </section>
