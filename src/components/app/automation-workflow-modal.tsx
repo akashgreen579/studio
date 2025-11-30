@@ -9,6 +9,7 @@ import { Loader, Check, AlertTriangle, FileCode, GitBranch, Share2, Bot, GitMerg
 import { type TestCase } from "@/lib/data";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
 
 interface AutomationWorkflowModalProps {
   isOpen: boolean;
@@ -38,13 +39,13 @@ const StatusIcon = ({ status }: { status: StepStatus }) => {
   }
 };
 
-const FolderFoundCard = () => (
+const FolderFoundCard = ({ onContinue }: { onContinue: () => void }) => (
     <Card className="bg-green-50 border-green-200">
         <CardHeader className="flex flex-row items-center gap-3 space-y-0 p-4">
             <FolderCheck className="h-6 w-6 text-green-600"/>
             <div>
-                <CardTitle className="text-base text-green-900">Folder Found</CardTitle>
-                <p className="text-sm text-green-800">An exact match for the folder structure already exists and will be reused.</p>
+                <CardTitle className="text-base text-green-900">Folder Found & Reused</CardTitle>
+                <p className="text-sm text-green-800">An exact match for the folder structure exists. Automatically proceeding...</p>
             </div>
         </CardHeader>
     </Card>
@@ -208,6 +209,7 @@ type WorkflowStage = "validation" | "workspacePrep";
 
 export function AutomationWorkflowModal({ isOpen, setIsOpen, testCase }: AutomationWorkflowModalProps) {
     const { toast } = useToast();
+    const router = useRouter();
     const [currentStepIndex, setCurrentStepIndex] = useState(0);
     const [workflowStage, setWorkflowStage] = useState<WorkflowStage>("validation");
     const [steps, setSteps] = useState<Step[]>([
@@ -259,7 +261,7 @@ export function AutomationWorkflowModal({ isOpen, setIsOpen, testCase }: Automat
                 const newSteps = [...prev];
                 newSteps[1].status = 'warning'; // Paused for user input
                 if (folderStatus === 'exact') {
-                    newSteps[1].component = <FolderFoundCard />;
+                    newSteps[1].component = <FolderFoundCard onContinue={proceedToStep3} />;
                     setTimeout(() => proceedToStep3(), 2000);
                 } else if (folderStatus === 'similar') {
                     newSteps[1].component = <SimilarFolderCard onReuse={proceedToStep3} onCreate={proceedToStep3} />;
@@ -279,7 +281,9 @@ export function AutomationWorkflowModal({ isOpen, setIsOpen, testCase }: Automat
             title: "Workspace Ready!",
             description: `Now entering the TestAI Lab for ${testCase.id}.`,
         });
-        setTimeout(() => setIsOpen(false), 500);
+        setIsOpen(false);
+        // After modal closes, navigate to the TestAI Lab
+        setTimeout(() => router.push('/test-ai-lab'), 300);
     };
 
     const proceedToStep3 = () => {
@@ -367,7 +371,5 @@ export function AutomationWorkflowModal({ isOpen, setIsOpen, testCase }: Automat
     </Dialog>
   );
 }
-
-    
 
     

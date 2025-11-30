@@ -372,7 +372,7 @@ export const getEffectivePermissions = (userId: string, project?: Project): Perm
         basePermissions = permissionPresets.manager.permissions;
     } else { // 'employee'
         // Employees have no base permissions globally, they are granted per project.
-        basePermissions = {};
+        basePermissions = { runPipelines: true, automateTestCases: true, viewAssignedProjects: true };
     }
     
     // Project-specific permissions override the base role permissions.
