@@ -13,14 +13,13 @@ import {
   Search,
   MoreHorizontal,
   Star,
-  UserPlus,
+  Users,
   FolderPlus,
   RefreshCw,
   Shield,
   PlayCircle,
   X,
   ListTodo,
-  Users,
   LayoutGrid,
   Sparkles,
   SlidersHorizontal,
@@ -134,7 +133,7 @@ const TreeItem = ({ item, level, onSelect, selectedId }: { item: HierarchyItem, 
 
 const TableSkeleton = () => (
     <>
-        {[...Array(3)].map((_, i) => (
+        {[...Array(5)].map((_, i) => (
             <TableRow key={i}>
                 <TableCell className="w-[50px]"><Skeleton className="h-4 w-4" /></TableCell>
                 <TableCell className="w-[100px]"><Skeleton className="h-4 w-20" /></TableCell>
@@ -167,7 +166,6 @@ export function TMTView({ user }: TMTViewProps) {
     const { toast } = useToast();
 
     const permissions = getEffectivePermissions(user.id);
-    const canAutomate = permissions.automateTestCases;
     const isManager = user.role === 'manager';
 
     const handleAutomateClick = (testCase: TestCase) => {
@@ -310,8 +308,10 @@ export function TMTView({ user }: TMTViewProps) {
 
     const ManagerActionButton = ({ permission, tooltip, children, className, onClick, asChild, disabled }: { permission: keyof (Permissions), tooltip: string, children: React.ReactNode, className?: string, onClick?: () => void, asChild?: boolean, disabled?: boolean }) => {
         const hasPermission = permissions[permission];
+        const isDisabled = !hasPermission || disabled;
+        
         const buttonContent = (
-            <Button variant="outline" size="icon" className={cn("h-10 w-10 p-0 transition-all hover:scale-105 hover:shadow-md active:scale-95", className)} disabled={!hasPermission || disabled} onClick={onClick} asChild={asChild}>
+            <Button variant="outline" size="icon" className={cn("h-10 w-10 p-0 transition-all hover:scale-105 hover:shadow-md active:scale-95", className)} disabled={isDisabled} onClick={onClick} asChild={asChild}>
                 {children}
             </Button>
         );
@@ -373,7 +373,7 @@ export function TMTView({ user }: TMTViewProps) {
                             </Tooltip>
                         </TooltipProvider>
                          {isManager && (
-                            <ManagerActionButton permission="assignUsers" tooltip="Bulk Actions" asChild>
+                            <ManagerActionButton permission="assignUsers" tooltip="Bulk Actions" asChild disabled={selectedTestCases.size === 0}>
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
                                         <Button variant="outline" size="icon" className="h-10 w-10 p-0 transition-all hover:scale-105 hover:shadow-md active:scale-95" disabled={selectedTestCases.size === 0}>
@@ -501,50 +501,52 @@ export function TMTView({ user }: TMTViewProps) {
                         </TableRow>
                         </TableHeader>
                         <TableBody>
-                            <AnimatePresence>
-                            {isRefreshing ? <TableSkeleton /> : filteredTestCases.map(tc => (
-                                <motion.tr 
-                                    key={tc.id}
-                                    layout
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
-                                    className={cn(selectedTestCases.has(tc.id) && "bg-primary/5")}
-                                >
-                                    <TableCell>
-                                      {isMultiSelectActive && <Checkbox 
-                                        checked={selectedTestCases.has(tc.id)}
-                                        onCheckedChange={(checked) => handleTestCaseSelection(tc.id, !!checked)}
-                                      />}
-                                    </TableCell>
-                                    <TableCell className="font-medium">{highlightMatch(tc.id.toUpperCase())}</TableCell>
-                                    <TableCell>{highlightMatch(tc.summary)}</TableCell>
-                                    <TableCell>
-                                        <Badge variant={
-                                            tc.priority === 'High' ? 'destructive' :
-                                            tc.priority === 'Medium' ? 'secondary' : 'outline'
-                                        }>{tc.priority}</Badge>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Badge variant="outline">{tc.status}</Badge>
-                                    </TableCell>
-                                    <TableCell>{tc.assignee}</TableCell>
-                                    <TableCell className="text-right">
-                                        <TooltipProvider>
-                                            <Tooltip>
-                                                <TooltipTrigger asChild>
-                                                    <div tabIndex={canAutomate ? -1 : 0}>
-                                                        <Button variant="default" size="sm" onClick={() => handleAutomateClick(tc)} disabled={!canAutomate}>
-                                                            <Sparkles className="mr-2 h-4 w-4"/>Automate</Button>
-                                                    </div>
-                                                </TooltipTrigger>
-                                                {!canAutomate && <TooltipContent><p>You do not have permission to automate tests.</p></TooltipContent>}
-                                            </Tooltip>
-                                        </TooltipProvider>
-                                    </TableCell>
-                                </motion.tr>
-                            ))}
-                            </AnimatePresence>
+                            {isRefreshing ? <TableSkeleton /> : (
+                                <AnimatePresence>
+                                {filteredTestCases.map(tc => (
+                                    <motion.tr 
+                                        key={tc.id}
+                                        layout
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        exit={{ opacity: 0 }}
+                                        className={cn(selectedTestCases.has(tc.id) && "bg-primary/5")}
+                                    >
+                                        <TableCell>
+                                        {isMultiSelectActive && <Checkbox 
+                                            checked={selectedTestCases.has(tc.id)}
+                                            onCheckedChange={(checked) => handleTestCaseSelection(tc.id, !!checked)}
+                                        />}
+                                        </TableCell>
+                                        <TableCell className="font-medium">{highlightMatch(tc.id.toUpperCase())}</TableCell>
+                                        <TableCell>{highlightMatch(tc.summary)}</TableCell>
+                                        <TableCell>
+                                            <Badge variant={
+                                                tc.priority === 'High' ? 'destructive' :
+                                                tc.priority === 'Medium' ? 'secondary' : 'outline'
+                                            }>{tc.priority}</Badge>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Badge variant="outline">{tc.status}</Badge>
+                                        </TableCell>
+                                        <TableCell>{tc.assignee}</TableCell>
+                                        <TableCell className="text-right">
+                                            <TooltipProvider>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <div tabIndex={permissions.automateTestCases ? -1 : 0}>
+                                                            <Button variant="default" size="sm" onClick={() => handleAutomateClick(tc)} disabled={!permissions.automateTestCases}>
+                                                                <Sparkles className="mr-2 h-4 w-4"/>Automate</Button>
+                                                        </div>
+                                                    </TooltipTrigger>
+                                                    {!permissions.automateTestCases && <TooltipContent><p>You do not have permission to automate tests.</p></TooltipContent>}
+                                                </Tooltip>
+                                            </TooltipProvider>
+                                        </TableCell>
+                                    </motion.tr>
+                                ))}
+                                </AnimatePresence>
+                            )}
                         </TableBody>
                     </Table>
                      {filteredTestCases.length === 0 && !isRefreshing && (
