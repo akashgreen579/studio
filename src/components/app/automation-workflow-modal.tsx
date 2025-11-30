@@ -167,7 +167,7 @@ const WorkspacePrepAnimation = ({ onComplete }: { onComplete: () => void }) => {
             const timer = setTimeout(() => setCurrentStep(s => s + 1), 700);
             return () => clearTimeout(timer);
         } else {
-            const finalTimer = setTimeout(onComplete, 1000);
+            const finalTimer = setTimeout(onComplete, 100);
             return () => clearTimeout(finalTimer);
         }
     }, [currentStep, onComplete, prepSteps.length]);
@@ -277,12 +277,12 @@ export function AutomationWorkflowModal({ isOpen, setIsOpen, testCase }: Automat
     }, [isOpen]);
 
     const handleFinalCompletion = () => {
+        router.push('/dashboard?view=test-ai-lab');
+        setIsOpen(false);
         toast({
             title: "Workspace Ready!",
             description: `Now entering the TestAI Lab for ${testCase.id}.`,
         });
-        setIsOpen(false);
-        router.push('/dashboard?view=test-ai-lab');
     };
 
     const proceedToStep3 = () => {
@@ -370,6 +370,3 @@ export function AutomationWorkflowModal({ isOpen, setIsOpen, testCase }: Automat
     </Dialog>
   );
 }
-
-    
-    
