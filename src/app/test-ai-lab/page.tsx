@@ -3,11 +3,13 @@
 
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import type { LabStage } from "@/lib/data";
+import type { LabStage, User } from "@/lib/data";
 import { NlpCleanupView } from "@/components/app/test-ai-lab/nlp-cleanup-view";
 import { GherkinPreparationView } from "@/components/app/test-ai-lab/gherkin-preparation-view";
 import { KeywordMappingView } from "@/components/app/test-ai-lab/keyword-mapping-view";
 import { CodeGenerationView } from "@/components/app/test-ai-lab/code-generation-view";
+import { useSearchParams } from "next/navigation";
+import { allUsers } from "@/lib/data";
 
 const testCase = {
   id: "TC-101",
@@ -60,6 +62,10 @@ const cleanedStepsInitial = [
 ];
 
 export default function TestAiLabPage() {
+  const searchParams = useSearchParams();
+  const role = searchParams.get('role') || 'employee';
+  const currentUser = allUsers.find(u => u.role === role)!;
+
   const [labStage, setLabStage] = useState<LabStage>("nlp-cleanup");
 
   const [cleanedSteps, setCleanedSteps] = useState(cleanedStepsInitial);
@@ -105,6 +111,7 @@ export default function TestAiLabPage() {
       case "keyword-mapping":
         return (
           <KeywordMappingView
+            user={currentUser}
             testCase={testCase}
             steps={gherkinSteps}
             onComplete={handleKeywordMappingComplete}
