@@ -165,7 +165,7 @@ export function TMTView({ user }: TMTViewProps) {
     const [isRefreshing, setIsRefreshing] = useState(false);
     const { toast } = useToast();
 
-    const permissions = getEffectivePermissions(user);
+    const permissions = getEffectivePermissions(user.id);
     const isManager = user.role === 'manager';
 
     const handleAutomateClick = (testCase: TestCase) => {
@@ -610,4 +610,3 @@ export function TMTView({ user }: TMTViewProps) {
     );
 }
 
-    

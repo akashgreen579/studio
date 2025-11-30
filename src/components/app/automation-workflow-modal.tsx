@@ -98,10 +98,10 @@ const CreateFolderCard = ({ onCreate }: { onCreate: () => void }) => (
 
 const MergeAnimation = ({ onComplete }: { onComplete: () => void }) => {
     const mergeSteps = [
-        { name: "Commit to branch", icon: GitBranch },
+        { name: "Commit to branch 'feat/TC-101-automation'", icon: GitBranch },
         { name: "Create Merge Request", icon: Share2 },
-        { name: "AI Code Review", icon: Bot },
-        { name: "Auto-Merge to main", icon: GitMerge }
+        { name: "AI Code Review...", icon: Bot },
+        { name: "Auto-Merge to 'main'", icon: GitMerge }
     ];
     const [currentStep, setCurrentStep] = useState(0);
 
@@ -126,7 +126,7 @@ const MergeAnimation = ({ onComplete }: { onComplete: () => void }) => {
                     >
                         <Check className="h-16 w-16 text-green-500 mb-4"/>
                         <h3 className="text-lg font-semibold text-green-900">Automation Complete</h3>
-                        <p className="text-sm text-green-800">The basic automation script has been merged to main.</p>
+                        <p className="text-sm text-green-800">The baseline automation script has been merged to main.</p>
                     </motion.div>
                 )}
             </AnimatePresence>
@@ -211,7 +211,7 @@ export function AutomationWorkflowModal({ isOpen, setIsOpen, testCase }: Automat
     const [currentStepIndex, setCurrentStepIndex] = useState(0);
     const [workflowStage, setWorkflowStage] = useState<WorkflowStage>("validation");
     const [steps, setSteps] = useState<Step[]>([
-        { name: "Initialize", status: "pending", description: "Connecting to Git repository..." },
+        { name: "Initialize", status: "pending", description: "Connecting to Git repository & pulling latest 'main'..." },
         { name: "Validate Folder Structure", status: "pending", description: "Checking for existing automation folders..." },
         { name: "Generate & Merge Script", status: "pending", description: "Creating baseline script and merging to main." },
     ]);

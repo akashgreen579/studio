@@ -26,13 +26,13 @@ export interface Permissions {
   createSrcStructure: boolean;
   runPipelines: boolean;
   approveMergePRs: boolean; // Same as merge pull requests
+  commitAndPublish: boolean;
   
   // Admin/Manager Permissions
   createProject: boolean;
   editProjectSettings: boolean;
   assignUsers: boolean;
   syncTMT: boolean;
-  commitAndPublish: boolean;
   approveAccessRequests: boolean;
   adminOverride: boolean;
 }
