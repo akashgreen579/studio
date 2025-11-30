@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import {
   Archive,
   ChevronDown,
@@ -21,8 +21,10 @@ import {
   X,
   ListTodo,
   Users,
+  LayoutGrid,
+  Sparkles,
 } from "lucide-react";
-import { testCaseHierarchy, testCases as allTestCases, type TestCase, type User, getEffectivePermissions, permissionDescriptions } from "@/lib/data";
+import { testCaseHierarchy, testCases as allTestCases, type TestCase, type User, getEffectivePermissions } from "@/lib/data";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -65,14 +67,14 @@ const getIcon = (
   type: "epic" | "feature" | "folder" | "test-case",
   isExpanded: boolean
 ) => {
-  const commonClass = "h-4 w-4 mr-2 flex-shrink-0";
+  const commonClass = "h-4 w-4 mr-2 flex-shrink-0 text-muted-foreground group-hover:text-primary transition-colors";
   switch (type) {
     case "epic":
       return <Archive className={commonClass} />;
     case "feature":
       return <Folder className={commonClass} />;
     case "folder":
-      return isExpanded ? <ChevronDown className={commonClass} /> : <ChevronRight className={commonClass} />;
+       return isExpanded ? <ChevronDown className={cn(commonClass, "text-primary")} /> : <ChevronRight className={commonClass} />;
     case "test-case":
       return <File className={commonClass} />;
     default:
@@ -83,34 +85,45 @@ const getIcon = (
 const TreeItem = ({ item, level, onSelect, selectedId }: { item: HierarchyItem, level: number, onSelect: (id: string, type: HierarchyItem['type']) => void, selectedId: string | null }) => {
   const [isExpanded, setIsExpanded] = useState(level < 2);
 
-  const hasChildren = item.children && item.children.length > 0;
-  
   const handleToggle = () => {
-    if (hasChildren) {
-      setIsExpanded(!isExpanded);
-    }
-    onSelect(item.id, item.type);
+    setIsExpanded(!isExpanded);
   };
+  
+  const handleSelect = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onSelect(item.id, item.type);
+    if(item.children && item.children.length > 0) {
+      handleToggle();
+    }
+  }
   
   const isSelected = selectedId === item.id;
 
   return (
-    <div>
+    <div className="group">
       <div
-        className={`flex items-center p-1.5 rounded-md cursor-pointer transition-colors ${isSelected ? 'bg-primary/10 text-primary' : 'hover:bg-muted/50'}`}
+        className={cn("flex items-center p-1.5 rounded-md cursor-pointer transition-colors", 
+          isSelected ? 'bg-primary/10 text-primary font-medium' : 'hover:bg-muted/50'
+        )}
         style={{ paddingLeft: `${level * 1.25 + 0.5}rem` }}
-        onClick={handleToggle}
+        onClick={handleSelect}
       >
         {getIcon(item.type, isExpanded)}
         <span className="text-sm truncate">{item.name}</span>
       </div>
-      {isExpanded && hasChildren && (
-        <div className="mt-1">
+      <AnimatePresence>
+      {isExpanded && item.children && item.children.length > 0 && (
+        <motion.div 
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          exit={{ opacity: 0, height: 0 }}
+          className="mt-1 overflow-hidden">
           {item.children?.map((child) => (
             <TreeItem key={child.id} item={child} level={level + 1} onSelect={onSelect} selectedId={selectedId}/>
           ))}
-        </div>
+        </motion.div>
       )}
+      </AnimatePresence>
     </div>
   );
 };
@@ -124,10 +137,12 @@ export function TMTView({ user }: TMTViewProps) {
     const [isFilterPanelOpen, setFilterPanelOpen] = useState(false);
     const [selectedTestCase, setSelectedTestCase] = useState<TestCase | null>(null);
     const [selectedTestCases, setSelectedTestCases] = useState<Set<string>>(new Set());
+    const [searchQuery, setSearchQuery] = useState("");
     const [activeFilters, setActiveFilters] = useState<any[]>([
-      { type: 'Status', value: 'To Do', color: 'bg-blue-100 text-blue-800' },
-      { type: 'Priority', value: 'High', color: 'bg-red-100 text-red-800' }
+      { id: "s1", type: 'Status', value: 'To Do', color: 'bg-blue-100 text-blue-800' },
+      { id: "p1", type: 'Priority', value: 'High', color: 'bg-red-100 text-red-800' }
     ]);
+    const [isMultiSelectActive, setIsMultiSelectActive] = useState(false);
 
 
     const permissions = getEffectivePermissions(user.id);
@@ -145,99 +160,96 @@ export function TMTView({ user }: TMTViewProps) {
     }
 
     const filteredTestCases = useMemo(() => {
-        if (!selectedId) return allTestCases;
-        
-        // This is a mock filter. A real implementation would recursively search the tree.
-        switch(selectedType) {
-            case 'epic':
-                return allTestCases.filter(tc => tc.id.startsWith('tc-1') || tc.id.startsWith('tc-2'));
-            case 'feature':
-                 if (selectedId === 'feat-1-1') return allTestCases.filter(tc => tc.id.startsWith('tc-1'));
-                 return allTestCases;
-            case 'folder':
-                if (selectedId === 'folder-1-1-1') return allTestCases.filter(tc => tc.id === 'tc-101' || tc.id === 'tc-102');
-                return [];
-            case 'test-case':
-                return allTestCases.filter(tc => tc.id === selectedId);
-            default:
-                return allTestCases;
+        let cases = allTestCases;
+        if (searchQuery) {
+            cases = cases.filter(tc => 
+                tc.summary.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                tc.id.toLowerCase().includes(searchQuery.toLowerCase())
+            );
         }
-    }, [selectedId, selectedType]);
+        return cases;
+    }, [searchQuery]);
 
     const handleTestCaseSelection = (testCaseId: string, isSelected: boolean) => {
       setSelectedTestCases(prev => {
         const newSet = new Set(prev);
-        if (isSelected) {
-          newSet.add(testCaseId);
-        } else {
-          newSet.delete(testCaseId);
-        }
+        if (isSelected) newSet.add(testCaseId);
+        else newSet.delete(testCaseId);
         return newSet;
       });
+      if(!isMultiSelectActive) setIsMultiSelectActive(true);
     };
-
+    
     const handleSelectAll = (isSelected: boolean) => {
-      if (isSelected) {
-        setSelectedTestCases(new Set(filteredTestCases.map(tc => tc.id)));
-      } else {
-        setSelectedTestCases(new Set());
-      }
-    };
-
+        if (isSelected) {
+            setSelectedTestCases(new Set(filteredTestCases.map(tc => tc.id)));
+        } else {
+            setSelectedTestCases(new Set());
+        }
+        if(!isMultiSelectActive) setIsMultiSelectActive(true);
+    }
+    
     const selectedTestCasesDetails = useMemo(() => {
         return allTestCases.filter(tc => selectedTestCases.has(tc.id));
     }, [selectedTestCases]);
 
-    const removeFilter = (filterToRemove: any) => {
-      setActiveFilters(prev => prev.filter(f => f.value !== filterToRemove.value));
+    const removeFilter = (filterIdToRemove: string) => {
+        setActiveFilters(prev => prev.filter(f => f.id !== filterIdToRemove));
+    };
+    
+    const highlightMatch = (text: string) => {
+      if (!searchQuery) return text;
+      const regex = new RegExp(`(${searchQuery})`, 'gi');
+      return text.split(regex).map((part, index) =>
+        regex.test(part) ? (
+          <span key={index} className="bg-yellow-200/50 rounded-sm px-0.5 py-px">{part}</span>
+        ) : (
+          part
+        )
+      );
     };
 
     const ManagerActionButton = ({ permission, tooltip, children, className }: { permission: keyof (Permissions), tooltip: string, children: React.ReactNode, className?: string }) => {
         const hasPermission = permissions[permission];
+        const buttonContent = (
+            <Button variant="outline" size="icon" className={cn("h-10 w-10 p-0 transition-all hover:scale-105 hover:shadow-md active:scale-95", className)} disabled={!hasPermission}>
+                {children}
+            </Button>
+        );
 
         if (hasPermission) {
             return (
                 <TooltipProvider>
                     <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button variant="outline" className={cn("h-10 w-10 p-0", className)}>
-                                {children}
-                            </Button>
-                        </TooltipTrigger>
+                        <TooltipTrigger asChild>{buttonContent}</TooltipTrigger>
                         <TooltipContent><p>{tooltip}</p></TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
-            )
+            );
         }
+        
         return (
-            <TooltipProvider>
+             <TooltipProvider>
                  <Tooltip>
-                    <TooltipTrigger asChild>
-                        <div tabIndex={0}>
-                            <Button variant="outline" size="icon" disabled className={cn("h-10 w-10 p-0", className)}>
-                                {children}
-                            </Button>
-                        </div>
-                    </TooltipTrigger>
-                    <TooltipContent><p>You do not have permission to perform this action.</p></TooltipContent>
+                    <TooltipTrigger asChild><div tabIndex={0}>{buttonContent}</div></TooltipTrigger>
+                    <TooltipContent><p>You do not have permission for this action.</p></TooltipContent>
                 </Tooltip>
             </TooltipProvider>
-        )
+        );
     };
-
 
     return (
       <>
         <div className="grid grid-cols-1 md:grid-cols-[320px_1fr] gap-6 h-full">
             {/* Left Panel */}
-            <div className="border-r pr-6">
+            <div className="border-r pr-6 flex flex-col">
                  <h2 className="text-lg font-semibold px-2 mb-2">Module Explorer</h2>
                  <p className="text-sm text-muted-foreground px-2 mb-4">Browse test cases by feature.</p>
                  <div className="relative mb-4">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input placeholder="Filter modules..." className="pl-8"/>
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input placeholder="Filter modules..." className="pl-9 h-10"/>
                  </div>
-                 <ScrollArea className="h-[calc(100vh-220px)]">
+                 <ScrollArea className="flex-grow h-0">
                     <div className="space-y-1 pr-4">
                         {testCaseHierarchy.map(item => <TreeItem key={item.id} item={item} level={0} onSelect={handleSelect} selectedId={selectedId} />)}
                     </div>
@@ -247,16 +259,20 @@ export function TMTView({ user }: TMTViewProps) {
             {/* Right Panel */}
             <div className="flex flex-col">
                 {/* Filter Bar */}
-                <div className="space-y-3">
-                    <div className="flex gap-2 items-center">
-                         <TooltipProvider>
+                <div className="space-y-4">
+                    <div className="flex gap-2 items-center p-2 bg-background/80 backdrop-blur-sm rounded-lg shadow-sm border">
+                        <TooltipProvider>
                             <Tooltip>
                                 <TooltipTrigger asChild>
-                                    <Button variant="outline" className="h-10 w-10 p-0"><ListTodo className="h-5 w-5"/></Button>
+                                    <Button variant="outline" size="icon" 
+                                    className={cn("h-10 w-10 transition-all hover:scale-105 active:scale-95", isMultiSelectActive && "bg-primary/10 text-primary ring-2 ring-primary/50")}
+                                    onClick={() => setIsMultiSelectActive(!isMultiSelectActive)}>
+                                        <LayoutGrid className="h-5 w-5"/>
+                                    </Button>
                                 </TooltipTrigger>
-                                <TooltipContent><p>Toggle multi-select</p></TooltipContent>
+                                <TooltipContent><p>Toggle multi-select mode</p></TooltipContent>
                             </Tooltip>
-                         </TooltipProvider>
+                        </TooltipProvider>
                          {isManager && (
                             <ManagerActionButton permission="assignUsers" tooltip="Bulk Actions">
                                 <Users className="h-5 w-5"/>
@@ -267,47 +283,44 @@ export function TMTView({ user }: TMTViewProps) {
                          </ManagerActionButton>
                         
                         <div className="relative flex-grow">
-                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                             <Input placeholder="Search test cases by ID or summary..." className="pl-10 h-10 text-base" />
+                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground z-10" />
+                             <Input 
+                                placeholder="Search test cases by ID or summary..." 
+                                className="pl-10 h-10 text-base rounded-md focus:shadow-md focus:ring-2 ring-primary/50 transition-all"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
                         </div>
-                        <Button variant="outline" className="h-10 gap-2" onClick={() => setFilterPanelOpen(true)}>
+                        <Button variant="outline" className="h-10 gap-2 hover:scale-105 active:scale-95 transition-transform" onClick={() => setFilterPanelOpen(true)}>
                           <FilterIcon className="h-4 w-4"/> Filters
                         </Button>
-                        <Button variant="outline" className="h-10 gap-2">
-                          <Star className="h-4 w-4 text-amber-500"/> Saved Filters
-                        </Button>
-                        <Button
-                          className="h-10"
-                          disabled={selectedTestCases.size === 0 || !permissions.runPipelines}
-                          onClick={() => setPipelineModalOpen(true)}
-                        >
-                            <PlayCircle className="mr-2 h-4 w-4"/>
-                            Create Pipeline ({selectedTestCases.size})
+                        <Button variant="outline" className="h-10 gap-2 hover:scale-105 active:scale-95 transition-transform">
+                          <Star className="h-4 w-4 text-amber-500/80"/> Saved Filters
                         </Button>
                     </div>
                     {activeFilters.length > 0 && (
-                      <div className="flex gap-2 items-center">
-                          <span className="text-sm text-muted-foreground">Active filters:</span>
+                      <div className="flex gap-2 items-center flex-wrap">
+                          <span className="text-sm text-muted-foreground font-medium">Active filters:</span>
                            <AnimatePresence>
                               {activeFilters.map((filter, index) => (
                                 <motion.div
-                                  key={filter.value}
+                                  key={filter.id}
                                   layout
-                                  initial={{ opacity: 0, y: -10, scale: 0.8 }}
-                                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                                  exit={{ opacity: 0, x: -10, scale: 0.8 }}
+                                  initial={{ opacity: 0, scale: 0.8 }}
+                                  animate={{ opacity: 1, scale: 1 }}
+                                  exit={{ opacity: 0, scale: 0.8 }}
                                   transition={{ duration: 0.2, delay: index * 0.05 }}
                                 >
-                                  <Badge className={`flex items-center gap-1.5 ${filter.color} border border-transparent`}>
+                                  <Badge className={cn("flex items-center gap-1.5 py-1 px-2 text-sm border-transparent hover:shadow-md", filter.color)}>
                                     {filter.value}
-                                    <button onClick={() => removeFilter(filter)} className="rounded-full hover:bg-black/10 p-0.5">
+                                    <button onClick={() => removeFilter(filter.id)} className="rounded-full hover:bg-black/10 p-0.5">
                                       <X className="h-3 w-3" />
                                     </button>
                                   </Badge>
                                 </motion.div>
                               ))}
                           </AnimatePresence>
-                          <Button variant="ghost" size="sm" className="text-muted-foreground h-auto p-1" onClick={() => setActiveFilters([])}>Clear all</Button>
+                          <Button variant="ghost" size="sm" className="text-muted-foreground h-auto p-1 font-medium hover:text-primary transition-colors" onClick={() => setActiveFilters([])}>Clear all</Button>
                       </div>
                     )}
                 </div>
@@ -315,16 +328,16 @@ export function TMTView({ user }: TMTViewProps) {
                 <Separator className="my-4"/>
                 
                 {/* Test Case Table */}
-                <div className="rounded-lg border">
+                <ScrollArea className="flex-grow h-0 rounded-lg border">
                     <Table>
-                        <TableHeader>
+                        <TableHeader className="sticky top-0 bg-background/95 backdrop-blur-sm z-10">
                         <TableRow>
                             <TableHead className="w-[50px]">
-                              <Checkbox 
+                              {isMultiSelectActive && <Checkbox 
                                 onCheckedChange={(checked) => handleSelectAll(!!checked)}
                                 checked={filteredTestCases.length > 0 && selectedTestCases.size === filteredTestCases.length}
                                 indeterminate={selectedTestCases.size > 0 && selectedTestCases.size < filteredTestCases.length}
-                              />
+                              />}
                             </TableHead>
                             <TableHead className="w-[100px]">ID</TableHead>
                             <TableHead>Summary</TableHead>
@@ -332,24 +345,29 @@ export function TMTView({ user }: TMTViewProps) {
                             <TableHead>Status</TableHead>
                             <TableHead>Assignee</TableHead>
                             <TableHead className="text-right">
-                              <div className="flex items-center justify-end gap-2">
-                                {permissions.adminOverride && <Shield className="h-4 w-4 text-muted-foreground" title="Manager Actions"/>}
-                                <span>Actions</span>
-                              </div>
+                                Actions
                             </TableHead>
                         </TableRow>
                         </TableHeader>
                         <TableBody>
+                            <AnimatePresence>
                             {filteredTestCases.map(tc => (
-                                <TableRow key={tc.id} data-state={selectedTestCases.has(tc.id) && "selected"}>
+                                <motion.tr 
+                                    key={tc.id}
+                                    layout
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    className={cn(selectedTestCases.has(tc.id) && "bg-primary/5")}
+                                >
                                     <TableCell>
-                                      <Checkbox 
+                                      {isMultiSelectActive && <Checkbox 
                                         checked={selectedTestCases.has(tc.id)}
                                         onCheckedChange={(checked) => handleTestCaseSelection(tc.id, !!checked)}
-                                      />
+                                      />}
                                     </TableCell>
-                                    <TableCell className="font-medium">{tc.id.toUpperCase()}</TableCell>
-                                    <TableCell>{tc.summary}</TableCell>
+                                    <TableCell className="font-medium">{highlightMatch(tc.id.toUpperCase())}</TableCell>
+                                    <TableCell>{highlightMatch(tc.summary)}</TableCell>
                                     <TableCell>
                                         <Badge variant={
                                             tc.priority === 'High' ? 'destructive' :
@@ -365,27 +383,45 @@ export function TMTView({ user }: TMTViewProps) {
                                             <Tooltip>
                                                 <TooltipTrigger asChild>
                                                     <div tabIndex={canAutomate ? -1 : 0}>
-                                                        <Button variant="default" size="sm" onClick={() => handleAutomateClick(tc)} disabled={!canAutomate}>Automate</Button>
+                                                        <Button variant="default" size="sm" onClick={() => handleAutomateClick(tc)} disabled={!canAutomate}>
+                                                            <Sparkles className="mr-2 h-4 w-4"/>Automate</Button>
                                                     </div>
                                                 </TooltipTrigger>
-                                                {!canAutomate && <TooltipContent><p>{permissionDescriptions.automateTestCases.description}</p></TooltipContent>}
+                                                {!canAutomate && <TooltipContent><p>You do not have permission to automate tests.</p></TooltipContent>}
                                             </Tooltip>
                                         </TooltipProvider>
                                     </TableCell>
-                                </TableRow>
+                                </motion.tr>
                             ))}
+                            </AnimatePresence>
                         </TableBody>
                     </Table>
-                </div>
-                 {filteredTestCases.length === 0 && (
-                    <div className="text-center py-24 px-6 border-2 border-dashed rounded-lg mt-4">
-                        <File className="mx-auto h-12 w-12 text-muted-foreground"/>
-                        <h3 className="mt-4 text-lg font-medium">No Test Cases Found</h3>
-                        <p className="mt-1 text-sm text-muted-foreground">
-                           Select a module from the explorer or adjust your filters.
-                        </p>
-                    </div>
-                 )}
+                     {filteredTestCases.length === 0 && (
+                        <div className="text-center py-24 px-6">
+                            <File className="mx-auto h-12 w-12 text-muted-foreground"/>
+                            <h3 className="mt-4 text-lg font-medium">No Test Cases Found</h3>
+                            <p className="mt-1 text-sm text-muted-foreground">
+                            Try adjusting your search or filters.
+                            </p>
+                        </div>
+                    )}
+                </ScrollArea>
+                {selectedTestCases.size > 0 && (
+                     <motion.div 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="mt-4 p-3 bg-card border rounded-lg shadow-lg flex items-center justify-between"
+                     >
+                        <p className="font-medium">{selectedTestCases.size} test case{selectedTestCases.size > 1 ? 's' : ''} selected</p>
+                         <Button
+                          disabled={!permissions.runPipelines}
+                          onClick={() => setPipelineModalOpen(true)}
+                        >
+                            <PlayCircle className="mr-2 h-4 w-4"/>
+                            Create Pipeline
+                        </Button>
+                    </motion.div>
+                )}
             </div>
         </div>
         
@@ -404,6 +440,8 @@ export function TMTView({ user }: TMTViewProps) {
         <AdvancedFilterPanel
           isOpen={isFilterPanelOpen}
           setIsOpen={setFilterPanelOpen}
+          activeFilters={activeFilters}
+          setActiveFilters={setActiveFilters}
         />
       </>
     );
