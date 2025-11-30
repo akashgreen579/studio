@@ -20,8 +20,10 @@ import {
   Eye,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-import { notifications } from "@/lib/data";
+import { notifications, draftAutomations as initialDraftAutomations } from "@/lib/data";
 import { AnimatePresence, motion } from "framer-motion";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 
 interface EmployeeDashboardProps {
@@ -33,12 +35,6 @@ const summaryCards = [
     { title: "Completed Scripts", value: "12", icon: FileText, change: "+2 this week" },
     { title: "Draft Automations", value: "3", icon: FileClock, change: "1 needs review" },
     { title: "Pipelines Passed", value: "89%", icon: CheckCircle2, change: "-1.2% vs last week" },
-];
-
-const draftAutomations = [
-    { name: "TC-101: User Login", project: "Customer Portal", updated: new Date(Date.now() - 3600000), status: "Step Mapping Pending" },
-    { name: "TC-205: Add to Cart", project: "Payment Gateway", updated: new Date(Date.now() - 86400000 * 2), status: "AI Refinement Pending" },
-    { name: "TC-310: Profile Update", project: "Customer Portal", updated: new Date(Date.now() - 86400000 * 4), status: "Dry Run Required" },
 ];
 
 const pipelineHistory = [
@@ -59,13 +55,21 @@ const getStatusIcon = (status: string) => {
 };
 
 export function EmployeeDashboard({ user, projects }: EmployeeDashboardProps) {
+  const [draftAutomations, setDraftAutomations] = useState(initialDraftAutomations);
+  const router = useRouter();
+
+  const handleContinueDraft = (draft: any) => {
+    // This would navigate to the TestAI lab and load the specific draft state
+    router.push(`/test-ai-lab?draftId=${draft.id}`);
+  };
+
 
   return (
     <div className="grid gap-8">
         <div className="flex items-center justify-between">
             <h1 className="text-2xl font-semibold">Dashboard</h1>
             <div className="flex gap-2">
-                <Button variant="outline"><FlaskConical className="mr-2 h-4 w-4"/> Open TestAI Lab</Button>
+                <Button variant="outline" onClick={() => router.push('/test-ai-lab')}><FlaskConical className="mr-2 h-4 w-4"/> Open TestAI Lab</Button>
                 <Button>Trigger Pipeline <PlayCircle className="ml-2 h-4 w-4"/></Button>
             </div>
         </div>
@@ -95,13 +99,13 @@ export function EmployeeDashboard({ user, projects }: EmployeeDashboardProps) {
                     {draftAutomations.length > 0 ? (
                         <div className="space-y-4">
                             {draftAutomations.map(draft => (
-                                <Card key={draft.name} className="p-4 flex justify-between items-center group hover:bg-muted/50 transition-colors">
+                                <Card key={draft.id} className="p-4 flex justify-between items-center group hover:bg-muted/50 transition-colors">
                                     <div>
                                         <p className="font-semibold">{draft.name} <span className="font-normal text-muted-foreground">({draft.project})</span></p>
                                         <p className="text-xs text-muted-foreground">Last updated {formatDistanceToNow(draft.updated, { addSuffix: true })}</p>
                                         <Badge variant="secondary" className="mt-2">{draft.status}</Badge>
                                     </div>
-                                    <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => handleContinueDraft(draft)}>
                                         Continue <ArrowRight className="ml-2 h-4 w-4" />
                                     </Button>
                                 </Card>

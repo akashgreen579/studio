@@ -5,11 +5,13 @@ import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Code, GitBranch, Sparkles, Copy, Download, TestTube, FileCode, CheckCircle, RefreshCw } from "lucide-react";
+import { Code, GitBranch, Sparkles, Copy, Download, TestTube, FileCode, CheckCircle, RefreshCw, Save } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { generatedCode } from "@/lib/data";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { DryRunModal } from "./dry-run-modal";
+import { AiRefinementModal } from "./ai-refinement-modal";
 
 interface CodeGenerationViewProps {
   testCase: {
@@ -33,6 +35,9 @@ const CodeBlock = ({ content, onCopy, onDownload }: { content: string, onCopy: (
 export function CodeGenerationView({ testCase, onRestart }: CodeGenerationViewProps) {
     const { toast } = useToast();
     const [activeTab, setActiveTab] = useState("page-object");
+    const [isDryRunModalOpen, setDryRunModalOpen] = useState(false);
+    const [isRefinementModalOpen, setRefinementModalOpen] = useState(false);
+    const [code, setCode] = useState(generatedCode);
 
     const handleCopy = (content: string, fileName: string) => {
         navigator.clipboard.writeText(content);
@@ -53,96 +58,124 @@ export function CodeGenerationView({ testCase, onRestart }: CodeGenerationViewPr
         }
         toast({ title: `Downloaded ${fileName}.` });
     }
+    
+    const handleSaveDraft = () => {
+        toast({
+            title: "Draft Saved",
+            description: "Your progress has been saved. You can resume from the dashboard.",
+        });
+    }
 
   return (
-    <div className="space-y-6">
-        <header>
-            <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
-                <FileCode className="h-8 w-8 text-primary"/>
-                TestAI Lab: Code Generation & Refinement
-            </h1>
-            <p className="text-lg text-muted-foreground mt-2">
-                Review, refine, and stage the AI-generated automation code.
-            </p>
-        </header>
+    <>
+        <div className="space-y-6">
+            <header>
+                <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
+                    <FileCode className="h-8 w-8 text-primary"/>
+                    TestAI Lab: Code Generation & Refinement
+                </h1>
+                <p className="text-lg text-muted-foreground mt-2">
+                    Review, refine, and stage the AI-generated automation code.
+                </p>
+            </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-            {/* Left Pane: Code Preview */}
-            <div className="lg:col-span-2">
-                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                    <TabsList className="grid w-full grid-cols-3">
-                        <TabsTrigger value="page-object">Page Object</TabsTrigger>
-                        <TabsTrigger value="step-def">Step Definition</TabsTrigger>
-                        <TabsTrigger value="diff-view">Diff View <Badge className="ml-2">3</Badge></TabsTrigger>
-                    </TabsList>
-                    <Card className="mt-4 h-[600px]">
-                        <CardContent className="p-2 h-full">
-                            <TabsContent value="page-object" className="m-0 h-full">
-                                <CodeBlock 
-                                    content={generatedCode.pageObject}
-                                    onCopy={() => handleCopy(generatedCode.pageObject, 'LoginPage.java')}
-                                    onDownload={() => handleDownload(generatedCode.pageObject, 'LoginPage.java')}
-                                />
-                            </TabsContent>
-                             <TabsContent value="step-def" className="m-0 h-full">
-                                <CodeBlock 
-                                    content={generatedCode.stepDefinition}
-                                    onCopy={() => handleCopy(generatedCode.stepDefinition, 'LoginSteps.java')}
-                                    onDownload={() => handleDownload(generatedCode.stepDefinition, 'LoginSteps.java')}
-                                />
-                            </TabsContent>
-                             <TabsContent value="diff-view" className="m-0 h-full">
-                                <div className="p-4 h-full flex items-center justify-center text-center">
-                                    <p className="text-muted-foreground">Diff view would show changes against existing files.</p>
-                                </div>
-                            </TabsContent>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                {/* Left Pane: Code Preview */}
+                <div className="lg:col-span-2">
+                    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                        <TabsList className="grid w-full grid-cols-3">
+                            <TabsTrigger value="page-object">Page Object</TabsTrigger>
+                            <TabsTrigger value="step-def">Step Definition</TabsTrigger>
+                            <TabsTrigger value="diff-view">Staging <Badge className="ml-2">3</Badge></TabsTrigger>
+                        </TabsList>
+                        <Card className="mt-4 h-[600px]">
+                            <CardContent className="p-2 h-full">
+                                <TabsContent value="page-object" className="m-0 h-full">
+                                    <CodeBlock 
+                                        content={code.pageObject}
+                                        onCopy={() => handleCopy(code.pageObject, 'LoginPage.java')}
+                                        onDownload={() => handleDownload(code.pageObject, 'LoginPage.java')}
+                                    />
+                                </TabsContent>
+                                <TabsContent value="step-def" className="m-0 h-full">
+                                    <CodeBlock 
+                                        content={code.stepDefinition}
+                                        onCopy={() => handleCopy(code.stepDefinition, 'LoginSteps.java')}
+                                        onDownload={() => handleDownload(code.stepDefinition, 'LoginSteps.java')}
+                                    />
+                                </TabsContent>
+                                <TabsContent value="diff-view" className="m-0 h-full">
+                                    <div className="p-4 h-full flex flex-col items-center justify-center text-center bg-muted/40 rounded-lg">
+                                        <GitBranch className="h-10 w-10 text-muted-foreground mb-4"/>
+                                        <h3 className="text-lg font-semibold">Staging Area</h3>
+                                        <p className="text-muted-foreground text-sm">This view would show a diff of all changed files ready to be committed.</p>
+                                    </div>
+                                </TabsContent>
+                            </CardContent>
+                        </Card>
+                    </Tabs>
+                </div>
+
+                {/* Right Pane: Actions & Next Steps */}
+                <div className="space-y-6 sticky top-20">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2"><Sparkles className="h-5 w-5 text-amber-500"/> AI Refinement</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <p className="text-sm text-muted-foreground">Use AI to add assertions, improve locators, or add comments to your generated code.</p>
+                            <Button className="w-full" variant="outline" onClick={() => setRefinementModalOpen(true)}>
+                                Refine Code with AI
+                            </Button>
                         </CardContent>
                     </Card>
-                </Tabs>
-            </div>
-
-             {/* Right Pane: Actions & Next Steps */}
-            <div className="space-y-6 sticky top-20">
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><Sparkles className="h-5 w-5 text-amber-500"/> AI Refinement</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <p className="text-sm text-muted-foreground">Use AI to add assertions, improve locators, or add comments to your generated code.</p>
-                        <Button className="w-full" variant="outline">
-                            Refine Code with AI
-                        </Button>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><TestTube className="h-5 w-5 text-blue-500"/> Dry Run</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                         <p className="text-sm text-muted-foreground">Run the generated script in a sandboxed environment to validate its correctness before staging.</p>
-                         <Button className="w-full">
-                           Start Dry Run
-                        </Button>
-                    </CardContent>
-                </Card>
-
-                <Alert className="bg-green-50 border-green-200">
-                    <CheckCircle className="h-4 w-4 !text-green-600"/>
-                    <AlertTitle className="text-green-900">Ready to Complete?</AlertTitle>
-                    <AlertDescription className="text-green-800">
-                        Once you're satisfied, stage the code. A merge request will be created for review.
-                         <div className="mt-4 flex gap-2">
-                             <Button size="sm" variant="secondary" onClick={onRestart}>
-                                <RefreshCw className="h-4 w-4 mr-2"/> Start Over
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2"><TestTube className="h-5 w-5 text-blue-500"/> Dry Run</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <p className="text-sm text-muted-foreground">Run the generated script in a sandboxed environment to validate its correctness before staging.</p>
+                            <Button className="w-full" onClick={() => setDryRunModalOpen(true)}>
+                            Start Dry Run
                             </Button>
-                            <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white">
-                                <GitBranch className="h-4 w-4 mr-2"/> Stage & Commit
-                            </Button>
-                         </div>
-                    </AlertDescription>
-                </Alert>
+                        </CardContent>
+                    </Card>
+
+                    <Alert className="bg-green-50 border-green-200">
+                        <CheckCircle className="h-4 w-4 !text-green-600"/>
+                        <AlertTitle className="text-green-900">Ready to Complete?</AlertTitle>
+                        <AlertDescription className="text-green-800">
+                            Once you're satisfied, stage the code. A merge request will be created for review.
+                            <div className="mt-4 flex gap-2">
+                                <Button size="sm" variant="secondary" onClick={onRestart}>
+                                    <RefreshCw className="h-4 w-4 mr-2"/> Start Over
+                                </Button>
+                                <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white">
+                                    <GitBranch className="h-4 w-4 mr-2"/> Stage & Commit
+                                </Button>
+                            </div>
+                        </AlertDescription>
+                    </Alert>
+                    <Button variant="ghost" className="w-full text-muted-foreground" onClick={handleSaveDraft}>
+                        <Save className="h-4 w-4 mr-2"/> Save Draft & Resume Later
+                    </Button>
+                </div>
             </div>
         </div>
-    </div>
+        <DryRunModal 
+            isOpen={isDryRunModalOpen}
+            setIsOpen={setDryRunModalOpen}
+        />
+        <AiRefinementModal
+            isOpen={isRefinementModalOpen}
+            setIsOpen={setRefinementModalOpen}
+            originalCode={code.pageObject}
+            onApply={(newCode) => {
+                setCode(prev => ({...prev, pageObject: newCode}));
+                setRefinementModalOpen(false);
+                toast({ title: "AI Refinement Applied", description: "The Page Object code has been updated."});
+            }}
+        />
+    </>
   );
 }

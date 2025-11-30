@@ -346,7 +346,13 @@ public class LoginSteps {
     }
 }
 `
-}
+};
+
+export const draftAutomations = [
+    { id: "draft-1", name: "TC-101: User Login", project: "Customer Portal", updated: new Date(Date.now() - 3600000), status: "Code Generation" },
+    { id: "draft-2", name: "TC-205: Add to Cart", project: "Payment Gateway", updated: new Date(Date.now() - 86400000 * 2), status: "Keyword Mapping" },
+    { id: "draft-3", name: "TC-310: Profile Update", project: "Customer Portal", updated: new Date(Date.now() - 86400000 * 4), status: "NLP Cleanup" },
+];
 
 
 // This function merges project-specific permissions with global role-based permissions
