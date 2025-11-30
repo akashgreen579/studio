@@ -22,8 +22,15 @@ export function UserPermissionsView() {
         );
     }, [searchQuery]);
 
+    const handleSelectUser = (user: User) => {
+        setSelectedUser(null);
+        setTimeout(() => {
+            setSelectedUser(user);
+        }, 100);
+    }
+
     return (
-        <div className="grid md:grid-cols-[300px_1fr] gap-8 items-start">
+        <div className="grid md:grid-cols-[350px_1fr] gap-8 items-start">
             <Card>
                 <CardHeader>
                     <CardTitle>Users</CardTitle>
@@ -44,7 +51,7 @@ export function UserPermissionsView() {
                             <button 
                                 key={user.id}
                                 className={`flex items-center gap-4 p-4 text-left hover:bg-muted/50 transition-colors w-full ${selectedUser?.id === user.id ? 'bg-muted' : ''}`}
-                                onClick={() => setSelectedUser(user)}
+                                onClick={() => handleSelectUser(user)}
                             >
                                 <Avatar className="h-10 w-10">
                                     <AvatarImage src={user.avatar} data-ai-hint="person face" />

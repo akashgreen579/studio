@@ -26,6 +26,7 @@ import {
   LogOut,
   UserCheck,
   Palette,
+  Bot,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Role, ActiveView } from "@/app/dashboard/page";
@@ -153,6 +154,13 @@ const menuItems = [
         tooltip: "View the component and style guide",
         roles: ["manager", "employee"],
       },
+       {
+        href: "/test-ai-lab-brief",
+        icon: Bot,
+        label: "TestAI Lab Brief",
+        tooltip: "View the project brief for the TestAI Lab",
+        roles: ["manager", "employee"],
+      },
       {
         href: "#",
         icon: Bell,
@@ -172,7 +180,7 @@ export function Sidebar({
   activeView,
   onMenuClick,
 }: SidebarProps) {
-  const isActive = (item: any) => item.view && item.view === activeView;
+  const isActive = (item: any) => item.view && item.view === activeView || (item.href && item.href !== '#' && location.pathname.startsWith(item.href));
   const router = useRouter();
 
   const handleLogout = () => {
