@@ -66,7 +66,7 @@ export default function TestAiLabPage() {
   const role = searchParams.get('role') || 'employee';
   const currentUser = allUsers.find(u => u.role === role)!;
 
-  const [labStage, setLabStage] = useState<LabStage>("nlp-cleanup");
+  const [labStage, setLabStage] = useState<LabStage>("keyword-mapping");
 
   const [cleanedSteps, setCleanedSteps] = useState(cleanedStepsInitial);
   const [gherkinSteps, setGherkinSteps] = useState<string[]>([]);

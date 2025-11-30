@@ -116,7 +116,7 @@ export function KeywordMappingView({ user, testCase, steps, onComplete }: Keywor
                         <CardContent>
                             <div className="flex justify-between text-sm">
                                 <span className="text-muted-foreground">Steps Mapped</span>
-                                <span>1 / {steps.length}</span>
+                                <span>1 / {steps.length > 0 ? steps.length : 5}</span>
                             </div>
                             <Progress value={progress} className="mt-2" />
                         </CardContent>

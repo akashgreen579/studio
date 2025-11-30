@@ -5,7 +5,7 @@
 
 @layer base {
   :root {
-    /* TestCraft AI Design System - Light Theme */
+    /* TestCraft AI Design System - V2 */
     --background: 220 20% 97%; /* #F6F7F9 */
     --foreground: 222 84% 10%;
 
@@ -15,6 +15,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222 84% 10%;
     
+    --primary: 235 69% 51%; /* #4A5BFF -> using #163f7a as requested */
     --primary: 217 69% 28%; /* #163f7a */
     --primary-foreground: 210 40% 98%;
     
