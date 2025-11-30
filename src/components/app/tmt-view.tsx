@@ -593,6 +593,7 @@ export function TMTView({ user }: TMTViewProps) {
                 isOpen={isWorkflowModalOpen}
                 setIsOpen={setWorkflowModalOpen}
                 testCase={selectedTestCase}
+                role={user.role}
             />
         )}
          <CreatePipelineModal

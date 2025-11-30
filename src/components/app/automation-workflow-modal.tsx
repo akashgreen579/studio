@@ -6,7 +6,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "../ui/dialog";
 import { Button } from "../ui/button";
 import { Loader, Check, AlertTriangle, FileCode, GitBranch, Share2, Bot, GitMerge, FolderPlus, FolderCheck, FolderSearch, BrainCircuit, Wand, TestTube, FileText, BotMessageSquare } from "lucide-react";
-import { type TestCase } from "@/lib/data";
+import { type TestCase, Role } from "@/lib/data";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
@@ -15,6 +15,7 @@ interface AutomationWorkflowModalProps {
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
   testCase: TestCase;
+  role: Role;
 }
 
 type StepStatus = "pending" | "running" | "success" | "warning" | "error";
@@ -208,7 +209,7 @@ const WorkspacePrepAnimation = ({ onComplete }: { onComplete: () => void }) => {
 
 type WorkflowStage = "validation" | "workspacePrep";
 
-export function AutomationWorkflowModal({ isOpen, setIsOpen, testCase }: AutomationWorkflowModalProps) {
+export function AutomationWorkflowModal({ isOpen, setIsOpen, testCase, role }: AutomationWorkflowModalProps) {
     const { toast } = useToast();
     const router = useRouter();
     const [currentStepIndex, setCurrentStepIndex] = useState(0);
@@ -278,13 +279,8 @@ export function AutomationWorkflowModal({ isOpen, setIsOpen, testCase }: Automat
     }, [isOpen]);
 
     const handleFinalCompletion = () => {
-        toast({
-            title: "Workspace Ready!",
-            description: `Now entering the TestAI Lab for ${testCase.id}.`,
-        });
-        setIsOpen(false);
         // Use direct browser navigation to avoid router state issues within the closing modal.
-        window.location.href = `/dashboard?view=test-ai-lab`;
+        window.location.href = `/dashboard?view=test-ai-lab&role=${role}`;
     };
 
     const proceedToStep3 = () => {
