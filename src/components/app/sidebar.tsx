@@ -1,9 +1,8 @@
 
-
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import {
   Tooltip,
   TooltipContent,
@@ -180,8 +179,9 @@ export function Sidebar({
   activeView,
   onMenuClick,
 }: SidebarProps) {
-  const isActive = (item: any) => item.view && item.view === activeView || (item.href && item.href !== '#' && location.pathname.startsWith(item.href));
   const router = useRouter();
+  const pathname = usePathname();
+  const isActive = (item: any) => item.view && item.view === activeView || (item.href && item.href !== '#' && pathname.startsWith(item.href));
 
   const handleLogout = () => {
     router.push('/login');
