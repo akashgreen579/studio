@@ -202,5 +202,3 @@ export function KeywordMappingView({ testCase, steps }: KeywordMappingViewProps)
     </div>
   );
 }
-
-    

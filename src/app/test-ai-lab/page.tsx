@@ -31,35 +31,35 @@ const cleanedStepsInitial = [
     cleaned: "Given the user is on the login page",
     confidence: 95,
     suggestion: "Change to Gherkin 'Given' syntax",
-    type: "syntax",
+    type: "syntax" as const,
   },
   {
     original: "User enters their username and password.",
     cleaned: "When the user enters their username and password",
     confidence: 98,
     suggestion: "Change to Gherkin 'When' syntax",
-    type: "syntax",
+    type: "syntax" as const,
   },
   {
     original: "User clicks the login button.",
     cleaned: "And the user clicks the 'Login' button",
     confidence: 85,
     suggestion: "Specify UI element 'Login' button",
-    type: "clarity",
+    type: "clarity" as const,
   },
   {
     original: "The user should be redirected to the dashboard.",
     cleaned: "Then the user is redirected to the dashboard page",
     confidence: 92,
     suggestion: "Change to Gherkin 'Then' syntax",
-    type: "syntax",
+    type: "syntax" as const,
   },
   {
     original: "A welcome message is visible.",
     cleaned: "And a 'Welcome' message is displayed",
     confidence: 78,
     suggestion: "Clarify what is displayed",
-    type: "clarity",
+    type: "clarity" as const,
   },
 ];
 
@@ -156,5 +156,3 @@ export default function TestAiLabPage() {
     </div>
   );
 }
-
-    
