@@ -283,7 +283,7 @@ export function AutomationWorkflowModal({ isOpen, setIsOpen, testCase }: Automat
         });
         setIsOpen(false);
         // After modal closes, navigate to the TestAI Lab
-        setTimeout(() => router.push('/test-ai-lab'), 300);
+        setTimeout(() => router.push('/dashboard?view=test-ai-lab'), 300);
     };
 
     const proceedToStep3 = () => {
@@ -372,4 +372,5 @@ export function AutomationWorkflowModal({ isOpen, setIsOpen, testCase }: Automat
   );
 }
 
+    
     
