@@ -199,24 +199,19 @@ export function Sidebar({
   
   const handleLinkClick = (e: React.MouseEvent, item: any) => {
     e.preventDefault();
-    const targetUrl = item.href || pathname;
-    let newPath = targetUrl;
-    
-    // For dashboard links, ensure role is preserved
-    if (targetUrl === '/dashboard') {
-        newPath = `/dashboard?role=${currentRole}`;
+    if (!item.view) {
+        if (item.href && item.href !== '#') router.push(item.href);
+        return;
     }
 
-    // Navigate if the path is different
-    if (newPath !== `${pathname}?role=${currentRole}` && targetUrl !== '#') {
+    if (item.href === '/dashboard') {
+        const newPath = `/dashboard?role=${currentRole}&view=${item.view}`;
         router.push(newPath);
+    } else if (item.href && item.href !== '#') {
+        router.push(item.href);
     }
 
-    // Set the active view
-    if (item.view) {
-        // Use a timeout to ensure the view switch happens after potential navigation
-        setTimeout(() => onMenuClick(item.view as ActiveView), 0);
-    }
+    onMenuClick(item.view as ActiveView);
   }
 
   return (

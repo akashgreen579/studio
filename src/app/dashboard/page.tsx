@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState, useMemo, useCallback, Suspense } from "react";
@@ -30,6 +29,7 @@ export type ActiveView = "dashboard" | "project-settings" | "user-management" | 
 function DashboardContent() {
   const searchParams = useSearchParams();
   const initialRole = searchParams.get('role') as Role || 'employee';
+  const initialView = searchParams.get('view') as ActiveView || 'dashboard';
 
   const { toast } = useToast();
   const [role, setRole] = useState<Role>(initialRole);
@@ -38,7 +38,7 @@ function DashboardContent() {
   const [lastCreatedProject, setLastCreatedProject] = useState<Project | null>(
     null
   );
-  const [activeView, setActiveView] = useState<ActiveView>("dashboard");
+  const [activeView, setActiveView] = useState<ActiveView>(initialView);
 
   const currentUser = useMemo(() => {
     return allUsers.find((u) => u.role === role)!;
