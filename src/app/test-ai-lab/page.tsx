@@ -7,7 +7,6 @@ import type { LabStage } from "@/lib/data";
 import { NlpCleanupView } from "@/components/app/test-ai-lab/nlp-cleanup-view";
 import { GherkinPreparationView } from "@/components/app/test-ai-lab/gherkin-preparation-view";
 import { KeywordMappingView } from "@/components/app/test-ai-lab/keyword-mapping-view";
-import { ActionSimulationView } from "@/components/app/test-ai-lab/action-simulation-view";
 import { CodeGenerationView } from "@/components/app/test-ai-lab/code-generation-view";
 
 const testCase = {
@@ -78,10 +77,6 @@ export default function TestAiLabPage() {
   };
   
   const handleKeywordMappingComplete = () => {
-    setLabStage("action-simulation");
-  }
-  
-  const handleSimulationComplete = () => {
     setLabStage("code-generation");
   }
   
@@ -114,14 +109,6 @@ export default function TestAiLabPage() {
             steps={gherkinSteps}
             onComplete={handleKeywordMappingComplete}
           />
-        );
-      case "action-simulation":
-        return (
-            <ActionSimulationView
-                testCase={testCase}
-                steps={gherkinSteps}
-                onComplete={handleSimulationComplete}
-            />
         );
       case "code-generation":
         return (

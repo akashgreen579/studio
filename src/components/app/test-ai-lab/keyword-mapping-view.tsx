@@ -12,7 +12,9 @@ import { existingKeywords, type ExistingKeyword } from "@/lib/data";
 import { AnimatePresence, motion } from "framer-motion";
 import { Progress } from "@/components/ui/progress";
 import { KeywordMappingCard } from "./keyword-mapping-card";
-import { CreateKeywordModal, RecordKeywordModal } from "./keyword-action-modals";
+import { CreateKeywordModal } from "./keyword-action-modals";
+import { ActionSimulationModal } from "./action-simulation-modal";
+
 
 interface KeywordMappingViewProps {
   testCase: {
@@ -88,12 +90,12 @@ export function KeywordMappingView({ testCase, steps, onComplete }: KeywordMappi
         });
     };
     
-    const openCreateModal = (mapping: StepMapping, index: number) => {
+    const openCreateModal = (mapping: StepMapping) => {
         setSelectedStep(mapping);
         setCreateModalOpen(true);
     }
     
-    const openRecordModal = (mapping: StepMapping, index: number) => {
+    const openRecordModal = (mapping: StepMapping) => {
         setSelectedStep(mapping);
         setRecordModalOpen(true);
     }
@@ -139,8 +141,8 @@ export function KeywordMappingView({ testCase, steps, onComplete }: KeywordMappi
                                 <KeywordMappingCard
                                     mapping={mapping}
                                     onUpdate={(newMapping) => handleUpdateMapping(index, newMapping)}
-                                    onCreate={() => openCreateModal(mapping, index)}
-                                    onRecord={() => openRecordModal(mapping, index)}
+                                    onCreate={() => openCreateModal(mapping)}
+                                    onRecord={() => openRecordModal(mapping)}
                                 />
                              </motion.div>
                         ))}
@@ -211,7 +213,7 @@ export function KeywordMappingView({ testCase, steps, onComplete }: KeywordMappi
                     onClick={onComplete}
                     className="glow-on-enable"
                 >
-                   Continue to Action Simulation <ArrowRight className="ml-2 h-5 w-5" />
+                   Continue to Code Generation <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
             </div>
         </motion.div>
@@ -221,10 +223,14 @@ export function KeywordMappingView({ testCase, steps, onComplete }: KeywordMappi
             setIsOpen={setCreateModalOpen}
             gherkinStep={selectedStep?.gherkinStep || ""}
         />
-        <RecordKeywordModal
+        <ActionSimulationModal
             isOpen={isRecordModalOpen}
             setIsOpen={setRecordModalOpen}
             gherkinStep={selectedStep?.gherkinStep || ""}
+            onGenerate={(actions) => {
+                console.log("Generated actions:", actions);
+                setRecordModalOpen(false);
+            }}
         />
     </>
   );
