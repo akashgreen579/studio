@@ -8,14 +8,17 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { ArrowRight, Sparkles, Wand, RefreshCw } from "lucide-react";
-import { existingKeywords, type ExistingKeyword, type TestCase } from "@/lib/data";
+import { existingKeywords, type ExistingKeyword } from "@/lib/data";
 import { AnimatePresence, motion } from "framer-motion";
 import { Progress } from "@/components/ui/progress";
 import { KeywordMappingCard } from "./keyword-mapping-card";
 import { CreateKeywordModal, RecordKeywordModal } from "./keyword-action-modals";
 
 interface KeywordMappingViewProps {
-  testCase: TestCase;
+  testCase: {
+    id: string;
+    summary: string;
+  };
   steps: string[];
   onComplete: () => void;
 }
@@ -226,4 +229,3 @@ export function KeywordMappingView({ testCase, steps, onComplete }: KeywordMappi
     </>
   );
 }
-

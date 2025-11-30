@@ -21,9 +21,9 @@ interface KeywordMappingCardProps {
 const SimilarityBadge = ({ similarity }: { similarity: number | null }) => {
   if (!similarity) return null;
   
-  let colorClass = "bg-amber-100 text-amber-800 border-amber-200/80";
-  if (similarity > 95) colorClass = "bg-green-100 text-green-800 border-green-200/80";
-  else if (similarity > 80) colorClass = "bg-sky-100 text-sky-800 border-sky-200/80";
+  let colorClass = "bg-gray-100 text-gray-800 border-gray-200/80";
+  if (similarity > 80) colorClass = "bg-green-100 text-green-800 border-green-200/80";
+  else if (similarity > 60) colorClass = "bg-amber-100 text-amber-800 border-amber-200/80";
 
   return (
     <Badge variant="outline" className={cn("font-semibold", colorClass)}>
@@ -43,7 +43,7 @@ export const KeywordMappingCard = ({ mapping, onUpdate, onCreate, onRecord }: Ke
         const timer = setTimeout(() => setIsReused(false), 2000);
         return () => clearTimeout(timer);
     }
-  }, [mapping.action]);
+  }, [mapping.action, isReused]);
 
 
   const handleRipple = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -119,7 +119,7 @@ export const KeywordMappingCard = ({ mapping, onUpdate, onCreate, onRecord }: Ke
     <Card 
         ref={cardRef} 
         className={cn(
-            "p-4 grid grid-cols-[1fr_auto] items-center gap-4 transition-all duration-300 shadow-sm hover:shadow-subtle",
+            "p-4 grid grid-cols-[1fr_auto] items-center gap-4 transition-all duration-300 shadow-sm hover:shadow-subtle hover:-translate-y-0.5",
             isReused && 'animate-glow-border-green'
         )}
     >
