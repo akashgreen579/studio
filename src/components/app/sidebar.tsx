@@ -26,7 +26,6 @@ import {
   UserCheck,
   Palette,
   Bot,
-  Link2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ActiveView } from "@/app/dashboard/page";
@@ -64,19 +63,10 @@ const menuItems = [
         roles: ["manager", "employee"],
       },
       {
-        href: "/test-ai-lab",
+        href: "#",
         icon: FlaskConical,
         label: "TestAI Lab",
-        view: "test-ai-lab",
         tooltip: "Automation workspace (Phase 4)",
-        roles: ["manager", "employee"],
-      },
-      {
-        href: "/test-ai-lab",
-        icon: Link2,
-        label: "Keyword Mapping",
-        view: "keyword-mapping",
-        tooltip: "Keyword mapping workspace (Phase 4)",
         roles: ["manager", "employee"],
       },
       {
@@ -199,19 +189,12 @@ export function Sidebar({
   
   const handleLinkClick = (e: React.MouseEvent, item: any) => {
     e.preventDefault();
-    if (!item.view) {
-        if (item.href && item.href !== '#') router.push(item.href);
-        return;
+    if (item.view) {
+        onMenuClick(item.view as ActiveView);
     }
-
-    if (item.href === '/dashboard') {
-        const newPath = `/dashboard?role=${currentRole}&view=${item.view}`;
-        router.push(newPath);
-    } else if (item.href && item.href !== '#') {
+    if (item.href && item.href !== '#') {
         router.push(item.href);
     }
-
-    onMenuClick(item.view as ActiveView);
   }
 
   return (

@@ -55,7 +55,7 @@ export default function DesignSystemPage() {
             <ColorSwatch name="Background" className="bg-background" hex="#F6F7F9" />
             <ColorSwatch name="Surface" className="bg-card" hex="#FFFFFF" />
             <ColorSwatch name="Accent" className="bg-accent" hex="#17A589" />
-            <ColorSwatch name="Warning" className="bg-yellow-500" hex="#F6A623" />
+            <ColorSwatch name="Warning" className="bg-warning" hex="#F6A623" />
             <ColorSwatch name="Destructive" className="bg-destructive" hex="#E04545" />
           </CardContent>
         </Card>

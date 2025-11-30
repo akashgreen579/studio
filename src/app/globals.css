@@ -26,7 +26,7 @@
     --accent: 170 70% 30%; /* #17A589 */
     --accent-foreground: 210 40% 98%;
     
-    --destructive: 0 84.2% 60.2%; /* #E04545 */
+    --destructive: 0 72% 51%; /* #E04545 */
     --destructive-foreground: 210 40% 98%;
 
     --warning: 38 92% 56%; /* #F6A623 */
@@ -62,7 +62,7 @@
     --accent: 170 70% 40%;
     --accent-foreground: 210 40% 98%;
     
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 0 63% 40%; /* #E04545 */
     --destructive-foreground: 210 40% 98%;
 
     --warning: 38 92% 50%;
@@ -89,4 +89,10 @@
   p { @apply text-base; }
   .text-small { @apply text-sm; }
   .text-tiny { @apply text-xs; }
+}
+
+@layer utilities {
+  .shadow-subtle {
+    box-shadow: 0 4px 14px rgba(20, 30, 40, 0.06);
+  }
 }

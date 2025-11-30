@@ -122,7 +122,7 @@ export default function TestAiLabBriefPage() {
                    <ColorSwatch name="Background" className="bg-background" hex="#F6F7F9" description="The main canvas color for a clean, spacious feel." />
                    <ColorSwatch name="Surface" className="bg-card" hex="#FFFFFF" description="For primary content panes like cards, modals, and panels." />
                    <ColorSwatch name="Accent" className="bg-accent" hex="#17A589" description="Teal for success states, confirmations, and positive feedback." />
-                   <ColorSwatch name="Warning" className="bg-yellow-500" hex="#F6A623" description="Amber for warnings, in-progress states, and areas needing attention." />
+                   <ColorSwatch name="Warning" className="bg-warning" hex="#F6A623" description="Amber for warnings, in-progress states, and areas needing attention." />
                    <ColorSwatch name="Danger" className="bg-destructive" hex="#E04545" description="For errors, destructive actions, and critical alerts." />
                 </CardContent>
             </Card>
