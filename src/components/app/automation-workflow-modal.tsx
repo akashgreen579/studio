@@ -154,6 +154,7 @@ const MergeAnimation = ({ onComplete }: { onComplete: () => void }) => {
 }
 
 const WorkspacePrepAnimation = ({ onComplete }: { onComplete: () => void }) => {
+    const router = useRouter();
     const prepSteps = [
         { name: "NLP Cleanup", icon: BotMessageSquare },
         { name: "Gherkin Preparation", icon: FileText },
@@ -278,9 +279,13 @@ export function AutomationWorkflowModal({ isOpen, setIsOpen, testCase, role }: A
 
     }, [isOpen]);
 
-    const handleFinalCompletion = () => {
-        // Use direct browser navigation to avoid router state issues within the closing modal.
-        window.location.href = `/dashboard?view=test-ai-lab&role=${role}`;
+    const handleFinalCompletion = async () => {
+        await router.push(`/dashboard?view=test-ai-lab&role=${role}`);
+        setIsOpen(false);
+        toast({
+            title: "Workspace Ready",
+            description: "The TestAI Lab is set up for your test case.",
+        });
     };
 
     const proceedToStep3 = () => {
