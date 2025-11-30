@@ -41,6 +41,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
@@ -52,6 +53,8 @@ import { CreatePipelineModal } from "./create-pipeline-modal";
 import { motion, AnimatePresence } from "framer-motion";
 import { AdvancedFilterPanel } from "./advanced-filter-panel";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
+import { Skeleton } from "../ui/skeleton";
 
 interface HierarchyItem {
   id: string;
@@ -129,6 +132,22 @@ const TreeItem = ({ item, level, onSelect, selectedId }: { item: HierarchyItem, 
   );
 };
 
+const TableSkeleton = () => (
+    <>
+        {[...Array(3)].map((_, i) => (
+            <TableRow key={i}>
+                <TableCell className="w-[50px]"><Skeleton className="h-4 w-4" /></TableCell>
+                <TableCell className="w-[100px]"><Skeleton className="h-4 w-20" /></TableCell>
+                <TableCell><Skeleton className="h-4 w-full" /></TableCell>
+                <TableCell><Skeleton className="h-6 w-16" /></TableCell>
+                <TableCell><Skeleton className="h-6 w-20" /></TableCell>
+                <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                <TableCell className="text-right"><Skeleton className="h-8 w-28 ml-auto" /></TableCell>
+            </TableRow>
+        ))}
+    </>
+)
+
 
 export function TMTView({ user }: TMTViewProps) {
     const [selectedId, setSelectedId] = useState<string | null>('epic-1');
@@ -144,6 +163,8 @@ export function TMTView({ user }: TMTViewProps) {
     const [isJQLOpen, setJQLOpen] = useState(false);
     const [jqlQuery, setJqlQuery] = useState("");
     const [isJqlValid, setIsJqlValid] = useState<boolean | null>(null);
+    const [isRefreshing, setIsRefreshing] = useState(false);
+    const { toast } = useToast();
 
     const permissions = getEffectivePermissions(user.id);
     const canAutomate = permissions.automateTestCases;
@@ -275,10 +296,22 @@ export function TMTView({ user }: TMTViewProps) {
         }
     }, [jqlQuery]);
 
-    const ManagerActionButton = ({ permission, tooltip, children, className, onClick }: { permission: keyof (Permissions), tooltip: string, children: React.ReactNode, className?: string, onClick?: () => void }) => {
+    const handleRefresh = () => {
+        if (isRefreshing) return;
+        setIsRefreshing(true);
+        setTimeout(() => {
+            setIsRefreshing(false);
+            toast({
+                title: "TMT Data Refreshed",
+                description: "Test cases and modules have been synced.",
+            });
+        }, 1500);
+    }
+
+    const ManagerActionButton = ({ permission, tooltip, children, className, onClick, asChild, disabled }: { permission: keyof (Permissions), tooltip: string, children: React.ReactNode, className?: string, onClick?: () => void, asChild?: boolean, disabled?: boolean }) => {
         const hasPermission = permissions[permission];
         const buttonContent = (
-            <Button variant="outline" size="icon" className={cn("h-10 w-10 p-0 transition-all hover:scale-105 hover:shadow-md active:scale-95", className)} disabled={!hasPermission} onClick={onClick}>
+            <Button variant="outline" size="icon" className={cn("h-10 w-10 p-0 transition-all hover:scale-105 hover:shadow-md active:scale-95", className)} disabled={!hasPermission || disabled} onClick={onClick} asChild={asChild}>
                 {children}
             </Button>
         );
@@ -340,12 +373,24 @@ export function TMTView({ user }: TMTViewProps) {
                             </Tooltip>
                         </TooltipProvider>
                          {isManager && (
-                            <ManagerActionButton permission="assignUsers" tooltip="Bulk Actions">
-                                <Users className="h-5 w-5"/>
+                            <ManagerActionButton permission="assignUsers" tooltip="Bulk Actions" asChild>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="outline" size="icon" className="h-10 w-10 p-0 transition-all hover:scale-105 hover:shadow-md active:scale-95" disabled={selectedTestCases.size === 0}>
+                                            <Users className="h-5 w-5"/>
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent>
+                                        <DropdownMenuItem>Assign Selected ({selectedTestCases.size})</DropdownMenuItem>
+                                        <DropdownMenuItem>Export Selected ({selectedTestCases.size})</DropdownMenuItem>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuItem className="text-red-600">Delete Selected</DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
                             </ManagerActionButton>
                          )}
-                         <ManagerActionButton permission="syncTMT" tooltip="Refresh TMT">
-                            <RefreshCw className="h-5 w-5"/>
+                         <ManagerActionButton permission="syncTMT" tooltip="Refresh TMT" onClick={handleRefresh}>
+                            <RefreshCw className={cn("h-5 w-5", isRefreshing && "animate-spin")}/>
                          </ManagerActionButton>
                         
                         <div className="relative flex-grow">
@@ -457,7 +502,7 @@ export function TMTView({ user }: TMTViewProps) {
                         </TableHeader>
                         <TableBody>
                             <AnimatePresence>
-                            {filteredTestCases.map(tc => (
+                            {isRefreshing ? <TableSkeleton /> : filteredTestCases.map(tc => (
                                 <motion.tr 
                                     key={tc.id}
                                     layout
@@ -502,7 +547,7 @@ export function TMTView({ user }: TMTViewProps) {
                             </AnimatePresence>
                         </TableBody>
                     </Table>
-                     {filteredTestCases.length === 0 && (
+                     {filteredTestCases.length === 0 && !isRefreshing && (
                         <div className="text-center py-24 px-6">
                             <File className="mx-auto h-12 w-12 text-muted-foreground"/>
                             <h3 className="mt-4 text-lg font-medium">No Test Cases Found</h3>
