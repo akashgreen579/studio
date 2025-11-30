@@ -47,7 +47,7 @@ const menuItems = [
     section: "MAIN",
     items: [
       {
-        href: "#",
+        href: "/dashboard",
         icon: Home,
         label: "Dashboard",
         view: "dashboard",
@@ -55,7 +55,7 @@ const menuItems = [
         roles: ["manager", "employee"],
       },
       {
-        href: "#",
+        href: "/dashboard", // Should go to dashboard then have TMT view selected
         icon: FileCheck,
         label: "TMT View",
         view: "tmt-view",
@@ -63,9 +63,10 @@ const menuItems = [
         roles: ["manager", "employee"],
       },
       {
-        href: "#",
+        href: "/test-ai-lab",
         icon: FlaskConical,
         label: "TestAI Lab",
+        view: "test-ai-lab",
         tooltip: "Automation workspace (Phase 4)",
         roles: ["manager", "employee"],
       },
@@ -104,7 +105,7 @@ const menuItems = [
     roles: ["manager"],
     items: [
       {
-        href: "#",
+        href: "/dashboard",
         icon: Settings,
         label: "Project Settings",
         view: "project-settings",
@@ -118,7 +119,7 @@ const menuItems = [
     roles: ["manager"],
     items: [
       {
-        href: "#",
+        href: "/dashboard",
         icon: Users,
         label: "User Management",
         view: "user-management",
@@ -126,7 +127,7 @@ const menuItems = [
         roles: ["manager"],
       },
       {
-        href: "#",
+        href: "/dashboard",
         icon: ScrollText,
         label: "Audit Log",
         view: "audit-log",
@@ -134,7 +135,7 @@ const menuItems = [
         roles: ["manager"],
       },
       {
-        href: "#",
+        href: "/dashboard",
         icon: UserCheck,
         label: "Approvals",
         view: "approvals",
@@ -186,6 +187,21 @@ export function Sidebar({
   const handleLogout = () => {
     router.push('/login');
   };
+  
+  const handleLinkClick = (e: React.MouseEvent, item: any) => {
+     if (item.href === "#" && item.view) {
+        e.preventDefault();
+        onMenuClick(item.view as ActiveView);
+    } else if (item.href === "/dashboard" && item.view) {
+        e.preventDefault();
+        router.push(item.href);
+        // This is a bit of a hack to ensure the view is set after navigation
+        setTimeout(() => onMenuClick(item.view as ActiveView), 0);
+    } else {
+        // Standard navigation for other links
+        // No e.preventDefault();
+    }
+  }
 
   return (
     <aside
@@ -225,14 +241,7 @@ export function Sidebar({
                                   }
                                 )}
                                 href={item.href}
-                                onClick={(e) => {
-                                  if (item.href === "#" && item.view) {
-                                    e.preventDefault();
-                                    onMenuClick(item.view as ActiveView);
-                                  } else if (item.href.startsWith('/')) {
-                                    router.push(item.href);
-                                  }
-                                }}
+                                onClick={(e) => handleLinkClick(e, item)}
                               >
                                 <item.icon className="h-4 w-4" />
                                 {item.label}

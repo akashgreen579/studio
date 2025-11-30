@@ -6,6 +6,9 @@ import { ComponentType } from 'react';
 // Types
 export type Role = "manager" | "employee" | "admin";
 
+export type ActiveView = "dashboard" | "project-settings" | "user-management" | "audit-log" | "approvals" | "tmt-view" | "test-ai-lab" | null;
+
+
 export interface User {
   id: string;
   name: string;
@@ -285,5 +288,3 @@ export const getEffectivePermissions = (userId: string, project?: Project): Perm
 
     return finalPermissions;
 }
-
-    
