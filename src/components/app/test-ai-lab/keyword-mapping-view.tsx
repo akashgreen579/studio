@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -11,26 +11,14 @@ import { ArrowRight, Sparkles, Wand, RefreshCw } from "lucide-react";
 import { motion } from "framer-motion";
 import { Progress } from "@/components/ui/progress";
 import type { User, Permissions } from "@/lib/data";
-import { getEffectivePermissions, existingKeywords } from "@/lib/data";
+import { getEffectivePermissions } from "@/lib/data";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { KeywordMappingCard } from "./keyword-mapping-card";
-import { CreateKeywordModal, RecordKeywordModal } from "./keyword-action-modals";
-import { ActionSimulationModal } from "./action-simulation-modal";
 
-
-export interface StepMapping {
-    id: string;
-    gherkinStep: string;
-    status: 'pending' | 'resolved';
-    action: 'none' | 'reuse' | 'create' | 'record';
-    suggestion: typeof existingKeywords[0] | null;
-    similarity: number | null;
-}
 
 interface KeywordMappingViewProps {
   user: User;
@@ -45,43 +33,10 @@ interface KeywordMappingViewProps {
 export function KeywordMappingView({ user, testCase, steps, onComplete }: KeywordMappingViewProps) {
     const [autoSuggest, setAutoSuggest] = useState(true);
     const [similarityThreshold, setSimilarityThreshold] = useState(80);
-    
-    const initialMappings = useMemo(() => steps.map((step, index) => ({
-        id: `step-${index}`,
-        gherkinStep: step,
-        status: 'pending' as StepMapping['status'],
-        action: 'none' as StepMapping['action'],
-        // Mock suggestions for demonstration
-        suggestion: index % 2 === 0 ? existingKeywords[index] : null,
-        similarity: index % 2 === 0 ? 75 + index * 5 : null
-    })), [steps]);
-
-    const [mappings, setMappings] = useState<StepMapping[]>(initialMappings);
-    const [isCreateModalOpen, setCreateModalOpen] = useState(false);
-    const [isRecordModalOpen, setRecordModalOpen] = useState(false);
-    const [isSimulationModalOpen, setSimulationModalOpen] = useState(false);
-    const [activeGherkinStep, setActiveGherkinStep] = useState("");
 
     const permissions = getEffectivePermissions(user.id);
     const canBulkReuse = permissions.syncTMT;
-
-    const resolvedSteps = mappings.filter(m => m.status === 'resolved').length;
-    const progress = (resolvedSteps / mappings.length) * 100;
-    
-    const handleUpdateMapping = (id: string, newMapping: Partial<StepMapping>) => {
-        setMappings(prev => prev.map(m => m.id === id ? {...m, ...newMapping} : m));
-    }
-    
-    const handleCreate = (gherkinStep: string) => {
-        setActiveGherkinStep(gherkinStep);
-        setCreateModalOpen(true);
-    };
-
-    const handleRecord = (gherkinStep: string) => {
-        setActiveGherkinStep(gherkinStep);
-        setSimulationModalOpen(true);
-    };
-
+    const progress = 33; // Mock progress
 
   return (
     <>
@@ -98,15 +53,12 @@ export function KeywordMappingView({ user, testCase, steps, onComplete }: Keywor
             <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-8 items-start pb-24">
                 {/* Left Pane: Mapping Cards */}
                 <div className="space-y-4">
-                     {mappings.map(mapping => (
-                        <KeywordMappingCard 
-                            key={mapping.id}
-                            mapping={mapping}
-                            onUpdate={(newMapping) => handleUpdateMapping(mapping.id, newMapping)}
-                            onCreate={() => handleCreate(mapping.gherkinStep)}
-                            onRecord={() => handleRecord(mapping.gherkinStep)}
-                        />
-                     ))}
+                     <Card>
+                        <CardHeader><CardTitle>Mapping List</CardTitle></CardHeader>
+                        <CardContent>
+                            <p className="text-muted-foreground">The card-based mapping list will be implemented here in the next step.</p>
+                        </CardContent>
+                     </Card>
                 </div>
                 
                 {/* Right Sidebar */}
@@ -142,7 +94,7 @@ export function KeywordMappingView({ user, testCase, steps, onComplete }: Keywor
                                     </TooltipTrigger>
                                     {!canBulkReuse && (
                                         <TooltipContent>
-                                            <p>You do not have permission for bulk actions. Please request access.</p>
+                                            <p>Requires "Sync TMT" permission.</p>
                                         </TooltipContent>
                                     )}
                                 </Tooltip>
@@ -160,7 +112,7 @@ export function KeywordMappingView({ user, testCase, steps, onComplete }: Keywor
                         <CardContent>
                             <div className="flex justify-between text-sm">
                                 <span className="text-muted-foreground">Steps Mapped</span>
-                                <span>{resolvedSteps} / {mappings.length}</span>
+                                <span>1 / {steps.length}</span>
                             </div>
                             <Progress value={progress} className="mt-2" />
                         </CardContent>
@@ -185,27 +137,11 @@ export function KeywordMappingView({ user, testCase, steps, onComplete }: Keywor
                     size="lg" 
                     disabled={progress < 100} 
                     onClick={onComplete}
-                    className="glow-on-enable"
                 >
                    Continue to Code Generation <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
             </div>
         </motion.div>
-        
-        <CreateKeywordModal 
-            isOpen={isCreateModalOpen} 
-            setIsOpen={setCreateModalOpen}
-            gherkinStep={activeGherkinStep}
-        />
-        <ActionSimulationModal
-            isOpen={isSimulationModalOpen}
-            setIsOpen={setSimulationModalOpen}
-            gherkinStep={activeGherkinStep}
-            onGenerate={(actions) => {
-                console.log("Generated actions:", actions);
-                setSimulationModalOpen(false);
-            }}
-        />
     </>
   );
 }
