@@ -198,25 +198,24 @@ export function Sidebar({
   };
   
   const handleLinkClick = (e: React.MouseEvent, item: any) => {
-     if (item.view === 'keyword-mapping' && pathname !== '/test-ai-lab') {
-        e.preventDefault();
-        router.push('/test-ai-lab');
-        // This is a bit of a hack to ensure the view is set after navigation
+    e.preventDefault();
+    const targetUrl = item.href || pathname;
+    let newPath = targetUrl;
+    
+    // For dashboard links, ensure role is preserved
+    if (targetUrl === '/dashboard') {
+        newPath = `/dashboard?role=${currentRole}`;
+    }
+
+    // Navigate if the path is different
+    if (newPath !== `${pathname}?role=${currentRole}` && targetUrl !== '#') {
+        router.push(newPath);
+    }
+
+    // Set the active view
+    if (item.view) {
+        // Use a timeout to ensure the view switch happens after potential navigation
         setTimeout(() => onMenuClick(item.view as ActiveView), 0);
-    } else if (item.href === "#" && item.view) {
-        e.preventDefault();
-        onMenuClick(item.view as ActiveView);
-    } else if (item.href === "/dashboard" && item.view) {
-        e.preventDefault();
-        router.push(item.href);
-        // This is a bit of a hack to ensure the view is set after navigation
-        setTimeout(() => onMenuClick(item.view as ActiveView), 0);
-    } else if (item.href !== "#" && item.href !== pathname) {
-        // Standard navigation for other links
-        // No e.preventDefault();
-    } else if (item.view) {
-      e.preventDefault();
-      onMenuClick(item.view as ActiveView);
     }
   }
 
