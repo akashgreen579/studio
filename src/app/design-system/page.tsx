@@ -4,7 +4,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, FolderPlus, GitMerge, Palette } from "lucide-react";
+import { CheckCircle, FolderPlus, GitMerge, Palette, Home, Users, Settings, ScrollText, FileCheck } from "lucide-react";
 import microcopy from "@/lib/microcopy.json";
 
 const ColorSwatch = ({ name, className, hex }: { name: string; className: string; hex: string }) => (
