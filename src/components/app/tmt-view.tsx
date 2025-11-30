@@ -23,8 +23,9 @@ import {
   Users,
   LayoutGrid,
   Sparkles,
+  SlidersHorizontal,
 } from "lucide-react";
-import { testCaseHierarchy, testCases as allTestCases, type TestCase, type User, getEffectivePermissions } from "@/lib/data";
+import { testCaseHierarchy, testCases as allTestCases, type TestCase, type User, getEffectivePermissions, type Permissions } from "@/lib/data";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -143,7 +144,9 @@ export function TMTView({ user }: TMTViewProps) {
       { id: "p1", type: 'Priority', value: 'High', color: 'bg-red-100 text-red-800' }
     ]);
     const [isMultiSelectActive, setIsMultiSelectActive] = useState(false);
-
+    const [isJQLOpen, setJQLOpen] = useState(false);
+    const [jqlQuery, setJqlQuery] = useState("");
+    const [isJqlValid, setIsJqlValid] = useState<boolean | null>(null);
 
     const permissions = getEffectivePermissions(user.id);
     const canAutomate = permissions.automateTestCases;
@@ -167,8 +170,16 @@ export function TMTView({ user }: TMTViewProps) {
                 tc.id.toLowerCase().includes(searchQuery.toLowerCase())
             );
         }
+        // This is a mock filter application. A real implementation would be more robust.
+        if (activeFilters.some(f => f.type === 'Status' && f.value === 'To Do')) {
+            cases = cases.filter(tc => tc.status === 'To Do');
+        }
+         if (activeFilters.some(f => f.type === 'Priority' && f.value === 'High')) {
+            cases = cases.filter(tc => tc.priority === 'High');
+        }
+
         return cases;
-    }, [searchQuery]);
+    }, [searchQuery, activeFilters]);
 
     const handleTestCaseSelection = (testCaseId: string, isSelected: boolean) => {
       setSelectedTestCases(prev => {
@@ -209,10 +220,66 @@ export function TMTView({ user }: TMTViewProps) {
       );
     };
 
-    const ManagerActionButton = ({ permission, tooltip, children, className }: { permission: keyof (Permissions), tooltip: string, children: React.ReactNode, className?: string }) => {
+    const validateAndApplyJql = useCallback(() => {
+        if (!jqlQuery) return;
+        
+        const parts = jqlQuery.split(':');
+        const key = parts[0]?.trim().toLowerCase();
+        const value = parts[1]?.trim().toLowerCase();
+
+        if (!key || !value) {
+            setIsJqlValid(false);
+            return;
+        }
+
+        const newFilters: any[] = [];
+        let isValid = false;
+
+        if (key === 'status') {
+             const statusMap: Record<string, any> = {
+                'todo': { id: "s1", type: 'Status', value: 'To Do', color: 'bg-blue-100 text-blue-800' },
+                'inprogress': { id: "s2", type: 'Status', value: 'In Progress', color: 'bg-amber-100 text-amber-800' },
+                'done': { id: "s3", type: 'Status', value: 'Done', color: 'bg-green-100 text-green-800' },
+            };
+            if (statusMap[value]) {
+                newFilters.push(statusMap[value]);
+                isValid = true;
+            }
+        } else if (key === 'priority') {
+            const priorityMap: Record<string, any> = {
+                'high': { id: "p1", type: 'Priority', value: 'High', color: 'bg-red-100 text-red-800' },
+                'medium': { id: "p2", type: 'Priority', value: 'Medium', color: 'bg-yellow-100 text-yellow-800' },
+                'low': { id: "p3", type: 'Priority', value: 'Low', color: 'bg-gray-100 text-gray-800' },
+            };
+            if (priorityMap[value]) {
+                newFilters.push(priorityMap[value]);
+                isValid = true;
+            }
+        }
+
+        if (isValid) {
+            setActiveFilters(prev => [...prev.filter(f => !newFilters.some(nf => nf.type === f.type)), ...newFilters]);
+            setIsJqlValid(true);
+            setJqlQuery("");
+            setTimeout(() => setJQLOpen(false), 500);
+        } else {
+            setIsJqlValid(false);
+        }
+    }, [jqlQuery]);
+
+    useEffect(() => {
+        if (jqlQuery.length > 3) {
+             const parts = jqlQuery.split(':');
+             setIsJqlValid(parts.length === 2 && !!parts[0] && !!parts[1]);
+        } else {
+            setIsJqlValid(null);
+        }
+    }, [jqlQuery]);
+
+    const ManagerActionButton = ({ permission, tooltip, children, className, onClick }: { permission: keyof (Permissions), tooltip: string, children: React.ReactNode, className?: string, onClick?: () => void }) => {
         const hasPermission = permissions[permission];
         const buttonContent = (
-            <Button variant="outline" size="icon" className={cn("h-10 w-10 p-0 transition-all hover:scale-105 hover:shadow-md active:scale-95", className)} disabled={!hasPermission}>
+            <Button variant="outline" size="icon" className={cn("h-10 w-10 p-0 transition-all hover:scale-105 hover:shadow-md active:scale-95", className)} disabled={!hasPermission} onClick={onClick}>
                 {children}
             </Button>
         );
@@ -259,7 +326,7 @@ export function TMTView({ user }: TMTViewProps) {
             {/* Right Panel */}
             <div className="flex flex-col">
                 {/* Filter Bar */}
-                <div className="space-y-4">
+                <div className="space-y-2">
                     <div className="flex gap-2 items-center p-2 bg-background/80 backdrop-blur-sm rounded-lg shadow-sm border">
                         <TooltipProvider>
                             <Tooltip>
@@ -291,6 +358,11 @@ export function TMTView({ user }: TMTViewProps) {
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
                         </div>
+
+                         <ManagerActionButton permission="syncTMT" tooltip="JQL Query" onClick={() => setJQLOpen(!isJQLOpen)}>
+                            <SlidersHorizontal className="h-5 w-5"/>
+                         </ManagerActionButton>
+
                         <Button variant="outline" className="h-10 gap-2 hover:scale-105 active:scale-95 transition-transform" onClick={() => setFilterPanelOpen(true)}>
                           <FilterIcon className="h-4 w-4"/> Filters
                         </Button>
@@ -298,8 +370,43 @@ export function TMTView({ user }: TMTViewProps) {
                           <Star className="h-4 w-4 text-amber-500/80"/> Saved Filters
                         </Button>
                     </div>
+
+                    <AnimatePresence>
+                        {isJQLOpen && (
+                            <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: "auto", opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                transition={{ duration: 0.3, ease: "easeInOut" }}
+                                className="overflow-hidden"
+                            >
+                                <div className="p-3 bg-muted/50 rounded-lg border flex items-center gap-3">
+                                    <div className="relative flex-grow">
+                                        <div className="flex items-center gap-2 absolute left-2 top-1/2 -translate-y-1/2">
+                                            {isJqlValid === true && <div className="h-2.5 w-2.5 rounded-full bg-green-500 animate-pulse"></div>}
+                                            {isJqlValid === false && <div className="h-2.5 w-2.5 rounded-full bg-red-500 animate-pulse"></div>}
+                                            {isJqlValid === null && <div className="h-2.5 w-2.5 rounded-full bg-border"></div>}
+                                        </div>
+                                        <Input 
+                                            placeholder="Enter JQL query (e.g., status:done or priority:high)" 
+                                            className="pl-8 h-9"
+                                            value={jqlQuery}
+                                            onChange={e => setJqlQuery(e.target.value)}
+                                            onKeyDown={e => e.key === 'Enter' && validateAndApplyJql()}
+                                        />
+                                    </div>
+                                    <div className="flex gap-1">
+                                        <Button variant="ghost" size="sm" className="h-auto px-2 py-1 text-xs" onClick={() => setJqlQuery('status:todo')}>status:todo</Button>
+                                        <Button variant="ghost" size="sm" className="h-auto px-2 py-1 text-xs" onClick={() => setJqlQuery('priority:high')}>priority:high</Button>
+                                    </div>
+                                    <Button size="sm" onClick={validateAndApplyJql}>Apply</Button>
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+
                     {activeFilters.length > 0 && (
-                      <div className="flex gap-2 items-center flex-wrap">
+                      <div className="flex gap-2 items-center flex-wrap pt-2">
                           <span className="text-sm text-muted-foreground font-medium">Active filters:</span>
                            <AnimatePresence>
                               {activeFilters.map((filter, index) => (
