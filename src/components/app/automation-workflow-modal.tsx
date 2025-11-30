@@ -163,13 +163,15 @@ const WorkspacePrepAnimation = ({ onComplete }: { onComplete: () => void }) => {
     const [currentStep, setCurrentStep] = useState(0);
 
     useEffect(() => {
-        if (currentStep < prepSteps.length) {
-            const timer = setTimeout(() => setCurrentStep(s => s + 1), 700);
-            return () => clearTimeout(timer);
-        } else {
+        const runAnimation = async () => {
+            for (let i = 0; i < prepSteps.length; i++) {
+                await new Promise(res => setTimeout(res, 700));
+                setCurrentStep(i + 1);
+            }
             onComplete();
-        }
-    }, [currentStep, onComplete, prepSteps.length]);
+        };
+        runAnimation();
+    }, [onComplete, prepSteps.length]);
     
     return (
         <div className="p-4">
@@ -275,13 +277,14 @@ export function AutomationWorkflowModal({ isOpen, setIsOpen, testCase }: Automat
 
     }, [isOpen]);
 
-    const handleFinalCompletion = async () => {
-        await router.push('/dashboard?view=test-ai-lab');
-        setIsOpen(false);
+    const handleFinalCompletion = () => {
         toast({
             title: "Workspace Ready!",
             description: `Now entering the TestAI Lab for ${testCase.id}.`,
         });
+        setIsOpen(false);
+        // Use direct browser navigation to avoid router state issues within the closing modal.
+        window.location.href = `/dashboard?view=test-ai-lab`;
     };
 
     const proceedToStep3 = () => {
