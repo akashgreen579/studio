@@ -21,6 +21,7 @@ interface KeywordMappingViewProps {
     summary: string;
   };
   steps: string[];
+  onComplete: () => void;
 }
 
 type StepMapping = {
@@ -43,7 +44,7 @@ const fuzzyMatch = (step1: string, step2: string): number => {
     return (matchingTokens.length / longerTokens.size) * 100;
 }
 
-export function KeywordMappingView({ testCase, steps }: KeywordMappingViewProps) {
+export function KeywordMappingView({ testCase, steps, onComplete }: KeywordMappingViewProps) {
     const { toast } = useToast();
     const [autoSuggest, setAutoSuggest] = useState(true);
 
@@ -190,9 +191,9 @@ export function KeywordMappingView({ testCase, steps }: KeywordMappingViewProps)
                     <CardContent className="p-6 flex items-center justify-between">
                        <div>
                          <h3 className="font-bold">Ready to generate code?</h3>
-                         <p className="text-sm opacity-80">Next, we'll generate the boilerplate code.</p>
+                         <p className="text-sm opacity-80">Next, we'll record actions or generate boilerplate.</p>
                        </div>
-                        <Button variant="secondary" size="lg">
+                        <Button variant="secondary" size="lg" onClick={onComplete}>
                            Continue <ArrowRight className="ml-2 h-5 w-5" />
                         </Button>
                     </CardContent>
