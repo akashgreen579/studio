@@ -485,9 +485,9 @@ export function TMTView({ user }: TMTViewProps) {
                         <TableRow>
                             <TableHead className="w-[50px]">
                               {isMultiSelectActive && <Checkbox 
-                                onCheckedChange={(checked) => handleSelectAll(!!checked)}
                                 checked={filteredTestCases.length > 0 && selectedTestCases.size === filteredTestCases.length}
                                 indeterminate={selectedTestCases.size > 0 && selectedTestCases.size < filteredTestCases.length}
+                                onCheckedChange={(checked) => handleSelectAll(!!checked)}
                               />}
                             </TableHead>
                             <TableHead className="w-[100px]">ID</TableHead>
@@ -609,4 +609,3 @@ export function TMTView({ user }: TMTViewProps) {
       </>
     );
 }
-

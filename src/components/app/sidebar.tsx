@@ -198,9 +198,9 @@ export function Sidebar({
   };
   
   const handleLinkClick = (e: React.MouseEvent, item: any) => {
-     if (item.view === 'keyword-mapping') {
+     if (item.view === 'keyword-mapping' && pathname !== '/test-ai-lab') {
         e.preventDefault();
-        router.push(item.href);
+        router.push('/test-ai-lab');
         // This is a bit of a hack to ensure the view is set after navigation
         setTimeout(() => onMenuClick(item.view as ActiveView), 0);
     } else if (item.href === "#" && item.view) {
@@ -211,9 +211,12 @@ export function Sidebar({
         router.push(item.href);
         // This is a bit of a hack to ensure the view is set after navigation
         setTimeout(() => onMenuClick(item.view as ActiveView), 0);
-    } else {
+    } else if (item.href !== "#" && item.href !== pathname) {
         // Standard navigation for other links
         // No e.preventDefault();
+    } else if (item.view) {
+      e.preventDefault();
+      onMenuClick(item.view as ActiveView);
     }
   }
 
