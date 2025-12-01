@@ -51,21 +51,21 @@ export function PipelinesView({ user }: PipelinesViewProps) {
   const isRunning = selectedPipeline?.lastRun?.status === 'Running';
 
 
-  const ManagerActionButton = ({ permission, tooltip, children, className, onClick, asChild, disabled }: { permission: keyof (Permissions), tooltip: string, children: React.ReactNode, className?: string, onClick?: () => void, asChild?: boolean, disabled?: boolean }) => {
+  const ManagerActionButton = ({ permission, tooltip, children, className, onClick, asChild, disabled, isSwitch }: { permission: keyof (Permissions), tooltip: string, children: React.ReactNode, className?: string, onClick?: () => void, asChild?: boolean, disabled?: boolean, isSwitch?: boolean }) => {
         const hasPermission = permissions[permission];
         const isDisabled = !hasPermission || disabled;
         
-        const buttonContent = (
+        const content = isSwitch ? <div className={className}>{children}</div> : (
             <Button variant="outline" className={className} disabled={isDisabled} onClick={onClick} asChild={asChild}>
                 {children}
             </Button>
         );
 
-        if (hasPermission) {
+        if (hasPermission && !isSwitch) {
             return (
                 <TooltipProvider>
                     <Tooltip>
-                        <TooltipTrigger asChild>{buttonContent}</TooltipTrigger>
+                        <TooltipTrigger asChild>{content}</TooltipTrigger>
                         <TooltipContent><p>{tooltip}</p></TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
@@ -75,8 +75,8 @@ export function PipelinesView({ user }: PipelinesViewProps) {
         return (
              <TooltipProvider>
                  <Tooltip>
-                    <TooltipTrigger asChild><div tabIndex={0}>{buttonContent}</div></TooltipTrigger>
-                    <TooltipContent><p>You do not have permission for this action.</p></TooltipContent>
+                    <TooltipTrigger asChild><div tabIndex={0} className={cn(isSwitch && 'inline-block')}>{content}</div></TooltipTrigger>
+                    <TooltipContent><p>{!hasPermission ? "You do not have permission for this action." : tooltip}</p></TooltipContent>
                 </Tooltip>
             </TooltipProvider>
         );
@@ -244,7 +244,7 @@ export function PipelinesView({ user }: PipelinesViewProps) {
                           <CardContent className="space-y-4">
                             <div className="flex items-center justify-between rounded-lg border p-4">
                                 <p className="font-medium">Run on new Pull Request to <code className="bg-muted px-1.5 py-1 rounded-sm text-sm">main</code></p>
-                                <ManagerActionButton permission="editProjectSettings" tooltip="Configure webhook trigger">
+                                <ManagerActionButton permission="editProjectSettings" tooltip="Configure webhook trigger" isSwitch>
                                     <Switch defaultChecked/>
                                 </ManagerActionButton>
                             </div>
