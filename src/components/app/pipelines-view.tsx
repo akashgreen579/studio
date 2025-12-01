@@ -13,8 +13,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, PlusCircle, Play, Settings, BarChart3, CheckCircle2, XCircle, Loader, Clock } from "lucide-react";
-import { projects, pipelines, pipelineTemplates, type User, getEffectivePermissions } from "@/lib/data";
+import { Search, PlusCircle, Play, Settings, BarChart3, CheckCircle2, XCircle, Loader, Clock, GitBranch, Bell, Trash2, Calendar, Link } from "lucide-react";
+import { projects, pipelines, pipelineTemplates, type User, getEffectivePermissions, type Permissions } from "@/lib/data";
 import { formatDistanceToNow } from "date-fns";
 import {
   Tooltip,
@@ -24,6 +24,9 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { ExecutionView } from "./execution-view";
+import { Label } from "../ui/label";
+import { Switch } from "../ui/switch";
+import { Alert, AlertTitle, AlertDescription } from "../ui/alert";
 
 interface PipelinesViewProps {
   user: User;
@@ -41,14 +44,14 @@ const getStatusIcon = (status: string) => {
 }
 
 export function PipelinesView({ user }: PipelinesViewProps) {
-  const [selectedPipelineId, setSelectedPipelineId] = useState<string | null>("pipe-2");
+  const [selectedPipelineId, setSelectedPipelineId] = useState<string | null>("pipe-1");
   const permissions = getEffectivePermissions(user.id);
   
   const selectedPipeline = pipelines.find(p => p.id === selectedPipelineId) || pipelineTemplates.find(p => p.id === selectedPipelineId);
   const isRunning = selectedPipeline?.lastRun?.status === 'Running';
 
 
-  const ManagerActionButton = ({ permission, tooltip, children, className, onClick, asChild, disabled }: { permission: keyof (typeof permissions), tooltip: string, children: React.ReactNode, className?: string, onClick?: () => void, asChild?: boolean, disabled?: boolean }) => {
+  const ManagerActionButton = ({ permission, tooltip, children, className, onClick, asChild, disabled }: { permission: keyof (Permissions), tooltip: string, children: React.ReactNode, className?: string, onClick?: () => void, asChild?: boolean, disabled?: boolean }) => {
         const hasPermission = permissions[permission];
         const isDisabled = !hasPermission || disabled;
         
@@ -194,8 +197,8 @@ export function PipelinesView({ user }: PipelinesViewProps) {
                         <CardDescription>{selectedPipeline.description}</CardDescription>
                         </div>
                          <div className="flex gap-2">
-                             <ManagerActionButton permission="runPipelines" tooltip="Configure this pipeline's settings.">
-                                <Settings className="mr-2 h-4 w-4"/>Edit
+                             <ManagerActionButton permission="runPipelines" tooltip="Save changes to this pipeline.">
+                                <Settings className="mr-2 h-4 w-4"/>Save
                              </ManagerActionButton>
                               <Button>
                                 <Play className="mr-2 h-4 w-4"/>Run Now
@@ -211,13 +214,86 @@ export function PipelinesView({ user }: PipelinesViewProps) {
                   </TabsList>
                   <CardContent className="mt-4">
                     <TabsContent value="summary">
-                        <p>Summary of pipeline performance and configuration would be shown here.</p>
+                        <p className="text-muted-foreground">A summary of pipeline performance, average duration, and success rate would be shown here.</p>
                     </TabsContent>
                     <TabsContent value="runs">
-                        <p>A detailed history of all runs for this pipeline would be displayed here.</p>
+                        <p className="text-muted-foreground">A detailed, filterable history of all runs for this pipeline would be displayed here.</p>
                     </TabsContent>
-                     <TabsContent value="settings">
-                        <p>Settings for this pipeline, such as triggers, notifications, and parameters would be editable here.</p>
+                     <TabsContent value="settings" className="space-y-6">
+                        <Card>
+                          <CardHeader>
+                            <CardTitle>General</CardTitle>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="pipeline-name">Pipeline Name</Label>
+                              <Input id="pipeline-name" defaultValue={selectedPipeline.name} />
+                            </div>
+                             <div className="space-y-2">
+                              <Label htmlFor="pipeline-desc">Description</Label>
+                              <Input id="pipeline-desc" defaultValue={selectedPipeline.description} />
+                            </div>
+                          </CardContent>
+                        </Card>
+
+                         <Card>
+                          <CardHeader>
+                            <CardTitle className="flex items-center gap-2"><GitBranch className="h-5 w-5"/> Triggers</CardTitle>
+                            <CardDescription>Configure how this pipeline is automatically triggered.</CardDescription>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                            <div className="flex items-center justify-between rounded-lg border p-4">
+                                <p className="font-medium">Run on new Pull Request to <code className="bg-muted px-1.5 py-1 rounded-sm text-sm">main</code></p>
+                                <ManagerActionButton permission="editProjectSettings" tooltip="Configure webhook trigger">
+                                    <Switch defaultChecked/>
+                                </ManagerActionButton>
+                            </div>
+                            <ManagerActionButton permission="editProjectSettings" tooltip="Connect a Git repository.">
+                                <Link className="mr-2 h-4 w-4"/> Connect to GitHub / GitLab
+                            </ManagerActionButton>
+                          </CardContent>
+                        </Card>
+                        
+                         <Card>
+                          <CardHeader>
+                            <CardTitle className="flex items-center gap-2"><Calendar className="h-5 w-5"/> Scheduling</CardTitle>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                             <div className="space-y-2">
+                              <Label htmlFor="cron-schedule">CRON Schedule</Label>
+                              <Input id="cron-schedule" placeholder="0 2 * * *" defaultValue="0 2 * * 1-5" />
+                              <p className="text-xs text-muted-foreground">Runs at 2:00 AM, Monday through Friday.</p>
+                            </div>
+                          </CardContent>
+                        </Card>
+
+                        <Card>
+                          <CardHeader>
+                            <CardTitle className="flex items-center gap-2"><Bell className="h-5 w-5"/> Notifications</CardTitle>
+                          </CardHeader>
+                           <CardContent className="space-y-4">
+                             <div className="space-y-2">
+                              <Label htmlFor="slack-channel">Slack Channel</Label>
+                              <Input id="slack-channel" placeholder="#qa-channel" />
+                            </div>
+                             <div className="flex items-center space-x-2">
+                                <Switch id="notify-failure" defaultChecked/>
+                                <Label htmlFor="notify-failure">Notify on failure only</Label>
+                            </div>
+                          </CardContent>
+                        </Card>
+
+                         <Card className="border-destructive/50">
+                          <CardHeader>
+                            <CardTitle className="text-destructive flex items-center gap-2"><Trash2 className="h-5 w-5"/> Danger Zone</CardTitle>
+                          </CardHeader>
+                           <CardContent>
+                               <ManagerActionButton permission="adminOverride" tooltip="Permanently delete this pipeline.">
+                                  Delete Pipeline
+                               </ManagerActionButton>
+                               <p className="text-xs text-muted-foreground mt-2">This action cannot be undone.</p>
+                          </CardContent>
+                        </Card>
                     </TabsContent>
                   </CardContent>
                 </Tabs>
@@ -249,3 +325,5 @@ export function PipelinesView({ user }: PipelinesViewProps) {
     </div>
   );
 }
+
+    
