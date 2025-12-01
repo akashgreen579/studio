@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -22,6 +23,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { ExecutionView } from "./execution-view";
 
 interface PipelinesViewProps {
   user: User;
@@ -39,10 +41,12 @@ const getStatusIcon = (status: string) => {
 }
 
 export function PipelinesView({ user }: PipelinesViewProps) {
-  const [selectedPipelineId, setSelectedPipelineId] = useState<string | null>("pipe-1");
+  const [selectedPipelineId, setSelectedPipelineId] = useState<string | null>("pipe-2");
   const permissions = getEffectivePermissions(user.id);
   
   const selectedPipeline = pipelines.find(p => p.id === selectedPipelineId) || pipelineTemplates.find(p => p.id === selectedPipelineId);
+  const isRunning = selectedPipeline?.lastRun?.status === 'Running';
+
 
   const ManagerActionButton = ({ permission, tooltip, children, className, onClick, asChild, disabled }: { permission: keyof (typeof permissions), tooltip: string, children: React.ReactNode, className?: string, onClick?: () => void, asChild?: boolean, disabled?: boolean }) => {
         const hasPermission = permissions[permission];
@@ -74,6 +78,10 @@ export function PipelinesView({ user }: PipelinesViewProps) {
             </TooltipProvider>
         );
     };
+
+  if (isRunning && selectedPipeline) {
+    return <ExecutionView pipeline={selectedPipeline} onBack={() => setSelectedPipelineId(null)}/>
+  }
 
   return (
     <div className="space-y-6 h-full flex flex-col">

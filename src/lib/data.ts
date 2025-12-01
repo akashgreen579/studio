@@ -1,3 +1,4 @@
+
 import { PlaceHolderImages } from './placeholder-images';
 import { Eye, TestTube, FolderPlus, GitMerge, PlayCircle, type LucideIcon, FilePlus, Settings2, UserPlus, GitBranch, GitCommit, CheckCheck, UserCheck, ShieldAlert } from 'lucide-react';
 import { ComponentType } from 'react';
@@ -108,6 +109,24 @@ export interface PipelineTemplate {
     id: string;
     name: string;
     description: string;
+}
+
+export type ExecutionStatus = "pending" | "running" | "passed" | "failed" | "skipped";
+
+export interface ExecutionJob {
+    id: string;
+    testCaseId: string;
+    browser: "Chrome" | "Firefox" | "Safari";
+    status: ExecutionStatus;
+}
+
+export interface ExecutionStep {
+    id: string;
+    name: string;
+    status: "pending" | "running" | "passed" | "failed";
+    duration?: number;
+    screenshotUrl?: string;
+    log?: string;
 }
 
 
@@ -390,7 +409,7 @@ export const draftAutomations = [
 
 export const pipelines: Pipeline[] = [
     { id: "pipe-1", name: "Full Regression Suite", description: "Runs all regression tests on the QA environment.", lastRun: { id: "run-1", status: "Passed", timestamp: new Date(Date.now() - 3600000 * 2), duration: "24m 11s", triggeredBy: "Alex Hartman" }, testCases: ["tc-101", "tc-102", "tc-201", "tc-202", "tc-203", "tc-301"] },
-    { id: "pipe-2", name: "Smoke Tests (Staging)", description: "Runs critical path smoke tests on Staging.", lastRun: { id: "run-2", status: "Failed", timestamp: new Date(Date.now() - 86400000), duration: "5m 32s", triggeredBy: "CI/CD" }, testCases: ["tc-101", "tc-203"] },
+    { id: "pipe-2", name: "Smoke Tests (Staging)", description: "Runs critical path smoke tests on Staging.", lastRun: { id: "run-2", status: "Running", timestamp: new Date(Date.now() - 3600), duration: "Running", triggeredBy: "CI/CD" }, testCases: ["tc-101", "tc-203", "tc-102"] },
     { id: "pipe-3", name: "Nightly API Checks", description: "Runs all API-level tests every night.", lastRun: { id: "run-3", status: "Passed", timestamp: new Date(Date.now() - 86400000 * 1.5), duration: "8m 5s", triggeredBy: "Scheduler" }, testCases: [] },
     { id: "pipe-4", name: "Scheduled Maintenance Run", description: "A pipeline that is scheduled to run later.", lastRun: { id: "run-4", status: "Scheduled", timestamp: new Date(Date.now() + 86400000 * 2), duration: "-", triggeredBy: "Alex Hartman" }, testCases: [] },
 ];
@@ -399,6 +418,23 @@ export const pipelineTemplates: PipelineTemplate[] = [
     { id: "template-1", name: "New Feature QA", description: "Standard template for QA testing a new feature branch." },
     { id: "template-2", name: "Hotfix Validation", description: "Quick pipeline to validate a hotfix before deploying to production." },
 ];
+
+export const executionJobs: ExecutionJob[] = [
+    { id: "job-1", testCaseId: "tc-101", browser: "Chrome", status: "passed" },
+    { id: "job-2", testCaseId: "tc-101", browser: "Firefox", status: "passed" },
+    { id: "job-3", testCaseId: "tc-203", browser: "Chrome", status: "failed" },
+    { id: "job-4", testCaseId: "tc-203", browser: "Firefox", status: "running" },
+    { id: "job-5", testCaseId: "tc-102", browser: "Chrome", status: "running" },
+    { id: "job-6", testCaseId: "tc-102", browser: "Firefox", status: "pending" },
+];
+
+export const executionSteps: ExecutionStep[] = [
+    { id: "step-1", name: "Given the user is on the login page", status: "passed", duration: 1520 },
+    { id: "step-2", name: "When the user enters 'testuser' and 'password123'", status: "passed", duration: 2100 },
+    { id: "step-3", name: "And the user clicks the 'Login' button", status: "failed", duration: 5033, log: "TIMEOUT: Element with selector `button[data-testid='login-button']` not found after 5000ms.", screenshotUrl: "https://placehold.co/600x400/FFF0F0/E04545?text=Error" },
+    { id: "step-4", name: "Then the user is redirected to the dashboard", status: "pending" },
+];
+
 
 
 // This function merges project-specific permissions with global role-based permissions
