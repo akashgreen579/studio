@@ -77,7 +77,7 @@ const getIcon = (
     case "feature":
       return <Folder className={commonClass} />;
     case "folder":
-       return isExpanded ? <ChevronDown className={cn(commonClass, "text-primary")} /> : <ChevronRight className={commonClass} />;
+       return isExpanded ? <ChevronDown className={cn(commonClass, "text-primary")} /> : <ChevronRight className={cn(commonClass, "text-primary")} />;
     case "test-case":
       return <File className={commonClass} />;
     default:
