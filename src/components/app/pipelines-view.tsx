@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, PlusCircle, Play, Settings, BarChart3, CheckCircle2, XCircle, Loader, Clock, GitBranch, Bell, Trash2, Calendar, Link } from "lucide-react";
+import { Search, PlusCircle, Play, Settings, BarChart3, CheckCircle2, XCircle, Loader, Clock, GitBranch, Bell, Trash2, Calendar, Link, PlayCircle } from "lucide-react";
 import { projects, pipelines, pipelineTemplates, type User, getEffectivePermissions, type Permissions } from "@/lib/data";
 import { formatDistanceToNow } from "date-fns";
 import {
@@ -325,4 +325,3 @@ export function PipelinesView({ user }: PipelinesViewProps) {
     </div>
   );
 }
-
