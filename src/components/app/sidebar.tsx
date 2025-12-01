@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -71,9 +70,10 @@ const menuItems = [
         roles: ["manager", "employee"],
       },
       {
-        href: "#",
+        href: "/dashboard",
         icon: PlayCircle,
         label: "Execution & Pipelines",
+        view: "pipelines",
         tooltip: "Run automated test cases (Phase 5)",
         roles: ["manager", "employee"],
       },

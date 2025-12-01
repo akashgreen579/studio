@@ -1,4 +1,3 @@
-
 import { PlaceHolderImages } from './placeholder-images';
 import { Eye, TestTube, FolderPlus, GitMerge, PlayCircle, type LucideIcon, FilePlus, Settings2, UserPlus, GitBranch, GitCommit, CheckCheck, UserCheck, ShieldAlert } from 'lucide-react';
 import { ComponentType } from 'react';
@@ -8,7 +7,7 @@ export type Role = "manager" | "employee" | "admin";
 
 export type LabStage = "nlp-cleanup" | "gherkin-preparation" | "keyword-mapping" | "action-simulation" | "code-generation";
 
-export type ActiveView = "dashboard" | "project-settings" | "user-management" | "audit-log" | "approvals" | "tmt-view" | "test-ai-lab" | "keyword-mapping" | null;
+export type ActiveView = "dashboard" | "project-settings" | "user-management" | "audit-log" | "approvals" | "tmt-view" | "test-ai-lab" | "keyword-mapping" | "pipelines" | null;
 
 
 export interface User {
@@ -88,6 +87,28 @@ export type RecordedAction = {
     value?: string;
     timestamp: number; // in ms from start
 };
+
+export interface PipelineRun {
+    id: string;
+    status: "Passed" | "Failed" | "Running" | "Scheduled";
+    timestamp: Date;
+    duration: string;
+    triggeredBy: string;
+}
+
+export interface Pipeline {
+    id: string;
+    name: string;
+    description: string;
+    lastRun: PipelineRun;
+    testCases: string[]; // array of TestCase IDs
+}
+
+export interface PipelineTemplate {
+    id: string;
+    name: string;
+    description: string;
+}
 
 
 export const permissionDescriptions: Record<keyof Permissions, { label: string; description: string; icon: LucideIcon; category: 'Project' | 'Management' | 'Admin' }> = {
@@ -365,6 +386,18 @@ export const draftAutomations = [
     { id: "draft-2", name: "TC-205: Add to Cart", project: "Payment Gateway", updated: new Date(Date.now() - 86400000 * 2), status: "Keyword Mapping" },
     { id: "draft-3", name: "TC-310: Profile Update", project: "Customer Portal", updated: new Date(Date.now() - 86400000 * 4), status: "NLP Cleanup" },
     { id: "draft-4", name: "TC-415: Search Functionality", project: "Customer Portal", updated: new Date(Date.now() - 86400000 * 5), status: "Gherkin Preparation" },
+];
+
+export const pipelines: Pipeline[] = [
+    { id: "pipe-1", name: "Full Regression Suite", description: "Runs all regression tests on the QA environment.", lastRun: { id: "run-1", status: "Passed", timestamp: new Date(Date.now() - 3600000 * 2), duration: "24m 11s", triggeredBy: "Alex Hartman" }, testCases: ["tc-101", "tc-102", "tc-201", "tc-202", "tc-203", "tc-301"] },
+    { id: "pipe-2", name: "Smoke Tests (Staging)", description: "Runs critical path smoke tests on Staging.", lastRun: { id: "run-2", status: "Failed", timestamp: new Date(Date.now() - 86400000), duration: "5m 32s", triggeredBy: "CI/CD" }, testCases: ["tc-101", "tc-203"] },
+    { id: "pipe-3", name: "Nightly API Checks", description: "Runs all API-level tests every night.", lastRun: { id: "run-3", status: "Passed", timestamp: new Date(Date.now() - 86400000 * 1.5), duration: "8m 5s", triggeredBy: "Scheduler" }, testCases: [] },
+    { id: "pipe-4", name: "Scheduled Maintenance Run", description: "A pipeline that is scheduled to run later.", lastRun: { id: "run-4", status: "Scheduled", timestamp: new Date(Date.now() + 86400000 * 2), duration: "-", triggeredBy: "Alex Hartman" }, testCases: [] },
+];
+
+export const pipelineTemplates: PipelineTemplate[] = [
+    { id: "template-1", name: "New Feature QA", description: "Standard template for QA testing a new feature branch." },
+    { id: "template-2", name: "Hotfix Validation", description: "Quick pipeline to validate a hotfix before deploying to production." },
 ];
 
 
