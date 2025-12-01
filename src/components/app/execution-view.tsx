@@ -74,7 +74,7 @@ const browsers: ExecutionJob["browser"][] = ["Chrome", "Firefox", "Safari"];
 export function ExecutionView({ pipeline, onBack }: ExecutionViewProps) {
   const [jobs, setJobs] = useState<ExecutionJob[]>(executionJobs);
   const [steps, setSteps] = useState<ExecutionStep[]>(executionSteps);
-  const [activeJobId, setActiveJobId] = useState<string | null>("job-4");
+  const [activeJobId, setActiveJobId] = useState<string | null>("job-3");
   
   const progress = Math.round(
     (jobs.filter((j) => j.status === "passed" || j.status === "failed").length /
@@ -206,7 +206,7 @@ export function ExecutionView({ pipeline, onBack }: ExecutionViewProps) {
                         <p>[RUNNER-2] Starting tc-203 on Chrome...</p>
                         <p>[RUNNER-1] PASSED tc-101 in 15.2s</p>
                         <p>[RUNNER-3] Starting tc-101 on Firefox...</p>
-                        <p>[ERROR] [RUNNER-2] FAILED tc-203 on Chrome. See details.</p>
+                        <p className="text-red-500">[ERROR] [RUNNER-2] FAILED tc-203 on Chrome. See details.</p>
                         <p className="text-red-500">[ERROR] [RUNNER-2]   Timeout: Element #login-btn not found.</p>
                     </div>
                 </ScrollArea>
@@ -271,8 +271,8 @@ export function ExecutionView({ pipeline, onBack }: ExecutionViewProps) {
                   <AlertDescription className="text-amber-800">
                       The AI detected a potential selector issue. The selector for the 'Login' button might be unstable.
                       <div className="my-2 p-2 rounded bg-amber-100 font-mono text-xs">
-                        - `button.login-btn`<br />
-                        + `button[data-testid='login-submit']`
+                        <span className="text-red-600">- `button.login-btn`</span><br />
+                        <span className="text-green-600">+ `button[data-testid='login-submit']`</span>
                       </div>
                       Applying this change may fix the issue.
                       <div className="mt-3">

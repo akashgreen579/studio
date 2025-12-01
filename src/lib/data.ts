@@ -429,10 +429,10 @@ export const executionJobs: ExecutionJob[] = [
 ];
 
 export const executionSteps: ExecutionStep[] = [
-    { id: "step-1", name: "Given the user is on the login page", status: "passed", duration: 1520 },
-    { id: "step-2", name: "When the user enters 'testuser' and 'password123'", status: "passed", duration: 2100 },
-    { id: "step-3", name: "And the user clicks the 'Login' button", status: "failed", duration: 5033, log: "TIMEOUT: Element with selector `button[data-testid='login-button']` not found after 5000ms.", screenshotUrl: "https://placehold.co/600x400/FFF0F0/E04545?text=Error" },
-    { id: "step-4", name: "Then the user is redirected to the dashboard", status: "pending" },
+    { id: "step-1", name: "Given the user is on the login page", status: "passed", duration: 1520, log: "Navigated to /login" },
+    { id: "step-2", name: "When the user enters 'testuser' and 'password123'", status: "passed", duration: 2100, log: "Entered credentials" },
+    { id: "step-3", name: "And the user clicks the 'Login' button", status: "failed", duration: 5033, log: "TIMEOUT: Element with selector `button.login-btn` not found after 5000ms.", screenshotUrl: "https://placehold.co/600x400/FFF0F0/E04545?text=Error" },
+    { id: "step-4", name: "Then the user is redirected to the dashboard", status: "pending", log: "" },
 ];
 
 
