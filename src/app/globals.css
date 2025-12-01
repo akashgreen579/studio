@@ -104,4 +104,30 @@
   .shadow-subtle {
     box-shadow: 0 2px 8px rgba(20,30,40,0.04);
   }
+  .animate-glow-border-green {
+    animation: glow-border-green 2s ease-out;
+  }
+  @keyframes glow-border-green {
+    0%, 100% {
+      box-shadow: 0 0 0 0px hsl(var(--success) / 0.5);
+    }
+    25% {
+      box-shadow: 0 0 0 4px hsl(var(--success) / 0.2);
+    }
+    50% {
+       box-shadow: 0 0 0 0px hsl(var(--success) / 0.5);
+    }
+  }
+  .glow-on-enable:not(:disabled) {
+    animation: glow-border-accent 1.5s ease-out;
+  }
+
+  @keyframes glow-border-accent {
+    0%, 100% {
+      box-shadow: 0 0 0 0px hsl(var(--accent) / 0.5);
+    }
+    50% {
+      box-shadow: 0 0 0 4px hsl(var(--accent) / 0.2);
+    }
+  }
 }
