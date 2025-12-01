@@ -107,7 +107,7 @@ export default function DesignSystemPage() {
             <CardHeader>
                 <CardTitle>Animation & Transitions</CardTitle>
                 <p className="text-muted-foreground">Motion should be purposeful, providing feedback and guiding the user without being distracting.</p>
-            </Header>
+            </CardHeader>
             <CardContent className="space-y-2">
                 <MotionSpec property="--ease-standard" value="cubic-bezier(0.2, 0.8, 0.2, 1)" description="Standard easing for most transitions."/>
                 <MotionSpec property="--duration-fast" value="200ms" description="For micro-interactions like hover effects."/>
