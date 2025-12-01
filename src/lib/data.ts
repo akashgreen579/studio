@@ -438,5 +438,3 @@ export const getEffectivePermissions = (userId: string, project?: Project): Perm
 
     return finalPermissions;
 }
-
-    
