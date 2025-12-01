@@ -44,7 +44,7 @@ const getStatusIcon = (status: string) => {
 }
 
 export function PipelinesView({ user }: PipelinesViewProps) {
-  const [selectedPipelineId, setSelectedPipelineId] = useState<string | null>("pipe-1");
+  const [selectedPipelineId, setSelectedPipelineId] = useState<string | null>(null);
   const permissions = getEffectivePermissions(user.id);
   
   const selectedPipeline = pipelines.find(p => p.id === selectedPipelineId) || pipelineTemplates.find(p => p.id === selectedPipelineId);
@@ -326,4 +326,3 @@ export function PipelinesView({ user }: PipelinesViewProps) {
   );
 }
 
-    
