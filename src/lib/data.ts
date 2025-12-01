@@ -8,7 +8,7 @@ export type Role = "manager" | "employee" | "admin";
 
 export type LabStage = "nlp-cleanup" | "gherkin-preparation" | "keyword-mapping" | "action-simulation" | "code-generation";
 
-export type ActiveView = "dashboard" | "project-settings" | "user-management" | "audit-log" | "approvals" | "tmt-view" | "test-ai-lab" | "keyword-mapping" | "pipelines" | null;
+export type ActiveView = "dashboard" | "project-settings" | "user-management" | "audit-log" | "approvals" | "tmt-view" | "test-ai-lab" | "keyword-mapping" | "pipelines" | "reports" | null;
 
 
 export interface User {

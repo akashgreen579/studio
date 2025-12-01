@@ -50,7 +50,7 @@ const menuItems = [
         icon: Home,
         label: "Dashboard",
         view: "dashboard",
-        tooltip: "Overview & insights (Phase 2)",
+        tooltip: "Overview & insights",
         roles: ["manager", "employee"],
       },
       {
@@ -58,7 +58,7 @@ const menuItems = [
         icon: FileCheck,
         label: "TMT View",
         view: "tmt-view",
-        tooltip: "Test case selection & filtering (Phase 3)",
+        tooltip: "Test case selection & filtering",
         roles: ["manager", "employee"],
       },
       {
@@ -66,7 +66,7 @@ const menuItems = [
         icon: FlaskConical,
         label: "TestAI Lab",
         view: "test-ai-lab",
-        tooltip: "Automation workspace (Phase 4)",
+        tooltip: "Automation workspace",
         roles: ["manager", "employee"],
       },
       {
@@ -74,14 +74,15 @@ const menuItems = [
         icon: PlayCircle,
         label: "Execution & Pipelines",
         view: "pipelines",
-        tooltip: "Run automated test cases (Phase 5)",
+        tooltip: "Run automated test cases",
         roles: ["manager", "employee"],
       },
       {
-        href: "#",
+        href: "/dashboard",
         icon: BarChart,
         label: "Reports",
-        tooltip: "Execution reports & historical data (Phase 6)",
+        view: "reports",
+        tooltip: "Execution reports & historical data",
         roles: ["manager", "employee"],
       },
       {
