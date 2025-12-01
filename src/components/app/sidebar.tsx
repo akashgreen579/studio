@@ -25,6 +25,7 @@ import {
   UserCheck,
   Palette,
   Bot,
+  History,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ActiveView } from "@/app/dashboard/page";
@@ -83,6 +84,13 @@ const menuItems = [
         label: "Reports",
         view: "reports",
         tooltip: "Execution reports & historical data",
+        roles: ["manager", "employee"],
+      },
+      {
+        href: "/history",
+        icon: History,
+        label: "Execution History",
+        tooltip: "Explore past execution results",
         roles: ["manager", "employee"],
       },
       {
@@ -208,7 +216,15 @@ export function Sidebar({
         } else {
             currentParams.delete('view');
         }
-        const newUrl = `${item.href}?${currentParams.toString()}`;
+        
+        let newUrl = `${item.href}?${currentParams.toString()}`;
+        // If it's a link to a different base path, we don't want to carry over the 'view' param
+        if (!item.href.startsWith('/dashboard')) {
+            currentParams.delete('view');
+            newUrl = `${item.href}?${currentParams.toString()}`;
+        }
+        
+        // Logic to determine if we need a full navigation or just history push
         if (item.href === pathname && item.view === activeView) {
             // Already on the right page and view, do nothing.
         } else if (item.href === pathname) {

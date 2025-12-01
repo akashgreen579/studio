@@ -1,6 +1,6 @@
 
 import { PlaceHolderImages } from './placeholder-images';
-import { Eye, TestTube, FolderPlus, GitMerge, PlayCircle, type LucideIcon, FilePlus, Settings2, UserPlus, GitBranch, GitCommit, CheckCheck, UserCheck, ShieldAlert } from 'lucide-react';
+import { Eye, TestTube, FolderPlus, GitMerge, PlayCircle, type LucideIcon, FilePlus, Settings2, UserPlus, GitBranch, GitCommit, CheckCheck, UserCheck, ShieldAlert, BrainCircuit, Repeat, ShieldQuestion } from 'lucide-react';
 import { ComponentType } from 'react';
 
 // Types
@@ -8,7 +8,7 @@ export type Role = "manager" | "employee" | "admin";
 
 export type LabStage = "nlp-cleanup" | "gherkin-preparation" | "keyword-mapping" | "action-simulation" | "code-generation";
 
-export type ActiveView = "dashboard" | "project-settings" | "user-management" | "audit-log" | "approvals" | "tmt-view" | "test-ai-lab" | "keyword-mapping" | "pipelines" | "reports" | null;
+export type ActiveView = "dashboard" | "project-settings" | "user-management" | "audit-log" | "approvals" | "tmt-view" | "test-ai-lab" | "keyword-mapping" | "pipelines" | "reports" | "execution-history" | null;
 
 
 export interface User {
@@ -130,6 +130,17 @@ export interface ExecutionStep {
     log?: string;
 }
 
+export interface ExecutionHistoryEntry {
+    id: string;
+    pipelineName: string;
+    triggeredBy: string;
+    duration: string;
+    environment: "QA" | "Staging" | "Production";
+    browser: "Chrome" | "Firefox" | "Safari" | "Edge";
+    status: "Passed" | "Failed" | "Blocked" | "Skipped";
+    startTime: string;
+    aiFlags: ("Auto-Healed" | "Flaky" | "Known-Failure")[];
+}
 
 export const permissionDescriptions: Record<keyof Permissions, { label: string; description: string; icon: LucideIcon; category: 'Project' | 'Management' | 'Admin' }> = {
     // Project
@@ -436,6 +447,14 @@ export const executionSteps: ExecutionStep[] = [
     { id: "step-4", name: "Then the user is redirected to the dashboard", status: "pending", log: "" },
 ];
 
+
+export const executionHistory: ExecutionHistoryEntry[] = [
+    { id: "run-hist-1", pipelineName: "Full Regression Suite", triggeredBy: "Alex Hartman", duration: "24m 11s", environment: "QA", browser: "Chrome", status: "Passed", startTime: new Date(Date.now() - 3600000 * 2).toISOString(), aiFlags: [] },
+    { id: "run-hist-2", pipelineName: "Smoke Tests (Staging)", triggeredBy: "CI/CD", duration: "2m 30s", environment: "Staging", browser: "Firefox", status: "Failed", startTime: new Date(Date.now() - 3600000 * 5).toISOString(), aiFlags: ["Auto-Healed", "Flaky"] },
+    { id: "run-hist-3", pipelineName: "Nightly API Checks", triggeredBy: "Scheduler", duration: "8m 5s", environment: "QA", browser: "Chrome", status: "Passed", startTime: new Date(Date.now() - 86400000 * 1.5).toISOString(), aiFlags: [] },
+    { id: "run-hist-4", pipelineName: "Hotfix: Login Button", triggeredBy: "Samira Khan", duration: "1m 15s", environment: "Staging", browser: "Chrome", status: "Passed", startTime: new Date(Date.now() - 86400000 * 2).toISOString(), aiFlags: [] },
+    { id: "run-hist-5", pipelineName: "Full Regression Suite", triggeredBy: "Alex Hartman", duration: "25m 2s", environment: "QA", browser: "Chrome", status: "Failed", startTime: new Date(Date.now() - 86400000 * 3).toISOString(), aiFlags: ["Known-Failure"] },
+];
 
 
 // This function merges project-specific permissions with global role-based permissions
