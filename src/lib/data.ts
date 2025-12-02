@@ -149,7 +149,7 @@ export const permissionDescriptions: Record<keyof Permissions, { label: string; 
     createSrcStructure: { label: "Create Folders", description: "Allows user to create new folders under the framework when automating tests.", icon: FolderPlus, category: 'Project' },
     runPipelines: { label: "Run Pipelines", description: "Enables user to trigger CI/CD test execution pipelines.", icon: PlayCircle, category: 'Project' },
     approveMergePRs: { label: "Approve/Merge PRs", description: "Grants permissions to approve and merge pull requests to the main branch.", icon: GitMerge, category: 'Project' },
-    commitAndPublish: { label: "Commit &amp; Publish", description: "Allows user to commit code and publish artifacts.", icon: GitCommit, category: 'Project' },
+    commitAndPublish: { label: "Commit & Publish", description: "Allows user to commit code and publish artifacts.", icon: GitCommit, category: 'Project' },
 
     // Management
     createProject: { label: "Create Project", description: "Allows user to create new testing projects.", icon: FilePlus, category: 'Management' },
