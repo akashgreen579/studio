@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { ArrowRight, Sparkles, Wand, RefreshCw } from "lucide-react";
+import { ArrowRight, Sparkles, Wand, RefreshCw, Server } from "lucide-react";
 import { motion } from "framer-motion";
 import { Progress } from "@/components/ui/progress";
 import type { User, Permissions, ExistingKeyword } from "@/lib/data";
@@ -21,6 +21,7 @@ import {
 import { KeywordMappingCard } from "./keyword-mapping-card";
 import { CreateKeywordModal, RecordKeywordModal } from "./keyword-action-modals";
 import { ActionSimulationModal } from "./action-simulation-modal";
+import { ApiRequestModal } from "./api-request-modal";
 
 
 export interface StepMapping {
@@ -29,7 +30,7 @@ export interface StepMapping {
     suggestion: ExistingKeyword | null;
     similarity: number | null;
     status: 'unresolved' | 'resolved';
-    action: 'none' | 'reuse' | 'create' | 'record';
+    action: 'none' | 'reuse' | 'create' | 'record' | 'api';
 }
 
 
@@ -48,6 +49,7 @@ export function KeywordMappingView({ user, testCase, steps, onComplete }: Keywor
     const [similarityThreshold, setSimilarityThreshold] = useState(80);
     const [isCreateModalOpen, setCreateModalOpen] = useState(false);
     const [isRecordModalOpen, setRecordModalOpen] = useState(false);
+    const [isApiModalOpen, setApiModalOpen] = useState(false);
     const [selectedGherkinStep, setSelectedGherkinStep] = useState("");
 
 
@@ -73,6 +75,11 @@ export function KeywordMappingView({ user, testCase, steps, onComplete }: Keywor
     const handleRecord = (gherkinStep: string) => {
         setSelectedGherkinStep(gherkinStep);
         setRecordModalOpen(true);
+    }
+    
+    const handleApi = (gherkinStep: string) => {
+        setSelectedGherkinStep(gherkinStep);
+        setApiModalOpen(true);
     }
 
     const permissions = getEffectivePermissions(user.id);
@@ -113,6 +120,7 @@ export function KeywordMappingView({ user, testCase, steps, onComplete }: Keywor
                                     onUpdate={(newMapping) => handleUpdateMapping(mapping.id, newMapping)}
                                     onCreate={() => handleCreate(mapping.gherkinStep)}
                                     onRecord={() => handleRecord(mapping.gherkinStep)}
+                                    onApi={() => handleApi(mapping.gherkinStep)}
                                />
                            ))}
                         </CardContent>
@@ -215,6 +223,11 @@ export function KeywordMappingView({ user, testCase, steps, onComplete }: Keywor
                 console.log('Generated actions:', actions);
                 setRecordModalOpen(false);
             }}
+        />
+        <ApiRequestModal
+            isOpen={isApiModalOpen}
+            setIsOpen={setApiModalOpen}
+            gherkinStep={selectedGherkinStep}
         />
     </>
   );

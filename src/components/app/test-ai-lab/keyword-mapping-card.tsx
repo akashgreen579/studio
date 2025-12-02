@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Link2, Code, Video, Check, Info } from "lucide-react";
+import { Link2, Code, Video, Check, Info, Server } from "lucide-react";
 import { type StepMapping } from "./keyword-mapping-view";
 import { ReuseKeywordPopover } from "./reuse-keyword-popover";
 import { cn } from "@/lib/utils";
@@ -16,6 +16,7 @@ interface KeywordMappingCardProps {
   onUpdate: (newMapping: Partial<StepMapping>) => void;
   onCreate: () => void;
   onRecord: () => void;
+  onApi: () => void;
 }
 
 const SimilarityBadge = ({ similarity }: { similarity: number | null }) => {
@@ -33,7 +34,7 @@ const SimilarityBadge = ({ similarity }: { similarity: number | null }) => {
 };
 
 
-export const KeywordMappingCard = ({ mapping, onUpdate, onCreate, onRecord }: KeywordMappingCardProps) => {
+export const KeywordMappingCard = ({ mapping, onUpdate, onCreate, onRecord, onApi }: KeywordMappingCardProps) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const [isReused, setIsReused] = useState(false);
 
@@ -79,13 +80,18 @@ export const KeywordMappingCard = ({ mapping, onUpdate, onCreate, onRecord }: Ke
       onUpdate({ action: 'record', status: 'resolved' });
       onRecord();
   }
+  
+  const handleApi = () => {
+    onUpdate({ action: 'api', status: 'resolved' });
+    onApi();
+  }
 
   const renderActionButtons = () => {
     if (mapping.status === 'resolved') {
         return (
             <div className="flex items-center gap-2 text-green-600 font-medium">
                 <Check className="h-5 w-5"/>
-                <span>{mapping.action === 'reuse' ? 'Reused' : mapping.action === 'create' ? 'Created' : 'Recorded'}</span>
+                <span>{mapping.action === 'reuse' ? 'Reused' : mapping.action === 'create' ? 'Created' : mapping.action === 'api' ? 'API Step' : 'Recorded'}</span>
             </div>
         )
     }
@@ -110,6 +116,10 @@ export const KeywordMappingCard = ({ mapping, onUpdate, onCreate, onRecord }: Ke
          <Button variant="secondary" className="relative overflow-hidden" onClick={(e) => {handleRipple(e); handleRecord();}}>
             <Video className="h-4 w-4 mr-2"/>
             Record
+         </Button>
+          <Button variant="secondary" className="relative overflow-hidden" onClick={(e) => {handleRipple(e); handleApi();}}>
+            <Server className="h-4 w-4 mr-2"/>
+            API
          </Button>
       </div>
     );
