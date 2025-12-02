@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -31,7 +32,7 @@ const MotionSpec = ({ property, value, description }: { property: string; value:
         </div>
         <Badge variant="outline">{value}</Badge>
     </div>
-)
+);
 
 const DeliverableItem = ({ title, description, icon: Icon }: { title: string, description: string, icon: React.ElementType }) => (
     <div className="flex items-start gap-4 p-4 rounded-lg bg-muted/40">
@@ -124,7 +125,7 @@ export default function TestAiLabBriefPage() {
                    <ColorSwatch name="Warning" className="bg-warning" hex="#F6A623" description="Amber for warnings, in-progress states, and areas needing attention." />
                    <ColorSwatch name="Danger" className="bg-destructive" hex="#E04545" description="For errors, destructive actions, and critical alerts." />
                    <ColorSwatch name="Background" className="bg-background" hex="#F6F7F9" description="The main canvas color for a clean, spacious feel." />
-                   <ColorSwatch name: "Surface" className="bg-card" hex="#FFFFFF" description="For primary content panes like cards, modals, and panels." />
+                   <ColorSwatch name="Surface" className="bg-card" hex="#FFFFFF" description="For primary content panes like cards, modals, and panels." />
                 </CardContent>
             </Card>
 
@@ -202,3 +203,5 @@ export default function TestAiLabBriefPage() {
     </div>
   );
 }
+
+    
