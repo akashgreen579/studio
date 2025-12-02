@@ -20,7 +20,6 @@ import {
 } from "@/components/ui/tooltip";
 import { KeywordMappingCard } from "./keyword-mapping-card";
 import { CreateKeywordModal, RecordKeywordModal } from "./keyword-action-modals";
-import { ActionSimulationModal } from "./action-simulation-modal";
 import { ApiRequestModal } from "./api-request-modal";
 
 
@@ -215,14 +214,10 @@ export function KeywordMappingView({ user, testCase, steps, onComplete }: Keywor
             setIsOpen={setCreateModalOpen}
             gherkinStep={selectedGherkinStep}
         />
-         <ActionSimulationModal
+         <RecordKeywordModal
             isOpen={isRecordModalOpen}
             setIsOpen={setRecordModalOpen}
             gherkinStep={selectedGherkinStep}
-            onGenerate={(actions) => {
-                console.log('Generated actions:', actions);
-                setRecordModalOpen(false);
-            }}
         />
         <ApiRequestModal
             isOpen={isApiModalOpen}

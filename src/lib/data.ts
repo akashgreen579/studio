@@ -1,6 +1,6 @@
 
 import { PlaceHolderImages } from './placeholder-images';
-import { Eye, TestTube, FolderPlus, GitMerge, PlayCircle, type LucideIcon, FilePlus, Settings2, UserPlus, GitBranch, GitCommit, CheckCheck, UserCheck, ShieldAlert, BrainCircuit, Repeat, ShieldQuestion } from 'lucide-react';
+import { Eye, TestTube, FolderPlus, GitMerge, PlayCircle, type LucideIcon, FilePlus, Settings2, UserPlus, GitBranch, GitCommit, CheckCheck, UserCheck, ShieldAlert, BrainCircuit, Repeat, ShieldQuestion, Server } from 'lucide-react';
 import { ComponentType } from 'react';
 
 // Types
@@ -416,7 +416,6 @@ export const draftAutomations = [
     { id: "draft-1", name: "TC-101: User Login", project: "Customer Portal", updated: new Date(Date.now() - 3600000), status: "Code Generation" },
     { id: "draft-2", name: "TC-205: Add to Cart", project: "Payment Gateway", updated: new Date(Date.now() - 86400000 * 2), status: "Keyword Mapping" },
     { id: "draft-3", name: "TC-310: Profile Update", project: "Customer Portal", updated: new Date(Date.now() - 86400000 * 4), status: "NLP Cleanup" },
-    { id: "draft-4", name: "TC-415: Search Functionality", project: "Customer Portal", updated: new Date(Date.now() - 86400000 * 5), status: "Gherkin Preparation" },
 ];
 
 export const pipelines: Pipeline[] = [
