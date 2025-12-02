@@ -27,7 +27,7 @@ const SimilarityBadge = ({ similarity }: { similarity: number | null }) => {
 
   return (
     <Badge variant="outline" className={cn("font-semibold", colorClass)}>
-      {Math.round(similarity)}% match
+      {Math.round(similarity)}% Similar
     </Badge>
   );
 };
@@ -96,7 +96,7 @@ export const KeywordMappingCard = ({ mapping, onUpdate, onCreate, onRecord }: Ke
             <ReuseKeywordPopover keyword={mapping.suggestion} onConfirm={handleReuse}>
                  <Button variant="outline" className="relative overflow-hidden" onClick={handleRipple}>Reuse</Button>
             </ReuseKeywordPopover>
-            <Button className="relative overflow-hidden" onClick={(e) => {handleRipple(e); handleCreate();}}>Create New</Button>
+            <Button className="relative overflow-hidden" variant="secondary" onClick={(e) => {handleRipple(e); handleCreate();}}>Create New</Button>
         </div>
       );
     }
@@ -144,8 +144,7 @@ export const KeywordMappingCard = ({ mapping, onUpdate, onCreate, onRecord }: Ke
                 </div>
             ) : (
                 <div className="text-sm text-muted-foreground italic flex items-center gap-2">
-                    <Info className="h-4 w-4"/>
-                    No suggestions found. Create or record a new keyword.
+                    No suggestion
                 </div>
             )}
         </div>

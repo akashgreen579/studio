@@ -10,14 +10,27 @@ import { Label } from "@/components/ui/label";
 import { ArrowRight, Sparkles, Wand, RefreshCw } from "lucide-react";
 import { motion } from "framer-motion";
 import { Progress } from "@/components/ui/progress";
-import type { User, Permissions } from "@/lib/data";
-import { getEffectivePermissions } from "@/lib/data";
+import type { User, Permissions, ExistingKeyword } from "@/lib/data";
+import { getEffectivePermissions, existingKeywords } from "@/lib/data";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { KeywordMappingCard } from "./keyword-mapping-card";
+import { CreateKeywordModal, RecordKeywordModal } from "./keyword-action-modals";
+import { ActionSimulationModal } from "./action-simulation-modal";
+
+
+export interface StepMapping {
+    id: string;
+    gherkinStep: string;
+    suggestion: ExistingKeyword | null;
+    similarity: number | null;
+    status: 'unresolved' | 'resolved';
+    action: 'none' | 'reuse' | 'create' | 'record';
+}
 
 
 interface KeywordMappingViewProps {
@@ -33,10 +46,39 @@ interface KeywordMappingViewProps {
 export function KeywordMappingView({ user, testCase, steps, onComplete }: KeywordMappingViewProps) {
     const [autoSuggest, setAutoSuggest] = useState(true);
     const [similarityThreshold, setSimilarityThreshold] = useState(80);
+    const [isCreateModalOpen, setCreateModalOpen] = useState(false);
+    const [isRecordModalOpen, setRecordModalOpen] = useState(false);
+    const [selectedGherkinStep, setSelectedGherkinStep] = useState("");
+
+
+    const initialMappings: StepMapping[] = [
+        { id: 'step-1', gherkinStep: "Given the user is on the login page", suggestion: existingKeywords[0], similarity: 71, status: 'unresolved', action: 'none' },
+        { id: 'step-2', gherkinStep: "When the user enters their username and password", suggestion: null, similarity: null, status: 'unresolved', action: 'none' },
+        { id: 'step-3', gherkinStep: "And the user clicks the 'Login' button", suggestion: null, similarity: null, status: 'unresolved', action: 'none' },
+        { id: 'step-4', gherkinStep: "Then the user is redirected to the dashboard page", suggestion: null, similarity: null, status: 'unresolved', action: 'none' },
+        { id: 'step-5', gherkinStep: "And a 'Welcome' message is displayed", suggestion: existingKeywords[4], similarity: 71, status: 'unresolved', action: 'none' },
+    ];
+    
+    const [mappings, setMappings] = useState<StepMapping[]>(initialMappings);
+
+    const handleUpdateMapping = (id: string, newMapping: Partial<StepMapping>) => {
+        setMappings(prev => prev.map(m => m.id === id ? { ...m, ...newMapping } : m));
+    }
+    
+    const handleCreate = (gherkinStep: string) => {
+        setSelectedGherkinStep(gherkinStep);
+        setCreateModalOpen(true);
+    }
+
+    const handleRecord = (gherkinStep: string) => {
+        setSelectedGherkinStep(gherkinStep);
+        setRecordModalOpen(true);
+    }
 
     const permissions = getEffectivePermissions(user.id);
     const canBulkReuse = permissions.syncTMT;
-    const progress = 33; // Mock progress
+    const resolvedCount = mappings.filter(m => m.status === 'resolved').length;
+    const progress = Math.round((resolvedCount / mappings.length) * 100);
 
   return (
     <>
@@ -54,9 +96,25 @@ export function KeywordMappingView({ user, testCase, steps, onComplete }: Keywor
                 {/* Left Pane: Mapping Cards */}
                 <div className="space-y-4">
                      <Card>
-                        <CardHeader><CardTitle>Mapping List</CardTitle></CardHeader>
-                        <CardContent>
-                            <p className="text-muted-foreground">The card-based mapping list will be implemented here in the next step.</p>
+                        <CardHeader>
+                            <CardTitle>Step to Keyword Mapping</CardTitle>
+                            <CardDescription>Review the AI's suggestions for mapping your test steps to existing code keywords.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                            <div className="grid grid-cols-[1fr_1.5fr_auto] items-center gap-4 px-4 py-2 text-sm font-semibold text-muted-foreground">
+                                <span>Gherkin Step</span>
+                                <span>Suggested Keyword</span>
+                                <span className="justify-self-end">Action</span>
+                            </div>
+                           {mappings.map(mapping => (
+                               <KeywordMappingCard 
+                                    key={mapping.id} 
+                                    mapping={mapping} 
+                                    onUpdate={(newMapping) => handleUpdateMapping(mapping.id, newMapping)}
+                                    onCreate={() => handleCreate(mapping.gherkinStep)}
+                                    onRecord={() => handleRecord(mapping.gherkinStep)}
+                               />
+                           ))}
                         </CardContent>
                      </Card>
                 </div>
@@ -112,7 +170,7 @@ export function KeywordMappingView({ user, testCase, steps, onComplete }: Keywor
                         <CardContent>
                             <div className="flex justify-between text-sm">
                                 <span className="text-muted-foreground">Steps Mapped</span>
-                                <span>1 / {steps.length}</span>
+                                <span>{resolvedCount} / {mappings.length}</span>
                             </div>
                             <Progress value={progress} className="mt-2" />
                         </CardContent>
@@ -137,11 +195,27 @@ export function KeywordMappingView({ user, testCase, steps, onComplete }: Keywor
                     size="lg" 
                     disabled={progress < 100} 
                     onClick={onComplete}
+                    className="glow-on-enable"
                 >
                    Continue to Code Generation <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
             </div>
         </motion.div>
+
+        <CreateKeywordModal
+            isOpen={isCreateModalOpen}
+            setIsOpen={setCreateModalOpen}
+            gherkinStep={selectedGherkinStep}
+        />
+         <ActionSimulationModal
+            isOpen={isRecordModalOpen}
+            setIsOpen={setRecordModalOpen}
+            gherkinStep={selectedGherkinStep}
+            onGenerate={(actions) => {
+                console.log('Generated actions:', actions);
+                setRecordModalOpen(false);
+            }}
+        />
     </>
   );
 }
