@@ -6,10 +6,11 @@ import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Link2, Code, Video, Check, Info, Server } from "lucide-react";
+import { Link2, Code, Video, Check, Info, Server, ChevronDown } from "lucide-react";
 import { type StepMapping } from "./keyword-mapping-view";
 import { ReuseKeywordPopover } from "./reuse-keyword-popover";
 import { cn } from "@/lib/utils";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 interface KeywordMappingCardProps {
   mapping: StepMapping;
@@ -109,18 +110,30 @@ export const KeywordMappingCard = ({ mapping, onUpdate, onCreate, onRecord, onAp
 
     return (
       <div className="flex gap-2">
-         <Button className="relative overflow-hidden" onClick={(e) => {handleRipple(e); handleCreate();}}>
-            <Code className="h-4 w-4 mr-2"/>
-            Create
-         </Button>
-         <Button variant="secondary" className="relative overflow-hidden" onClick={(e) => {handleRipple(e); handleRecord();}}>
-            <Video className="h-4 w-4 mr-2"/>
-            Record
-         </Button>
-          <Button variant="secondary" className="relative overflow-hidden" onClick={(e) => {handleRipple(e); handleApi();}}>
-            <Server className="h-4 w-4 mr-2"/>
-            API
-         </Button>
+        <ReuseKeywordPopover keyword={existingKeywords[0]} onConfirm={handleReuse}>
+          <Button className="relative overflow-hidden" variant="outline" onClick={handleRipple}>Reuse</Button>
+        </ReuseKeywordPopover>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+             <Button className="relative overflow-hidden" variant="default" onClick={handleRipple}>
+                Create <ChevronDown className="h-4 w-4 ml-2"/>
+             </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem onClick={handleCreate}>
+              <Code className="h-4 w-4 mr-2"/>
+              <span>Create Manually</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleRecord}>
+              <Video className="h-4 w-4 mr-2"/>
+              <span>Record UI</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleApi}>
+              <Server className="h-4 w-4 mr-2"/>
+              <span>API Request</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     );
   };
@@ -167,5 +180,3 @@ export const KeywordMappingCard = ({ mapping, onUpdate, onCreate, onRecord, onAp
     </Card>
   );
 };
-
-    
