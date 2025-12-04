@@ -17,6 +17,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import {
   CalendarDays,
@@ -35,14 +43,20 @@ import {
   Bot,
   ShieldAlert,
   GitMerge,
-  BarChart,
+  BarChart as BarChartIcon,
   Users,
+  Eye,
 } from "lucide-react"
 import {
   ResponsiveContainer,
   AreaChart,
   Area,
   Tooltip as RechartsTooltip,
+  BarChart,
+  XAxis,
+  YAxis,
+  Bar,
+  Cell,
 } from "recharts"
 import type { User } from "@/lib/data"
 import { cn } from "@/lib/utils"
@@ -114,9 +128,23 @@ const insights = [
 const teamMetrics = [
     { title: "Team Productivity", value: "+8%", icon: Users },
     { title: "MR Approval Time", value: "4.2h", icon: GitMerge },
-    { title: "Team Success Rate", value: "92%", icon: BarChart },
+    { title: "Team Success Rate", value: "92%", icon: BarChartIcon },
     { title: "Automation Velocity", value: "1.2k lines/week", icon: FlaskConical },
 ]
+
+const flakyTestsData = [
+    { id: "TC-415", summary: "Verify user can apply coupon code", failureRate: "18%", lastFailure: "2h ago" },
+    { id: "TC-208", summary: "Check cart persistence after logout", failureRate: "12%", lastFailure: "1d ago" },
+    { id: "TC-501", summary: "API: Validate product search results", failureRate: "9%", lastFailure: "4h ago" },
+]
+
+const selectorStabilityData = [
+  { name: 'data-testid', stability: 98, color: "hsl(var(--success))" },
+  { name: 'ID', stability: 92, color: "hsl(var(--success))" },
+  { name: 'CSS Class', stability: 75, color: "hsl(var(--warning))" },
+  { name: 'XPath', stability: 65, color: "hsl(var(--warning))" },
+  { name: 'Full Text', stability: 40, color: "hsl(var(--destructive))" },
+];
 
 const KPICard = ({
   title,
@@ -199,7 +227,7 @@ export function ReportsDashboard({ user }: ReportsDashboardProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <header className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Reports Dashboard</h1>
@@ -281,6 +309,78 @@ export function ReportsDashboard({ user }: ReportsDashboardProps) {
                 ))}
             </div>
         </div>
+      
+      {/* Quality & Stability Section */}
+      <div className="space-y-4">
+        <h2 className="text-2xl font-bold tracking-tight">Quality & Stability</h2>
+        <div className="grid gap-6 lg:grid-cols-2 items-start">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Flaky Tests</CardTitle>
+                    <CardDescription>Tests with inconsistent results. Prioritize fixing these to improve trust in your test suites.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Test Case</TableHead>
+                                <TableHead>Failure Rate</TableHead>
+                                <TableHead>Last Failure</TableHead>
+                                <TableHead className="text-right">Actions</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {flakyTestsData.map(test => (
+                                <TableRow key={test.id}>
+                                    <TableCell className="font-medium">{test.id}</TableCell>
+                                    <TableCell><span className="text-destructive font-semibold">{test.failureRate}</span></TableCell>
+                                    <TableCell>{test.lastFailure}</TableCell>
+                                    <TableCell className="text-right"><Button variant="outline" size="sm"><Eye className="mr-2 h-4 w-4"/>Drilldown</Button></TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </CardContent>
+            </Card>
+            <div className="grid gap-6">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Step Failure Heatmap</CardTitle>
+                        <CardDescription>Hotspots where failures occur most often.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="h-48 flex items-center justify-center text-muted-foreground bg-muted/40 rounded-lg">
+                        <p>Step Failure Heatmap Placeholder</p>
+                    </CardContent>
+                </Card>
+                 <Card>
+                    <CardHeader>
+                        <CardTitle>Selector Stability Distribution</CardTitle>
+                        <CardDescription>Breakdown of locator stability across your project.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <ResponsiveContainer width="100%" height={200}>
+                            <BarChart data={selectorStabilityData} layout="vertical" margin={{ left: 20, right: 20 }}>
+                                <XAxis type="number" hide />
+                                <YAxis type="category" dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12 }} width={80} />
+                                <RechartsTooltip 
+                                    cursor={{fill: 'hsla(var(--muted))'}}
+                                    contentStyle={{
+                                        backgroundColor: "hsl(var(--background))",
+                                        borderColor: "hsl(var(--border))",
+                                    }}
+                                />
+                                <Bar dataKey="stability" radius={[0, 4, 4, 0]}>
+                                    {selectorStabilityData.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={entry.color} />
+                                    ))}
+                                </Bar>
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </CardContent>
+                </Card>
+            </div>
+        </div>
+      </div>
 
       {/* Role-based content */}
       <AnimatePresence mode="wait">
