@@ -58,6 +58,8 @@ import {
   LineChart,
   Line,
   Tooltip as RechartsTooltip,
+  XAxis,
+  YAxis,
 } from "recharts"
 import type { User } from "@/lib/data"
 import { cn } from "@/lib/utils"
