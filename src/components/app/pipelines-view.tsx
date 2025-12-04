@@ -90,7 +90,7 @@ export function PipelinesView({ user }: PipelinesViewProps) {
     <div className="space-y-6 h-full flex flex-col">
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-2xl font-semibold">Execution &amp; Pipelines</h1>
+        <h1 className="text-2xl font-semibold">Execution & Pipelines</h1>
         <div className="flex items-center gap-2">
           <Select defaultValue="proj1">
             <SelectTrigger className="w-[200px]">
