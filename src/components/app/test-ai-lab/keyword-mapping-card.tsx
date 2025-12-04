@@ -11,6 +11,8 @@ import { type StepMapping } from "./keyword-mapping-view";
 import { ReuseKeywordPopover } from "./reuse-keyword-popover";
 import { cn } from "@/lib/utils";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { existingKeywords } from "@/lib/data";
+
 
 interface KeywordMappingCardProps {
   mapping: StepMapping;
@@ -97,21 +99,10 @@ export const KeywordMappingCard = ({ mapping, onUpdate, onCreate, onRecord, onAp
         )
     }
 
-    if (mapping.suggestion) {
-      return (
-        <div className="flex gap-2">
-            <ReuseKeywordPopover keyword={mapping.suggestion} onConfirm={handleReuse}>
-                 <Button variant="outline" className="relative overflow-hidden" onClick={handleRipple}>Reuse</Button>
-            </ReuseKeywordPopover>
-            <Button className="relative overflow-hidden" variant="secondary" onClick={(e) => {handleRipple(e); handleCreate();}}>Create New</Button>
-        </div>
-      );
-    }
-
     return (
       <div className="flex gap-2">
-        <ReuseKeywordPopover keyword={existingKeywords[0]} onConfirm={handleReuse}>
-          <Button className="relative overflow-hidden" variant="outline" onClick={handleRipple}>Reuse</Button>
+        <ReuseKeywordPopover keyword={mapping.suggestion || existingKeywords[0]} onConfirm={handleReuse}>
+            <Button className="relative overflow-hidden" variant="outline" onClick={handleRipple}>Reuse</Button>
         </ReuseKeywordPopover>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -167,7 +158,8 @@ export const KeywordMappingCard = ({ mapping, onUpdate, onCreate, onRecord, onAp
                 </div>
             ) : (
                 <div className="text-sm text-muted-foreground italic flex items-center gap-2">
-                    No suggestion
+                    <Info className="h-4 w-4"/>
+                    No suggestion found. Choose a "Create" action.
                 </div>
             )}
         </div>
