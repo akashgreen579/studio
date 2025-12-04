@@ -101,26 +101,4 @@ export const RecordKeywordModal = ({ isOpen, setIsOpen, gherkinStep }: ModalProp
     )
 }
 
-export const ApiRequestModal = ({ isOpen, setIsOpen, gherkinStep }: ModalProps) => {
-    return (
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>API Request</DialogTitle>
-                    <DialogDescription>
-                        Create an API request for the step: "{gherkinStep}"
-                    </DialogDescription>
-                </DialogHeader>
-                <div className="h-64 my-4 flex flex-col items-center justify-center text-center bg-muted/50 border-2 border-dashed rounded-lg">
-                    <Server className="h-12 w-12 text-muted-foreground"/>
-                    <p className="mt-4 font-semibold">API Request Builder</p>
-                    <p className="text-sm text-muted-foreground">A Postman-like interface would open here.</p>
-                </div>
-                <DialogFooter>
-                    <Button variant="outline" onClick={() => setIsOpen(false)}>Cancel</Button>
-                    <Button onClick={() => setIsOpen(false)}>Save Request</Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
-    );
-};
+    
