@@ -1,6 +1,6 @@
 
 import { PlaceHolderImages } from './placeholder-images';
-import { Eye, TestTube, FolderPlus, GitMerge, PlayCircle, type LucideIcon, FilePlus, Settings2, UserPlus, GitBranch, GitCommit, CheckCheck, UserCheck, ShieldAlert, BrainCircuit, Repeat, ShieldQuestion, Server } from 'lucide-react';
+import { Eye, TestTube, FolderPlus, GitMerge, PlayCircle, type LucideIcon, FilePlus, Settings2, UserPlus, GitBranch, GitCommit, CheckCheck, UserCheck, ShieldAlert, BrainCircuit, Repeat, ShieldQuestion, Server, Video, Code } from 'lucide-react';
 import { ComponentType } from 'react';
 
 // Types
@@ -493,5 +493,7 @@ export const getEffectivePermissions = (userId: string, project?: Project): Perm
 
     return finalPermissions;
 }
+
+    
 
     

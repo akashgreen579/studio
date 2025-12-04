@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { ArrowRight, Sparkles, Wand, RefreshCw, Server } from "lucide-react";
+import { ArrowRight, Sparkles, Wand, RefreshCw, Server, Video, Code } from "lucide-react";
 import { motion } from "framer-motion";
 import { Progress } from "@/components/ui/progress";
 import type { User, Permissions, ExistingKeyword } from "@/lib/data";
@@ -229,5 +229,7 @@ export function KeywordMappingView({ user, testCase, steps, onComplete }: Keywor
     </>
   );
 }
+
+    
 
     

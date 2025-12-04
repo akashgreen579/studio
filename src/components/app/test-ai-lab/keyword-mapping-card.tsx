@@ -172,3 +172,5 @@ export const KeywordMappingCard = ({ mapping, onUpdate, onCreate, onRecord, onAp
     </Card>
   );
 };
+
+    
