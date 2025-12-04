@@ -280,8 +280,7 @@ export const auditLog: AuditLogEntry[] = [
 
 export const mockRequests = [
     { id: 1, user: "Samira Khan", project: "Customer Portal Relaunch", type: "Access Request", permissions: ["Approve/Merge PRs"], justification: "Need to manage hotfixes for the release.", date: new Date(Date.now() - 86400000), status: "Pending" },
-    { id: 2, user: "John Doe", project: "Payment Gateway Integration", type: "Merge Request", permissions: [], justification: "feat: add stripe payments", date: new Date(Date.now() - 172800000), status: "Pending" },
-    { id: 3, user: "Jane Smith", project: "Customer Portal Relaunch", type: "Folder Creation", permissions: [], justification: "/new_feature/tests", date: new Date(Date.now() - 172800000), status: "Pending" },
+    { id: 2, user: "John Doe", project: "Payment Gateway Integration", type: "Access Request", permissions: ["Sync TMT"], justification: "Aligning test cases with our Jira board.", date: new Date(Date.now() - 172800000), status: "Pending" },
 ];
 
 export const notifications = [
