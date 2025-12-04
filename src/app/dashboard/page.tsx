@@ -142,7 +142,7 @@ function DashboardContent() {
         })
       );
     },
-    [currentUser, addAuditLogEntry, toast]
+    [currentUser, addAuditLogEntry]
   );
   
   const handleRoleChange = (newRole: Role) => {

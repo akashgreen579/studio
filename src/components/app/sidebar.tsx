@@ -95,20 +95,6 @@ const menuItems = [
         tooltip: "Explore past execution results",
         roles: ["manager", "employee"],
       },
-      {
-        href: "#",
-        icon: BrainCircuit,
-        label: "AI Insights",
-        tooltip: "AI-driven feedback & analysis (Phase 7)",
-        roles: ["manager", "employee"],
-      },
-      {
-        href: "#",
-        icon: Wand,
-        label: "Auto-Healing",
-        tooltip: "Automated fix suggestions (Phase 8)",
-        roles: ["manager", "employee"],
-      },
     ],
   },
   {

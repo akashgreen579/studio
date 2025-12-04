@@ -275,12 +275,29 @@ export const auditLog: AuditLogEntry[] = [
     timestamp: new Date(new Date().setDate(new Date().getDate() - 2)),
     impact: "Medium",
   },
+  {
+    id: "log4",
+    user: users.employee,
+    action: "Denied request",
+    details: "Denied access request from John Doe for 'Approve/Merge PRs' on 'Payment Gateway Integration'. Reason: Not a lead developer.",
+    timestamp: new Date(new Date().setDate(new Date().getDate() - 3)),
+    impact: "Medium"
+  },
+  {
+    id: "log5",
+    user: users.manager,
+    action: "Approved request",
+    details: "Approved 'Sync TMT' for Samira Khan on 'Customer Portal Relaunch'.",
+    timestamp: new Date(new Date().setHours(new Date().getHours() - 4)),
+    impact: "Medium"
+  }
 ];
 
 
 export const mockRequests = [
     { id: 1, user: "Samira Khan", project: "Customer Portal Relaunch", type: "Access Request", permissions: ["Approve/Merge PRs"], justification: "Need to manage hotfixes for the release.", date: new Date(Date.now() - 86400000), status: "Pending" },
     { id: 2, user: "John Doe", project: "Payment Gateway Integration", type: "Access Request", permissions: ["Sync TMT"], justification: "Aligning test cases with our Jira board.", date: new Date(Date.now() - 172800000), status: "Pending" },
+    { id: 3, user: "Jane Smith", project: "Customer Portal Relaunch", type: "Merge Request", permissions: [], justification: "feat: TC-405 automation for cart persistence", date: new Date(Date.now() - 3600000 * 6), status: "Pending" },
 ];
 
 export const notifications = [

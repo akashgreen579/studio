@@ -52,22 +52,14 @@ export function AuditLogScreen({ log }: AuditLogScreenProps) {
       const actionType = entry.action.split(' for')[0].split(' "')[0];
       if (!actionFilters.includes(actionType)) return false;
 
-      const projectNameMatch = entry.details.match(/'([^']+)'/);
+      // This logic is simplified. A more robust solution would involve storing project IDs in the audit log.
+      const projectNameMatch = entry.details.match(/'([^']+)'/) || entry.action.match(/"([^"]+)"/);
       if (projectNameMatch) {
           const projectName = projectNameMatch[1];
           const project = allProjects.find(p => p.name === projectName);
           if (project && !projectFilters.includes(project.id)) {
               return false;
           }
-      } else if (entry.action.includes('Created project')) {
-         const projectNameMatch = entry.action.match(/"([^"]+)"/);
-         if(projectNameMatch) {
-            const projectName = projectNameMatch[1];
-            const project = allProjects.find(p => p.name === projectName);
-            if (project && !projectFilters.includes(project.id)) {
-                return false;
-            }
-         }
       }
 
       return true;
