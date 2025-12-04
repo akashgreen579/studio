@@ -131,15 +131,15 @@ export interface ExecutionStep {
 }
 
 export interface ExecutionHistoryEntry {
-    id: string;
-    pipelineName: string;
-    triggeredBy: string;
-    duration: string;
-    environment: "QA" | "Staging" | "Production";
-    browser: "Chrome" | "Firefox" | "Safari" | "Edge";
-    status: "Passed" | "Failed" | "Blocked" | "Skipped";
-    startTime: string;
-    aiFlags: ("Auto-Healed" | "Flaky" | "Known-Failure")[];
+  id: string;
+  pipelineName: string;
+  status: 'Passed' | 'Failed';
+  duration: string;
+  triggeredBy: string;
+  environment: 'QA' | 'Staging' | 'Production';
+  browser: 'Chrome' | 'Firefox' | 'Safari' | 'Edge';
+  startTime: string;
+  aiFlags: ('Auto-Healed' | 'Flaky' | 'Known-Failure')[];
 }
 
 export const permissionDescriptions: Record<keyof Permissions, { label: string; description: string; icon: LucideIcon; category: 'Project' | 'Management' | 'Admin' }> = {
@@ -446,15 +446,13 @@ export const executionSteps: ExecutionStep[] = [
     { id: "step-4", name: "Then the user is redirected to the dashboard", status: "pending", log: "" },
 ];
 
-
 export const executionHistory: ExecutionHistoryEntry[] = [
-    { id: "run-hist-1", pipelineName: "Full Regression Suite", triggeredBy: "Alex Hartman", duration: "24m 11s", environment: "QA", browser: "Chrome", status: "Passed", startTime: new Date(Date.now() - 3600000 * 2).toISOString(), aiFlags: [] },
-    { id: "run-hist-2", pipelineName: "Smoke Tests (Staging)", triggeredBy: "CI/CD", duration: "2m 30s", environment: "Staging", browser: "Firefox", status: "Failed", startTime: new Date(Date.now() - 3600000 * 5).toISOString(), aiFlags: ["Auto-Healed", "Flaky"] },
-    { id: "run-hist-3", pipelineName: "Nightly API Checks", triggeredBy: "Scheduler", duration: "8m 5s", environment: "QA", browser: "Chrome", status: "Passed", startTime: new Date(Date.now() - 86400000 * 1.5).toISOString(), aiFlags: [] },
-    { id: "run-hist-4", pipelineName: "Hotfix: Login Button", triggeredBy: "Samira Khan", duration: "1m 15s", environment: "Staging", browser: "Chrome", status: "Passed", startTime: new Date(Date.now() - 86400000 * 2).toISOString(), aiFlags: [] },
-    { id: "run-hist-5", pipelineName: "Full Regression Suite", triggeredBy: "Alex Hartman", duration: "25m 2s", environment: "QA", browser: "Chrome", status: "Failed", startTime: new Date(Date.now() - 86400000 * 3).toISOString(), aiFlags: ["Known-Failure"] },
+    { id: "eh-1", pipelineName: "Full Regression Suite", status: 'Passed', duration: "24m 11s", triggeredBy: "Alex Hartman", environment: "QA", browser: "Chrome", startTime: new Date(Date.now() - 3600000 * 2).toISOString(), aiFlags: [] },
+    { id: "eh-2", pipelineName: "Smoke Tests", status: 'Failed', duration: "2m 3s", triggeredBy: "Samira Khan", environment: "QA", browser: "Firefox", startTime: new Date(Date.now() - 3600000 * 4).toISOString(), aiFlags: ['Auto-Healed'] },
+    { id: "eh-3", pipelineName: "Hotfix Validation", status: 'Passed', duration: "1m 15s", triggeredBy: "CI/CD", environment: "Staging", browser: "Chrome", startTime: new Date(Date.now() - 3600000 * 6).toISOString(), aiFlags: [] },
+    { id: "eh-4", pipelineName: "Full Regression Suite", status: 'Failed', duration: "22m 50s", triggeredBy: "Alex Hartman", environment: "QA", browser: "Chrome", startTime: new Date(Date.now() - 86400000).toISOString(), aiFlags: ['Flaky', 'Known-Failure'] },
+    { id: "eh-5", pipelineName: "API Checks", status: 'Passed', duration: "5m 2s", triggeredBy: "Scheduler", environment: "Production", browser: "Chrome", startTime: new Date(Date.now() - 86400000 * 2).toISOString(), aiFlags: [] },
 ];
-
 
 // This function merges project-specific permissions with global role-based permissions
 export const getEffectivePermissions = (userId: string, project?: Project): Permissions => {
@@ -493,9 +491,3 @@ export const getEffectivePermissions = (userId: string, project?: Project): Perm
 
     return finalPermissions;
 }
-
-    
-
-    
-
-  
