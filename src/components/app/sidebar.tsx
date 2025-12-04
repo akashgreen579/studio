@@ -88,9 +88,10 @@ const menuItems = [
         roles: ["manager", "employee"],
       },
       {
-        href: "/history",
+        href: "/dashboard",
         icon: History,
         label: "Execution History",
+        view: "execution-history",
         tooltip: "Explore past execution results",
         roles: ["manager", "employee"],
       },

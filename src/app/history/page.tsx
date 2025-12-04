@@ -31,8 +31,10 @@ function HistoryPageContent() {
   // For the purpose of this standalone page, we don't need full view switching logic
   // but we need the props for the sidebar to work correctly.
   const handleMenuClick = (view: ActiveView) => {
+    if (view === 'execution-history') return;
     // In a real app, this might navigate. Here we can just log it.
     console.log("Navigating to view:", view);
+    window.location.href = `/dashboard?role=${role}&view=${view}`;
   };
 
   return (
@@ -41,7 +43,7 @@ function HistoryPageContent() {
         currentRole={role}
         onRoleChange={handleRoleChange}
         user={currentUser}
-        activeView={null} // Or a new specific view type for history
+        activeView={"execution-history"}
         onMenuClick={handleMenuClick}
       />
       <div className="flex flex-1 flex-col sm:gap-4 sm:py-4 sm:pl-64">

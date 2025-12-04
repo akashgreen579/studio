@@ -25,10 +25,11 @@ import { ProjectSettings } from "@/components/app/project-settings";
 import TestAiLabPage from "@/app/test-ai-lab/page";
 import { PipelinesView } from "@/components/app/pipelines-view";
 import { ReportsDashboard } from "@/components/app/reports-dashboard";
+import { ExecutionHistoryView } from "@/components/app/execution-history-view";
 
 
 export type Role = "manager" | "employee";
-export type ActiveView = "dashboard" | "project-settings" | "user-management" | "audit-log" | "approvals" | "tmt-view" | "test-ai-lab" | "pipelines" | "reports" | null;
+export type ActiveView = "dashboard" | "project-settings" | "user-management" | "audit-log" | "approvals" | "tmt-view" | "test-ai-lab" | "pipelines" | "reports" | "execution-history" | null;
 
 function DashboardContent() {
   const searchParams = useSearchParams();
@@ -195,6 +196,8 @@ function DashboardContent() {
         return <PipelinesView user={currentUser} />;
       case 'reports':
         return <ReportsDashboard user={currentUser} />;
+      case 'execution-history':
+        return <ExecutionHistoryView user={currentUser} />;
       case 'project-settings':
         return role === "manager" ? (
           <ProjectSettings

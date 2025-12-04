@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState } from "react"
@@ -130,7 +131,7 @@ const KPICard = ({
 }) => {
   const Icon = icon
   const trendColor =
-    data.trendDirection === "up" ? "text-success" : "text-destructive"
+    data.trendDirection === "up" ? "text-success-500" : "text-destructive"
 
   return (
     <motion.div
