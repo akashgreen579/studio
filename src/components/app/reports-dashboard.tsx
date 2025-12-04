@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useState } from "react"
+import * as React from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import {
   Card,
@@ -28,9 +28,7 @@ import {
 import { Button } from "@/components/ui/button"
 import {
   CalendarDays,
-  Globe,
-  Monitor,
-  Tag,
+  ChevronDown,
   RefreshCw,
   TrendingUp,
   TrendingDown,
@@ -46,171 +44,82 @@ import {
   BarChart as BarChartIcon,
   Users,
   Eye,
+  CheckCheck,
+  Percent,
+  SlidersHorizontal,
+  Inspect,
+  X,
+  FileText
 } from "lucide-react"
 import {
   ResponsiveContainer,
   AreaChart,
   Area,
-  Tooltip as RechartsTooltip,
   BarChart,
   XAxis,
   YAxis,
   Bar,
   Cell,
+  Tooltip as RechartsTooltip,
+  Line,
+  LineChart
 } from "recharts"
 import type { User } from "@/lib/data"
 import { cn } from "@/lib/utils"
+import { Checkbox } from "../ui/checkbox"
+import { Badge } from "../ui/badge"
+import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from "../ui/tooltip"
 
 interface ReportsDashboardProps {
   user: User
 }
 
 const kpiData = {
-  passRate: {
-    value: "96.4%",
-    trend: "+1.2%",
-    trendDirection: "up" as const,
-    chart: [
-      { v: 92 },
-      { v: 93 },
-      { v: 92.5 },
-      { v: 94 },
-      { v: 95 },
-      { v: 96 },
-      { v: 96.4 },
-    ],
-  },
-  executions: {
-    value: "1,204",
-    trend: "+152",
-    trendDirection: "up" as const,
-    chart: [{ v: 800 }, { v: 950 }, { v: 900 }, { v: 1050 }, { v: 1100 }, { v: 1204 }],
-  },
-  coverage: {
-    value: "78.2%",
-    trend: "+3.0%",
-    trendDirection: "up" as const,
-    chart: [{ v: 65 }, { v: 68 }, { v: 70 }, { v: 72 }, { v: 75 }, { v: 78.2 }],
-  },
-  flakyTests: {
-    value: "12",
-    trend: "-2",
-    trendDirection: "down" as const,
-    chart: [{ v: 18 }, { v: 15 }, { v: 16 }, { v: 14 }, { v: 13 }, { v: 12 }],
-  },
-  avgDuration: {
-    value: "3m 45s",
-    trend: "-12s",
-    trendDirection: "down" as const,
-    chart: [
-      { v: 240 },
-      { v: 235 },
-      { v: 230 },
-      { v: 228 },
-      { v: 225 },
-    ],
-  },
-  autoHealing: {
-    value: "89%",
-    trend: "+5%",
-    trendDirection: "up" as const,
-    chart: [{ v: 80 }, { v: 82 }, { v: 85 }, { v: 86 }, { v: 89 }],
-  },
+  successRate24h: { value: "98.1%", trend: "+0.5%", trendDirection: "up" as const, chart: [{ v: 97 }, { v: 97.2 }, { v: 97.8 }, { v: 97.5 }, { v: 98.1 }] },
+  successRate7d: { value: "96.4%", trend: "+1.2%", trendDirection: "up" as const, chart: [{ v: 92 }, { v: 93 }, { v: 95 }, { v: 94 }, { v: 96.4 }] },
+  flakyRate: { value: "2.3%", trend: "-0.8%", trendDirection: "down" as const, chart: [{ v: 4 }, { v: 3.5 }, { v: 3 }, { v: 2.8 }, { v: 2.3 }] },
+  coverage: { value: "78.2%", trend: "+3.0%", trendDirection: "up" as const, chart: [{ v: 65 }, { v: 68 }, { v: 72 }, { v: 75 }, { v: 78.2 }] },
+  pendingSuggestions: { value: "12", trend: "+3", trendDirection: "up" as const, chart: [{ v: 5 }, { v: 8 }, { v: 9 }, { v: 10 }, { v: 12 }] },
+  avgTimeToFix: { value: "4.2h", trend: "-1.1h", trendDirection: "down" as const, chart: [{ v: 8 }, { v: 7 }, { v: 6.5 }, { v: 5 }, { v: 4.2 }] },
 }
 
-const insights = [
-  { title: "High-Risk Feature", content: "The 'new checkout flow' has a 15% lower pass rate than average.", icon: ShieldAlert, color: "text-amber-500" },
-  { title: "Auto-Heal Opportunity", content: "AI suggests a fix for 'TC-208' which has failed 3 times.", icon: Wand, color: "text-blue-500" },
-  { title: "Flaky Test Detected", content: "'TC-415' is intermittently failing on Firefox. Review needed.", icon: Bug, color: "text-red-500" },
-  { title: "Upcoming Regression", content: "The nightly regression suite is scheduled to run in 2 hours.", icon: Clock, color: "text-gray-500" },
+const suggestions = [
+  { id: "s1", type: "Fix Selector", confidence: 95, tests: 3, description: "Selector for #login-button is unstable." },
+  { id: "s2", type: "Add Wait", confidence: 88, tests: 2, description: "Add explicit wait before checking for .cart-summary." },
+  { id: "s3", type: "Optimize Step", confidence: 75, tests: 5, description: "Consolidate login steps into one keyword." },
 ];
 
-const teamMetrics = [
-    { title: "Team Productivity", value: "+8%", icon: Users },
-    { title: "MR Approval Time", value: "4.2h", icon: GitMerge },
-    { title: "Team Success Rate", value: "92%", icon: BarChartIcon },
-    { title: "Automation Velocity", value: "1.2k lines/week", icon: FlaskConical },
-]
-
-const flakyTestsData = [
-    { id: "TC-415", summary: "Verify user can apply coupon code", failureRate: "18%", lastFailure: "2h ago" },
-    { id: "TC-208", summary: "Check cart persistence after logout", failureRate: "12%", lastFailure: "1d ago" },
-    { id: "TC-501", summary: "API: Validate product search results", failureRate: "9%", lastFailure: "4h ago" },
-]
-
-const selectorStabilityData = [
-  { name: 'data-testid', stability: 98, color: "hsl(var(--success))" },
-  { name: 'ID', stability: 92, color: "hsl(var(--success))" },
-  { name: 'CSS Class', stability: 75, color: "hsl(var(--warning))" },
-  { name: 'XPath', stability: 65, color: "hsl(var(--warning))" },
-  { name: 'Full Text', stability: 40, color: "hsl(var(--destructive))" },
+const recentAiActions = [
+  { id: "a1", type: "Auto-Heal", description: "Fixed selector for TC-208 on Firefox.", status: "success" },
+  { id: "a2", type: "Merge Request", description: "Generated MR for TC-415 automation.", status: "info" },
+  { id: "a3", type: "Error", description: "Could not fix flaky test TC-501.", status: "error" },
 ];
 
-const KPICard = ({
-  title,
-  data,
-  icon,
-  className,
-}: {
-  title: string
-  data: (typeof kpiData)[keyof typeof kpiData]
-  icon: React.ElementType
-  className?: string
-}) => {
-  const Icon = icon
-  const trendColor =
-    data.trendDirection === "up" ? "text-success-500" : "text-destructive"
 
+const KPICard = ({ title, data, icon: Icon, className }: { title: string, data: (typeof kpiData)[keyof typeof kpiData], icon: React.ElementType, className?: string }) => {
+  const trendColor = data.trendDirection === "up" ? "text-success" : "text-destructive"
   return (
-    <motion.div
-      whileHover={{ scale: 1.03 }}
-      transition={{ type: "spring", stiffness: 300, damping: 20 }}
-    >
-      <Card
-        className={cn(
-          "overflow-hidden relative group transition-shadow hover:shadow-subtle",
-          className
-        )}
-      >
+    <motion.div whileHover={{ scale: 1.03, y: -5 }} transition={{ type: "spring", stiffness: 300, damping: 15 }}>
+      <Card className="overflow-hidden relative group transition-shadow hover:shadow-subtle backdrop-blur-sm bg-card/60">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-sm font-medium">{title}</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
             <Icon className="h-4 w-4 text-muted-foreground" />
           </div>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{data.value}</div>
-          <p className={cn("text-xs", trendColor)}>
+          <div className="text-3xl font-bold">{data.value}</div>
+          <p className={cn("text-xs font-semibold", trendColor)}>
             {data.trendDirection === "up" ? "↑" : "↓"} {data.trend}
           </p>
         </CardContent>
-        <div className="absolute bottom-0 left-0 right-0 h-16 opacity-40 group-hover:opacity-70 transition-opacity">
+        <div className="absolute bottom-0 left-0 right-0 h-20 opacity-30 group-hover:opacity-50 transition-opacity">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={data.chart} margin={{ top: 5, right: 0, left: 0, bottom: 0 }}>
-              <defs>
-                <linearGradient id="colorUv" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
-                </linearGradient>
-              </defs>
-              <RechartsTooltip
-                contentStyle={{
-                  backgroundColor: "hsl(var(--background))",
-                  borderColor: "hsl(var(--border))",
-                  fontSize: "12px",
-                  padding: "4px 8px"
-                }}
-                labelStyle={{ display: "none" }}
-              />
-              <Area
-                type="monotone"
-                dataKey="v"
-                stroke="hsl(var(--primary))"
-                strokeWidth={2}
-                fill="url(#colorUv)"
-                dot={false}
-              />
-            </AreaChart>
+            <LineChart data={data.chart} margin={{ top: 5, right: 0, left: 0, bottom: 0 }}>
+              <defs><linearGradient id="kpiGradient" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.4}/><stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/></linearGradient></defs>
+              <RechartsTooltip contentStyle={{ display: "none" }}/>
+              <Line type="monotone" dataKey="v" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
+            </LineChart>
           </ResponsiveContainer>
         </div>
       </Card>
@@ -219,213 +128,112 @@ const KPICard = ({
 }
 
 export function ReportsDashboard({ user }: ReportsDashboardProps) {
-  const [isRefreshing, setIsRefreshing] = useState(false)
+  const [isRefreshing, setIsRefreshing] = React.useState(false)
 
   const handleRefresh = () => {
     setIsRefreshing(true)
     setTimeout(() => setIsRefreshing(false), 1500)
   }
 
+  const isManager = user.role === 'manager';
+
   return (
-    <div className="space-y-8">
-      <header className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Reports Dashboard</h1>
-          <p className="text-muted-foreground mt-1">
-            Analyze execution trends and team performance.
-          </p>
+    <div className="space-y-6">
+      {/* Top Layer: Filters */}
+      <div className="flex flex-wrap items-center justify-between gap-2 p-2 rounded-lg bg-card/50 backdrop-blur-sm border shadow-sm">
+        <div className="flex items-center gap-2">
+            <Select defaultValue="proj-1"><SelectTrigger className="w-[180px] font-semibold"><SelectValue/></SelectTrigger><SelectContent><SelectItem value="proj-1">Customer Portal</SelectItem></SelectContent></Select>
+            <Select defaultValue="all-modules"><SelectTrigger className="w-[180px]"><SelectValue/></SelectTrigger><SelectContent><SelectItem value="all-modules">All Modules</SelectItem></SelectContent></Select>
+            <Button variant="outline" className="h-10 gap-2"><CalendarDays className="h-4 w-4"/> Last 7 days <ChevronDown className="h-4 w-4"/></Button>
+            {isManager && <Select defaultValue="all-users"><SelectTrigger className="w-[180px]"><SelectValue/></SelectTrigger><SelectContent><SelectItem value="all-users">All Users</SelectItem></SelectContent></Select>}
         </div>
         <div className="flex items-center gap-2">
-          <Select defaultValue="7d">
-            <SelectTrigger className="w-[120px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="24h">Last 24h</SelectItem>
-              <SelectItem value="7d">Last 7d</SelectItem>
-              <SelectItem value="30d">Last 30d</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select defaultValue="all">
-            <SelectTrigger className="w-[150px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Environments</SelectItem>
-              <SelectItem value="qa">QA</SelectItem>
-              <SelectItem value="staging">Staging</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select defaultValue="all">
-            <SelectTrigger className="w-[150px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Browsers</SelectItem>
-              <SelectItem value="chrome">Chrome</SelectItem>
-              <SelectItem value="firefox">Firefox</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button variant="outline" onClick={handleRefresh}>
-            <RefreshCw
-              className={cn("h-4 w-4 mr-2", isRefreshing && "animate-spin")}
-            />
-            Refresh
-          </Button>
+            <Select defaultValue="test-level"><SelectTrigger className="w-[150px]"><SelectValue/></SelectTrigger><SelectContent><SelectItem value="test-level">Test-Level</SelectItem></SelectContent></Select>
+            <Button variant="ghost" size="icon" onClick={handleRefresh}><RefreshCw className={cn("h-4 w-4", isRefreshing && "animate-spin")}/></Button>
         </div>
-      </header>
-
-      {/* KPI Cards */}
-      <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
-        <KPICard title="Pass Rate (7d)" data={kpiData.passRate} icon={PieChart} />
-        <KPICard title="Total Executions" data={kpiData.executions} icon={Target} />
-        <KPICard title="Automation Coverage" data={kpiData.coverage} icon={FlaskConical} />
-        <KPICard title="Flaky Tests" data={kpiData.flakyTests} icon={Bug} />
-        <KPICard title="Avg. Duration" data={kpiData.avgDuration} icon={Clock} />
-        <KPICard title="Auto-Heal Success" data={kpiData.autoHealing} icon={Wand} />
       </div>
 
-       {/* Insights Strip */}
-        <div>
-            <h3 className="text-sm font-semibold mb-2 uppercase text-muted-foreground tracking-wider">Insights & Actions</h3>
-             <div className="flex gap-4 pb-4 overflow-x-auto">
-                {insights.map((insight, index) => (
-                    <motion.div key={index}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.5 + index * 0.1 }}
-                        className="flex-shrink-0 w-64"
-                    >
-                    <Card className="hover:shadow-md transition-shadow">
-                        <CardHeader className="flex flex-row items-center gap-3 p-4">
-                            <insight.icon className={cn("h-6 w-6 flex-shrink-0", insight.color)} />
-                            <CardTitle className="text-base">{insight.title}</CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-4 pt-0">
-                            <p className="text-sm text-muted-foreground">{insight.content}</p>
-                        </CardContent>
-                    </Card>
-                    </motion.div>
-                ))}
-            </div>
+      {/* Middle Layer: KPI Band */}
+      <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
+        <KPICard title="Success Rate (24h)" data={kpiData.successRate24h} icon={PieChart} />
+        <KPICard title="Success Rate (7d)" data={kpiData.successRate7d} icon={PieChart} />
+        <KPICard title="Flaky Test Rate" data={kpiData.flakyRate} icon={Bug} />
+        <KPICard title="Automated Coverage" data={kpiData.coverage} icon={Percent} />
+        <KPICard title="AI Suggestions" data={kpiData.pendingSuggestions} icon={Bot} />
+        <KPICard title="Avg. Time-to-Fix" data={kpiData.avgTimeToFix} icon={Clock} />
+      </div>
+
+      {/* Main Insights Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        {/* Left Column: Analytics */}
+        <div className="lg:col-span-2 space-y-6">
+            <Card className="bg-card/60 backdrop-blur-sm"><CardHeader><CardTitle>Success Rate Trend</CardTitle></CardHeader><CardContent className="h-64 flex items-center justify-center text-muted-foreground"><p>Success Rate Trend Chart Placeholder</p></CardContent></Card>
+            <Card className="bg-card/60 backdrop-blur-sm"><CardHeader><CardTitle>Execution Volume</CardTitle></CardHeader><CardContent className="h-64 flex items-center justify-center text-muted-foreground"><p>Execution Volume Chart Placeholder</p></CardContent></Card>
+            <Card className="bg-card/60 backdrop-blur-sm"><CardHeader><CardTitle>Flaky Test Heatmap</CardTitle></CardHeader><CardContent className="h-64 flex items-center justify-center text-muted-foreground"><p>Flaky Test Heatmap Placeholder</p></CardContent></Card>
+            <Card className="bg-card/60 backdrop-blur-sm"><CardHeader><CardTitle>Selector Stability</CardTitle></CardHeader><CardContent className="h-64 flex items-center justify-center text-muted-foreground"><p>Selector Stability Chart Placeholder</p></CardContent></Card>
         </div>
-      
-      {/* Quality & Stability Section */}
-      <div className="space-y-4">
-        <h2 className="text-2xl font-bold tracking-tight">Quality & Stability</h2>
-        <div className="grid gap-6 lg:grid-cols-2 items-start">
-            <Card>
+
+        {/* Right Column: AI Insights */}
+        <div className="space-y-6 sticky top-24">
+            <Card className="bg-card/60 backdrop-blur-sm">
                 <CardHeader>
-                    <CardTitle>Flaky Tests</CardTitle>
-                    <CardDescription>Tests with inconsistent results. Prioritize fixing these to improve trust in your test suites.</CardDescription>
+                    <div className="flex items-center justify-between">
+                        <CardTitle>AI Suggestions</CardTitle>
+                        <Button variant="ghost" size="sm">Apply All</Button>
+                    </div>
                 </CardHeader>
-                <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Test Case</TableHead>
-                                <TableHead>Failure Rate</TableHead>
-                                <TableHead>Last Failure</TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {flakyTestsData.map(test => (
-                                <TableRow key={test.id}>
-                                    <TableCell className="font-medium">{test.id}</TableCell>
-                                    <TableCell><span className="text-destructive font-semibold">{test.failureRate}</span></TableCell>
-                                    <TableCell>{test.lastFailure}</TableCell>
-                                    <TableCell className="text-right"><Button variant="outline" size="sm"><Eye className="mr-2 h-4 w-4"/>Drilldown</Button></TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
+                <CardContent className="space-y-3">
+                    {suggestions.map(s => (
+                        <div key={s.id} className="p-3 rounded-lg border bg-background/50 space-y-2">
+                           <div className="flex items-center justify-between">
+                             <p className="font-semibold text-sm flex items-center gap-2">
+                                <Wand className="h-4 w-4 text-primary"/> {s.type}
+                             </p>
+                             <Badge variant="outline" className={s.confidence > 90 ? "text-success border-success/50" : "text-amber-600 border-amber-500/50"}>{s.confidence}%</Badge>
+                           </div>
+                           <p className="text-xs text-muted-foreground">{s.description}</p>
+                           <div className="flex items-center justify-between pt-2">
+                            <p className="text-xs text-muted-foreground">{s.tests} affected tests</p>
+                            <div className="flex gap-1">
+                                <Button variant="ghost" size="icon" className="h-7 w-7"><Inspect className="h-4 w-4"/></Button>
+                                <Button variant="ghost" size="icon" className="h-7 w-7"><X className="h-4 w-4"/></Button>
+                                <Button variant="secondary" size="sm" className="h-7">Apply</Button>
+                            </div>
+                           </div>
+                        </div>
+                    ))}
                 </CardContent>
             </Card>
-            <div className="grid gap-6">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Step Failure Heatmap</CardTitle>
-                        <CardDescription>Hotspots where failures occur most often.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="h-48 flex items-center justify-center text-muted-foreground bg-muted/40 rounded-lg">
-                        <p>Step Failure Heatmap Placeholder</p>
-                    </CardContent>
-                </Card>
-                 <Card>
-                    <CardHeader>
-                        <CardTitle>Selector Stability Distribution</CardTitle>
-                        <CardDescription>Breakdown of locator stability across your project.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <ResponsiveContainer width="100%" height={200}>
-                            <BarChart data={selectorStabilityData} layout="vertical" margin={{ left: 20, right: 20 }}>
-                                <XAxis type="number" hide />
-                                <YAxis type="category" dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12 }} width={80} />
-                                <RechartsTooltip 
-                                    cursor={{fill: 'hsla(var(--muted))'}}
-                                    contentStyle={{
-                                        backgroundColor: "hsl(var(--background))",
-                                        borderColor: "hsl(var(--border))",
-                                    }}
-                                />
-                                <Bar dataKey="stability" radius={[0, 4, 4, 0]}>
-                                    {selectorStabilityData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={entry.color} />
-                                    ))}
-                                </Bar>
-                            </BarChart>
-                        </ResponsiveContainer>
-                    </CardContent>
-                </Card>
-            </div>
+             <Card className="bg-card/60 backdrop-blur-sm">
+                <CardHeader><CardTitle>Recent AI Actions</CardTitle></CardHeader>
+                <CardContent className="space-y-3">
+                    {recentAiActions.map(a => (
+                         <div key={a.id} className="flex items-center gap-3 text-sm">
+                            {a.status === 'success' && <CheckCheck className="h-4 w-4 text-success"/>}
+                            {a.status === 'info' && <Bot className="h-4 w-4 text-primary"/>}
+                            {a.status === 'error' && <ShieldAlert className="h-4 w-4 text-destructive"/>}
+                            <p className="text-muted-foreground">{a.description}</p>
+                         </div>
+                    ))}
+                </CardContent>
+            </Card>
+             <Card className="bg-card/60 backdrop-blur-sm">
+                <CardHeader><CardTitle>Anomaly Detector</CardTitle></CardHeader>
+                <CardContent className="h-32 flex items-center justify-center text-muted-foreground">
+                    <p>No new anomalies detected.</p>
+                </CardContent>
+            </Card>
         </div>
       </div>
-
-      {/* Role-based content */}
-      <AnimatePresence mode="wait">
-        <motion.div
-            key={user.role}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0, transition: { delay: 0.2 } }}
-            exit={{ opacity: 0, y: -20 }}
-        >
-            {user.role === "manager" ? (
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                     {teamMetrics.map((metric, i) => (
-                        <Card key={metric.title}>
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">{metric.title}</CardTitle>
-                                <metric.icon className="h-4 w-4 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold">{metric.value}</div>
-                            </CardContent>
-                        </Card>
-                    ))}
-                </div>
-            ) : (
-                <div className="grid gap-4 md:grid-cols-2">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>My Recent Executions</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                             <p className="text-sm text-muted-foreground">A list of your recent pipeline runs would appear here.</p>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>My Draft Automations</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-sm text-muted-foreground">A list of your in-progress automation scripts would appear here.</p>
-                        </CardContent>
-                    </Card>
-                </div>
-            )}
-        </motion.div>
-      </AnimatePresence>
+       {isManager && (
+          <div className="space-y-4">
+            <h2 className="text-2xl font-bold tracking-tight">Team Performance</h2>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              <Card><CardHeader><CardTitle>Team Metrics Placeholder</CardTitle></CardHeader></Card>
+              <Card><CardHeader><CardTitle>Approvals Placeholder</CardTitle></CardHeader></Card>
+            </div>
+          </div>
+        )}
     </div>
   )
 }

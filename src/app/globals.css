@@ -5,48 +5,47 @@
 
 @layer base {
   :root {
-    /* TestCraft AI Design System - V2 */
+    /* TestCraft AI Design System - V3 Modern */
     --background: 220 20% 97%; /* #F6F7F9 */
-    --foreground: 222 84% 10%;
+    --foreground: 222 47% 11.2%;
 
-    --card: 0 0% 100%; /* #FFFFFF */
-    --card-foreground: 222 84% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11.2%;
     
     --popover: 0 0% 100%;
-    --popover-foreground: 222 84% 10%;
+    --popover-foreground: 222 47% 11.2%;
     
-    --primary: 217 69% 28%; /* #163f7a */
+    --primary: 224 76% 58%; /* #5B8CFF -> Adjusted to be more accessible as primary */
     --primary-foreground: 210 40% 98%;
-    
+
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222 47% 11.2%;
-    
+
     --muted: 210 40% 96.1%;
-    --muted-foreground: 215 20% 45.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
     
-    --accent: 217 100% 58%; /* #2979FF */
+    --accent: 226 79% 51%; /* #3457D5 */
     --accent-foreground: 210 40% 98%;
-    
-    --destructive: 0 72% 51%; /* #E04545 */
+
+    --destructive: 356 79% 65%; /* #E65A5A */
     --destructive-foreground: 210 40% 98%;
 
-    --warning: 38 92% 56%; /* #F6A623 */
+    --warning: 45 93% 58%; /* #F4BE2C */
     --warning-foreground: 210 40% 98%;
 
-    --success: 168 70% 36%; /* #17A589 - Teal */
+    --success: 154 59% 49%; /* #33C682 */
     --success-foreground: 210 40% 98%;
 
-    --success-500: 168 70% 40%;
+    --success-500: 154 59% 49%;
     
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 217 69% 28%; /* #163f7a */
+    --ring: 226 79% 51%; /* #3457D5 */
     
     --radius: 0.75rem; /* 12px */
   }
  
   .dark {
-    /* TestCraft AI Design System - Dark Theme */
     --background: 222 84% 4.9%;
     --foreground: 210 40% 98%;
     
@@ -56,7 +55,7 @@
     --popover: 222 84% 4.9%;
     --popover-foreground: 210 40% 98%;
     
-    --primary: 217 70% 48%;
+    --primary: 224 76% 58%;
     --primary-foreground: 222 47% 11.2%;
     
     --secondary: 217.2 32.6% 17.5%;
@@ -65,21 +64,21 @@
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20% 65.1%;
     
-    --accent: 217 91% 70%;
+    --accent: 226 79% 51%;
     --accent-foreground: 210 40% 98%;
     
-    --destructive: 0 63% 40%;
+    --destructive: 356 79% 65%;
     --destructive-foreground: 210 40% 98%;
 
-    --warning: 38 92% 50%;
+    --warning: 45 93% 58%;
     --warning-foreground: 210 40% 98%;
 
-    --success: 168 70% 40%;
+    --success: 154 59% 49%;
     --success-foreground: 210 40% 98%;
     
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 217 70% 48%;
+    --ring: 226 79% 51%;
   }
 }
  
