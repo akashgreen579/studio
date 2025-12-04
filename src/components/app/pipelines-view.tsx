@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Select,
   SelectContent,
@@ -45,7 +45,12 @@ const getStatusIcon = (status: string) => {
 
 export function PipelinesView({ user }: PipelinesViewProps) {
   const [selectedPipelineId, setSelectedPipelineId] = useState<string | null>(null);
+  const [isClient, setIsClient] = useState(false);
   const permissions = getEffectivePermissions(user.id);
+  
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
   
   const selectedPipeline = pipelines.find(p => p.id === selectedPipelineId) || pipelineTemplates.find(p => p.id === selectedPipelineId);
   const isRunning = selectedPipeline?.lastRun?.status === 'Running';
@@ -157,7 +162,7 @@ export function PipelinesView({ user }: PipelinesViewProps) {
                         </div>
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        Last run {formatDistanceToNow(p.lastRun.timestamp, { addSuffix: true })} by {p.lastRun.triggeredBy}
+                        Last run {isClient ? formatDistanceToNow(p.lastRun.timestamp, { addSuffix: true }) : '...'} by {p.lastRun.triggeredBy}
                       </p>
                     </div>
                   ))}
