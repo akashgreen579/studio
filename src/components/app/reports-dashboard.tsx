@@ -41,7 +41,7 @@ import {
   Bot,
   ShieldAlert,
   GitMerge,
-  BarChart as BarChartIcon,
+  BarChart,
   Users,
   Eye,
   CheckCheck,
@@ -55,14 +55,9 @@ import {
   ResponsiveContainer,
   AreaChart,
   Area,
-  BarChart,
-  XAxis,
-  YAxis,
-  Bar,
-  Cell,
-  Tooltip as RechartsTooltip,
+  LineChart,
   Line,
-  LineChart
+  Tooltip as RechartsTooltip,
 } from "recharts"
 import type { User } from "@/lib/data"
 import { cn } from "@/lib/utils"
@@ -81,25 +76,36 @@ const kpiData = {
   coverage: { value: "78.2%", trend: "+3.0%", trendDirection: "up" as const, chart: [{ v: 65 }, { v: 68 }, { v: 72 }, { v: 75 }, { v: 78.2 }] },
   pendingSuggestions: { value: "12", trend: "+3", trendDirection: "up" as const, chart: [{ v: 5 }, { v: 8 }, { v: 9 }, { v: 10 }, { v: 12 }] },
   avgTimeToFix: { value: "4.2h", trend: "-1.1h", trendDirection: "down" as const, chart: [{ v: 8 }, { v: 7 }, { v: 6.5 }, { v: 5 }, { v: 4.2 }] },
-}
+};
 
-const suggestions = [
-  { id: "s1", type: "Fix Selector", confidence: 95, tests: 3, description: "Selector for #login-button is unstable." },
-  { id: "s2", type: "Add Wait", confidence: 88, tests: 2, description: "Add explicit wait before checking for .cart-summary." },
-  { id: "s3", type: "Optimize Step", confidence: 75, tests: 5, description: "Consolidate login steps into one keyword." },
+const insights = [
+    { type: 'High-Risk Feature', title: 'New checkout flow has a 15% lower success rate.', icon: ShieldAlert, color: 'text-destructive' },
+    { type: 'Auto-Heal', title: 'Selector for TC-208 on Firefox auto-healed.', icon: Wand, color: 'text-blue-500' },
+    { type: 'Flaky Test', title: 'TC-112 is now marked as flaky after 3 consecutive failures.', icon: Bug, color: 'text-amber-500' },
 ];
 
-const recentAiActions = [
-  { id: "a1", type: "Auto-Heal", description: "Fixed selector for TC-208 on Firefox.", status: "success" },
-  { id: "a2", type: "Merge Request", description: "Generated MR for TC-415 automation.", status: "info" },
-  { id: "a3", type: "Error", description: "Could not fix flaky test TC-501.", status: "error" },
+const flakyTests = [
+  { id: 'TC-112', module: 'Authentication', failCount: 5, flakyScore: '88%', lastFail: '2h ago' },
+  { id: 'TC-304', module: 'Payments', failCount: 3, flakyScore: '75%', lastFail: '1d ago' },
+];
+
+const selectorStabilityData = [
+  { type: 'ID', stability: 98 },
+  { type: 'Data-Test', stability: 95 },
+  { type: 'CSS', stability: 82 },
+  { type: 'XPath', stability: 65 },
 ];
 
 
-const KPICard = ({ title, data, icon: Icon, className }: { title: string, data: (typeof kpiData)[keyof typeof kpiData], icon: React.ElementType, className?: string }) => {
+const KPICard = ({ title, data, icon: Icon }: { title: string, data: (typeof kpiData)[keyof typeof kpiData], icon: React.ElementType }) => {
   const trendColor = data.trendDirection === "up" ? "text-success" : "text-destructive"
   return (
-    <motion.div whileHover={{ scale: 1.03, y: -5 }} transition={{ type: "spring", stiffness: 300, damping: 15 }}>
+    <motion.div 
+        whileHover={{ scale: 1.03, y: -5 }} 
+        transition={{ type: "spring", stiffness: 300, damping: 15 }}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+    >
       <Card className="overflow-hidden relative group transition-shadow hover:shadow-subtle backdrop-blur-sm bg-card/60">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
@@ -169,31 +175,99 @@ export function ReportsDashboard({ user }: ReportsDashboardProps) {
         <div className="lg:col-span-2 space-y-6">
             <Card className="bg-card/60 backdrop-blur-sm"><CardHeader><CardTitle>Success Rate Trend</CardTitle></CardHeader><CardContent className="h-64 flex items-center justify-center text-muted-foreground"><p>Success Rate Trend Chart Placeholder</p></CardContent></Card>
             <Card className="bg-card/60 backdrop-blur-sm"><CardHeader><CardTitle>Execution Volume</CardTitle></CardHeader><CardContent className="h-64 flex items-center justify-center text-muted-foreground"><p>Execution Volume Chart Placeholder</p></CardContent></Card>
-            <Card className="bg-card/60 backdrop-blur-sm"><CardHeader><CardTitle>Flaky Test Heatmap</CardTitle></CardHeader><CardContent className="h-64 flex items-center justify-center text-muted-foreground"><p>Flaky Test Heatmap Placeholder</p></CardContent></Card>
-            <Card className="bg-card/60 backdrop-blur-sm"><CardHeader><CardTitle>Selector Stability</CardTitle></CardHeader><CardContent className="h-64 flex items-center justify-center text-muted-foreground"><p>Selector Stability Chart Placeholder</p></CardContent></Card>
+             <h2 className="text-xl font-bold tracking-tight pt-4">Quality & Stability</h2>
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+               <Card>
+                  <CardHeader>
+                    <CardTitle>Flaky Tests</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Test ID</TableHead>
+                          <TableHead>Fail %</TableHead>
+                          <TableHead>Last Fail</TableHead>
+                          <TableHead>Action</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {flakyTests.map(test => (
+                          <TableRow key={test.id}>
+                            <TableCell className="font-medium">{test.id}</TableCell>
+                            <TableCell>{test.flakyScore}</TableCell>
+                            <TableCell>{test.lastFail}</TableCell>
+                            <TableCell><Button variant="outline" size="sm">Drilldown</Button></TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Selector Stability</CardTitle>
+                  </CardHeader>
+                  <CardContent className="h-64">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={selectorStabilityData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                        <XAxis dataKey="type" />
+                        <YAxis />
+                        <RechartsTooltip />
+                        <Area type="monotone" dataKey="stability" stroke="hsl(var(--primary))" fill="hsl(var(--primary) / 0.2)" />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+                <Card className="xl:col-span-2">
+                    <CardHeader><CardTitle>Step Failure Heatmap</CardTitle></CardHeader>
+                    <CardContent className="h-64 flex items-center justify-center text-muted-foreground bg-muted/30 rounded-lg">
+                        <p>Heatmap Visualization Placeholder</p>
+                    </CardContent>
+                </Card>
+            </div>
+             <h2 className="text-xl font-bold tracking-tight pt-4">Insights & Actions</h2>
+             <Card>
+              <CardHeader><CardTitle>AI Suggestions</CardTitle></CardHeader>
+              <CardContent className="flex gap-4 overflow-x-auto pb-4">
+                {insights.map(insight => (
+                    <motion.div key={insight.title} className="min-w-[300px]"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3 }}
+                    >
+                    <Card className="bg-muted/50">
+                        <CardHeader className="flex flex-row items-center gap-3">
+                            <insight.icon className={cn("h-6 w-6", insight.color)} />
+                            <CardTitle className="text-base">{insight.type}</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-sm">{insight.title}</p>
+                            <Button variant="link" className="p-0 h-auto mt-2">View Details</Button>
+                        </CardContent>
+                    </Card>
+                    </motion.div>
+                ))}
+              </CardContent>
+             </Card>
         </div>
 
         {/* Right Column: AI Insights */}
         <div className="space-y-6 sticky top-24">
             <Card className="bg-card/60 backdrop-blur-sm">
                 <CardHeader>
-                    <div className="flex items-center justify-between">
-                        <CardTitle>AI Suggestions</CardTitle>
-                        <Button variant="ghost" size="sm">Apply All</Button>
-                    </div>
+                    <CardTitle>AI Suggestions</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                    {suggestions.map(s => (
-                        <div key={s.id} className="p-3 rounded-lg border bg-background/50 space-y-2">
+                    {insights.map(s => (
+                        <div key={s.title} className="p-3 rounded-lg border bg-background/50 space-y-2">
                            <div className="flex items-center justify-between">
                              <p className="font-semibold text-sm flex items-center gap-2">
-                                <Wand className="h-4 w-4 text-primary"/> {s.type}
+                                <s.icon className={cn("h-4 w-4", s.color)}/> {s.type}
                              </p>
-                             <Badge variant="outline" className={s.confidence > 90 ? "text-success border-success/50" : "text-amber-600 border-amber-500/50"}>{s.confidence}%</Badge>
                            </div>
-                           <p className="text-xs text-muted-foreground">{s.description}</p>
-                           <div className="flex items-center justify-between pt-2">
-                            <p className="text-xs text-muted-foreground">{s.tests} affected tests</p>
+                           <p className="text-xs text-muted-foreground">{s.title}</p>
+                           <div className="flex items-center justify-end pt-2">
                             <div className="flex gap-1">
                                 <Button variant="ghost" size="icon" className="h-7 w-7"><Inspect className="h-4 w-4"/></Button>
                                 <Button variant="ghost" size="icon" className="h-7 w-7"><X className="h-4 w-4"/></Button>
@@ -207,12 +281,10 @@ export function ReportsDashboard({ user }: ReportsDashboardProps) {
              <Card className="bg-card/60 backdrop-blur-sm">
                 <CardHeader><CardTitle>Recent AI Actions</CardTitle></CardHeader>
                 <CardContent className="space-y-3">
-                    {recentAiActions.map(a => (
-                         <div key={a.id} className="flex items-center gap-3 text-sm">
-                            {a.status === 'success' && <CheckCheck className="h-4 w-4 text-success"/>}
-                            {a.status === 'info' && <Bot className="h-4 w-4 text-primary"/>}
-                            {a.status === 'error' && <ShieldAlert className="h-4 w-4 text-destructive"/>}
-                            <p className="text-muted-foreground">{a.description}</p>
+                    {insights.slice(0,2).map(a => (
+                         <div key={a.title} className="flex items-center gap-3 text-sm">
+                            <a.icon className={cn("h-4 w-4", a.color)}/>
+                            <p className="text-muted-foreground">{a.title}</p>
                          </div>
                     ))}
                 </CardContent>
